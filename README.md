@@ -98,12 +98,6 @@ NekoType 是一款运行在 Android 上的系统级消息处理工具，核心�
 
 要求：JDK 17+，Android SDK Platform 34 + Build-Tools 34.0.0，Gradle 8.7（仓库已内置 wrapper）。
 
-## 🔐 签名说明
-
-* Release 与 Debug 共用同一签名，避免按签名校验的应用 debug/release 不一致。
-* `nekotype-release.keystore` 与 `keystore.properties` 已 gitignore，**切勿提交**；默认密码仅开箱即用，正式发布前务必更换强密码并妥善保管。
-* CI 构建见 [.github/workflows/build.yml](.github/workflows/build.yml)，可通过仓库 Secrets 注入密钥。
-
 ## 📬 支持与反馈
 
 * QQ 交流群：`1007865515`
