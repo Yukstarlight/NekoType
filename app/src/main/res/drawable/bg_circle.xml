@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 步骤圆点（随主题） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@color/bg_2"/>
+    <stroke android:width="1dp" android:color="@color/divider"/>
+</shape>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 深色主题（Night 模式，纯黑） -->
+<resources>
+    <color name="bg_0">#000000</color>
+    <color name="bg_1">#0D0D0D</color>
+    <color name="bg_2">#141414</color>
+
+    <color name="fg_0">#F2F2F2</color>
+    <color name="fg_1">#A6A6A6</color>
+    <color name="fg_2">#666666</color>
+
+    <color name="accent_blue">#7AA8FF</color>
+    <color name="accent_purple">#C8A2FF</color>
+    <color name="accent_pink">#FF9BD1</color>
+    <color name="glow_green">#4ADE80</color>
+
+    <color name="glass">#0D0D0D</color>
+    <color name="glass_strong">#141414</color>
+    <color name="border_glass">#1F1F1F</color>
+
+    <color name="brand">@color/accent_blue</color>
+    <color name="brand_dark">@color/bg_1</color>
+    <color name="brand_light">@color/glass_strong</color>
+    <color name="accent">@color/accent_purple</color>
+    <color name="accent_dark">@color/fg_0</color>
+    <color name="accent_light">@color/glass_strong</color>
+    <color name="hero_start">@color/accent_blue</color>
+    <color name="hero_end">@color/accent_purple</color>
+    <color name="hero_text">@color/fg_0</color>
+    <color name="hero_text_soft">@color/fg_1</color>
+    <color name="surface_bg">@color/bg_0</color>
+    <color name="surface_card">@color/bg_1</color>
+    <color name="surface_card_glass">@color/bg_1</color>
+    <color name="text_primary">@color/fg_0</color>
+    <color name="text_secondary">@color/fg_1</color>
+    <color name="divider">@color/border_glass</color>
+    <color name="bg_grad_start">@color/bg_0</color>
+    <color name="bg_grad_end">@color/bg_1</color>
+    <color name="fab_start">@color/accent_blue</color>
+    <color name="fab_end">@color/accent_purple</color>
+    <color name="ok_green">@color/glow_green</color>
+    <color name="ok_green_light">#12281B</color>
+    <color name="warn_amber">#FFB84D</color>
+    <color name="log_error">#FF6B6B</color>
+    <color name="log_nav">#4DD0E1</color>
+    <color name="log_adjust">#C8A2FF</color>
+    <color name="log_rule">#FFA726</color>
+
+    <color name="bubble_in">#141414</color>
+    <color name="bubble_out">#1A1A1A</color>
+
+    <color name="md_theme_primary">@color/accent_blue</color>
+    <color name="md_theme_onPrimary">@color/bg_1</color>
+    <color name="md_theme_surface">@color/bg_1</color>
+    <color name="md_theme_onSurface">@color/fg_0</color>
+    <color name="md_theme_onSurfaceVariant">@color/fg_1</color>
+    <color name="fab_bg">@color/accent_blue</color>
+    <color name="ic_bg">#000000</color>
+</resources>

@@ -1,0 +1,74 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.nekotype.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.nekotype.app"
+        minSdk 26
+        targetSdk 34
+        versionCode 16
+        versionName "2.5.5"
+    }
+
+    // 签名配置：keystore.properties 存在且 keystore 文件存在时才启用签名，
+    // 保证无密钥的 CI/克隆环境也能构建（此时产出未签名 APK）。
+    def ksPropsFile = rootProject.file("keystore.properties")
+    def ksProps = new Properties()
+    if (ksPropsFile.exists()) {
+        ksProps.load(new FileInputStream(ksPropsFile))
+    }
+    def releaseStoreFile = ksProps.getProperty("storeFile") ? rootProject.file(ksProps.getProperty("storeFile")) : null
+    def hasReleaseKey = releaseStoreFile != null && releaseStoreFile.exists()
+
+    signingConfigs {
+        release {
+            storeFile releaseStoreFile
+            storePassword ksProps.getProperty("storePassword", "")
+            keyAlias ksProps.getProperty("keyAlias", "")
+            keyPassword ksProps.getProperty("keyPassword", "")
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (hasReleaseKey) {
+                signingConfig signingConfigs.release
+            }
+        }
+        debug {
+            // debug 也走同一签名，避免微信/QQ 等按签名校验时 debug/release 不一致
+            if (hasReleaseKey) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+    buildFeatures {
+        viewBinding true
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.preference:preference-ktx:1.2.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.6'
+    implementation 'androidx.lifecycle:lifecycle-service:2.8.6'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
+    // Shizuku API (system-level enhancement via adb shell permission)
+    implementation 'dev.rikka.shizuku:api:13.1.5'
+    implementation 'dev.rikka.shizuku:provider:13.1.5'
+}

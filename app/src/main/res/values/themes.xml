@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 窗口动画：关闭退出动画，避免纯黑背景下退出时出现黑波纹 -->
+    <style name="NekoWindowAnim" parent="@android:style/Animation.Activity">
+        <item name="android:activityCloseExitAnimation">@null</item>
+    </style>
+
+    <!-- 浅色模式（Day） -->
+    <style name="Theme.NekoType" parent="Theme.Material3.DayNight">
+        <item name="colorPrimary">@color/accent_blue</item>
+        <item name="colorOnPrimary">@color/md_theme_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/glass_strong</item>
+        <item name="colorOnPrimaryContainer">@color/fg_0</item>
+        <item name="colorSecondary">@color/accent_purple</item>
+        <item name="colorOnSecondary">@color/md_theme_onPrimary</item>
+        <item name="colorSecondaryContainer">@color/glass_strong</item>
+        <item name="colorOnSecondaryContainer">@color/fg_0</item>
+        <item name="colorSurface">@color/bg_1</item>
+        <item name="colorOnSurface">@color/fg_0</item>
+        <item name="colorOnSurfaceVariant">@color/fg_1</item>
+        <item name="colorOutlineVariant">@color/border_glass</item>
+        <!-- 窗口背景透明 + 关闭启动预览：退出/进入动效不再透出纯黑窗口，黑波纹消除 -->
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:statusBarColor">@color/bg_0</item>
+        <item name="android:navigationBarColor">@color/bg_0</item>
+        <item name="android:windowLightStatusBar">@bool/light_status_bar</item>
+        <item name="android:windowAnimationStyle">@style/NekoWindowAnim</item>
+    </style>
+
+    <!-- 主界面：无 ActionBar（全沉浸式，自定义头部） -->
+    <style name="Theme.NekoType.Main" parent="Theme.NekoType">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+</resources>

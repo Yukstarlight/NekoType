@@ -1,0 +1,16 @@
+# 签名凭据 (切勿提交)
+*.keystore
+keystore.properties
+
+# 构建产物
+build/
+app/build/
+.gradle/
+local.properties
+dist/
+.tools/
+
+# IDE
+.idea/
+*.iml
+captures/
