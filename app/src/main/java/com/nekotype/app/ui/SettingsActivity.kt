@@ -1,33 +1,3 @@
-/*
- * NekoType
- *
- * BSD 2-Clause License
- *
- * Copyright (c) 2026, Yukstarlight
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- */
 package com.nekotype.app.ui
 
 import android.content.ClipData
@@ -70,16 +40,13 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySettingsBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // 主题：super 前设置夜间模式（recreate 后保持），super 后设置星空主题
+        // 主题：super 前设置夜间模式（recreate 后保持）
         when (AppPrefs.themeMode) {
-            "dark", "star" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            "dark" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         }
         super.onCreate(savedInstanceState)
-        if (AppPrefs.themeMode == "star") {
-            setTheme(R.style.Theme_NekoType_Star)
-        }
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         BgUtils.apply(binding.root)
@@ -120,14 +87,10 @@ class SettingsActivity : AppCompatActivity() {
             if (isChecked) {
                 val mode = when (checkedId) {
                     R.id.btnThemeDark -> "dark"
+                    R.id.btnThemeLight -> "light"
                     else -> "system"
                 }
                 switchTheme(mode)
-            }
-        }
-        binding.themeGroup2.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (isChecked) {
-                switchTheme("star")
             }
         }
 
@@ -291,6 +254,7 @@ class SettingsActivity : AppCompatActivity() {
         val et = EditText(this).apply {
             hint = "粘贴 NekoType 配置文本"
             minLines = 4
+            maxLines = 6
             gravity = android.view.Gravity.TOP
         }
         // 预填剪贴板内容
@@ -300,13 +264,15 @@ class SettingsActivity : AppCompatActivity() {
                 if (it.startsWith("{") && it.contains("NekoType")) et.setText(it)
             }
         } catch (_: Throwable) { }
-        AlertDialog.Builder(this)
-            .setTitle("导入配置")
-            .setMessage("粘贴从「导出配置」得到的文本")
-            .setView(et)
-            .setPositiveButton("导入") { _, _ ->
+
+        // 自定义布局：输入框 + 导入/取消按钮（按钮固定可见，不受系统对话框按钮渲染问题影响）
+        var dialogRef: AlertDialog? = null
+        val btnImport = com.google.android.material.button.MaterialButton(this).apply {
+            text = "导入"
+            layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            setOnClickListener {
                 val text = et.text.toString().trim()
-                if (text.isEmpty()) { toast("内容为空"); return@setPositiveButton }
+                if (text.isEmpty()) { toast("内容为空"); return@setOnClickListener }
                 val err = AppPrefs.importConfigText(text)
                 if (err != null) {
                     NekoLog.error("导入配置失败：$err")
@@ -314,14 +280,45 @@ class SettingsActivity : AppCompatActivity() {
                 } else {
                     NekoLog.ok("配置导入成功")
                     toast("配置导入成功")
-                    // 主题可能变化，重新应用
                     applyThemeMode()
                     refreshStatsDaily()
                     BgUtils.apply(binding.root)
+                    dialogRef?.dismiss()
                 }
             }
-            .setNegativeButton("取消", null)
-            .show()
+        }
+        val btnCancel = com.google.android.material.button.MaterialButton(this).apply {
+            text = "取消"
+            layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            setOnClickListener { dialogRef?.dismiss() }
+        }
+        val btnRow = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            addView(btnImport)
+            addView(btnCancel)
+        }
+        val content = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            layoutParams = android.view.ViewGroup.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            setPadding(24, 8, 24, 8)
+            addView(et)
+            addView(btnRow)
+        }
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("导入配置")
+            .setMessage("粘贴从「导出配置」得到的文本")
+            .setView(content)
+            .create()
+        dialogRef = dialog
+        dialog.window?.setSoftInputMode(
+            android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or
+                    android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
+        )
+        dialog.show()
     }
 
     /** 切换主题：保存 + 应用 + 刷新选中态（setDefaultNightMode 变化触发重建，主题在 onCreate 重新应用） */
@@ -332,13 +329,9 @@ class SettingsActivity : AppCompatActivity() {
         refreshTheme()
     }
 
-    /** 应用主题（含星空模式：深色夜空 + 紫金星光） */
+    /** 应用主题（浅色 / 深色 / 跟随系统） */
     private fun applyThemeMode() {
         when (AppPrefs.themeMode) {
-            "star" -> {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                setTheme(R.style.Theme_NekoType_Star)
-            }
             "dark" -> {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
                 setTheme(R.style.Theme_NekoType)
@@ -357,26 +350,20 @@ class SettingsActivity : AppCompatActivity() {
     private fun themeLabel(m: String): String = when (m) {
         "dark" -> "深色"
         "light" -> "浅色"
-        "star" -> "浅色星空"
         else -> "跟随系统"
     }
 
     private fun refreshTheme() {
-        // themeGroup：跟随系统 / 深色；themeGroup2：浅色星空
-        val m = AppPrefs.themeMode
         binding.themeGroup.check(
-            when (m) {
+            when (AppPrefs.themeMode) {
                 "dark" -> R.id.btnThemeDark
+                "light" -> R.id.btnThemeLight
                 else -> R.id.btnThemeSystem
             }
         )
-        binding.themeGroup2.check(
-            if (m == "star") R.id.btnThemeStar else -1
-        )
-        binding.tvThemeHint.text = when (m) {
+        binding.tvThemeHint.text = when (AppPrefs.themeMode) {
             "dark" -> "深色模式：纯黑界面"
             "light" -> "浅色模式：明亮界面"
-            "star" -> "浅色星空：浅色底 + 紫金星光（Yukstarlight 配色）"
             else -> "跟随系统：随系统深色/浅色设置自动切换"
         }
     }
@@ -445,6 +432,7 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
+    /** 复制群号，并尝试拉起 QQ 群卡片 */
     /** 复制频道号，并尝试拉起 QQ 频道 */
     private fun tryOpenQqChannel() {
         try {

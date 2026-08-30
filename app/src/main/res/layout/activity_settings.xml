@@ -56,22 +56,14 @@
                         android:layout_weight="1"
                         android:minHeight="44dp"
                         android:text="深色"/>
-                </com.google.android.material.button.MaterialButtonToggleGroup>
-                <com.google.android.material.button.MaterialButtonToggleGroup
-                    android:id="@+id/themeGroup2"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:singleSelection="true"
-                    app:selectionRequired="false"
-                    android:layout_marginTop="8dp">
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnThemeStar"
+                        android:id="@+id/btnThemeLight"
                         style="@style/Widget.Material3.Button.TonalButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:minHeight="44dp"
-                        android:text="浅色星空"/>
+                        android:text="浅色"/>
                 </com.google.android.material.button.MaterialButtonToggleGroup>
                 <TextView
                     android:id="@+id/tvThemeHint"
@@ -561,15 +553,6 @@
                     android:layout_marginTop="8dp"
                     android:text="QQ 频道：pd43973125\n邮箱：TR114512@qq.com"
                     android:textIsSelectable="true"/>
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="12sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:lineSpacingExtra="5dp"
-                    android:layout_marginTop="10dp"
-                    android:text="开源协议：BSD 2-Clause License（BSD-2-Clause）\nCopyright (c) 2026, Yukstarlight\n详见项目 LICENSE 文件。"
-                    android:textIsSelectable="true"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -646,7 +629,7 @@
                         android:layout_height="wrap_content"
                         android:minWidth="0dp"
                         android:minHeight="0dp"
-                        android:text="复制频道号"/>
+                        android:text="复制群号"/>
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

@@ -14,6 +14,3 @@ dist/
 .idea/
 *.iml
 captures/
-
-# CI 工作流（暂未推送）
-.github/workflows/build.yml

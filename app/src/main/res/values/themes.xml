@@ -19,9 +19,8 @@
         <item name="colorOnSurface">@color/fg_0</item>
         <item name="colorOnSurfaceVariant">@color/fg_1</item>
         <item name="colorOutlineVariant">@color/border_glass</item>
-        <!-- 窗口背景透明 + 关闭启动预览：退出/进入动效不再透出纯黑窗口，黑波纹消除 -->
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowDisablePreview">true</item>
+        <!-- 窗口背景用主题色（不透明）：进入页面不闪屏；退出动画已禁用（NekoWindowAnim），不会黑波纹 -->
+        <item name="android:windowBackground">@color/bg_0</item>
         <item name="android:statusBarColor">@color/bg_0</item>
         <item name="android:navigationBarColor">@color/bg_0</item>
         <item name="android:windowLightStatusBar">@bool/light_status_bar</item>
@@ -48,6 +47,7 @@
         <item name="colorOnSurface">@color/star_fg0</item>
         <item name="colorOnSurfaceVariant">@color/star_fg1</item>
         <item name="colorOutlineVariant">@color/star_border</item>
+        <item name="android:windowBackground">@color/star_bg0</item>
         <item name="android:statusBarColor">@color/star_bg0</item>
         <item name="android:navigationBarColor">@color/star_bg0</item>
         <item name="android:windowLightStatusBar">false</item>
