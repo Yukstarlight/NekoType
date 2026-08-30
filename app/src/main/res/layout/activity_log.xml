@@ -134,7 +134,7 @@
             android:id="@+id/scrollSysLog"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/bg_1"
+            android:background="?attr/colorSurface"
             android:padding="12dp">
             <TextView
                 android:id="@+id/tvSysLog"
@@ -152,7 +152,7 @@
             android:id="@+id/scrollAppLog"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/bg_1"
+            android:background="?attr/colorSurface"
             android:padding="12dp"
             android:visibility="gone">
             <TextView

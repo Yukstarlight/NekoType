@@ -1,5 +1,36 @@
+/*
+ * NekoType
+ *
+ * BSD 2-Clause License
+ *
+ * Copyright (c) 2026, Yukstarlight
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.nekotype.app.overlay
 
+import android.app.AlarmManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -53,7 +84,10 @@ class FloatingButtonService : Service() {
                     context.startService(intent)
                 }
             } catch (_: Throwable) {
-                // Android 12+ 后台启动前台服务受限时静默降级：不会崩溃
+                // Android 12+ 后台启动前台服务受限时降级为普通启动（服务已在前台时也能生效）
+                try {
+                    context.startService(Intent(context, FloatingButtonService::class.java))
+                } catch (_: Throwable) { /* 系统级限制（如华为应用启动管理），App 无法绕过 */ }
             }
         }
 
@@ -69,6 +103,21 @@ class FloatingButtonService : Service() {
                 it.params = null
                 it.showButton()
             }
+        }
+
+        /** 取消心跳闹钟（关闭心跳保活开关时调用） */
+        fun cancelHeartbeatGlobal(context: Context) {
+            try {
+                val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                val pi = PendingIntent.getService(
+                    context, 1001,
+                    Intent(context, FloatingButtonService::class.java).apply {
+                        action = "${context.packageName}.action.HEARTBEAT"
+                    },
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                am.cancel(pi)
+            } catch (_: Throwable) { }
         }
 
         /** 实时应用大小/透明度（不重建，避免滑块拖动时抖动） */
@@ -149,11 +198,43 @@ class FloatingButtonService : Service() {
         wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         createNotificationChannel()
         startForeground(NOTIF_ID, buildNotification())
+        // 心跳保活（皆成同款，用户开关控制）：每 60 秒闹钟唤醒检查，服务被系统杀了也能自动拉活
+        startHeartbeat()
         NekoLog.ok("悬浮服务已启动，按钮常驻屏幕边缘")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // 防篡改：签名被改 / Hook 框架 → 拒绝运行
+        if (AppPrefs.tampered) {
+            AppPrefs.serviceEnabled = false
+            NekoLog.warn("检测到篡改，悬浮服务拒绝运行")
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        // 心跳唤醒：确认服务还活着，按钮显示（若因被系统清理而重建）
+        if (intent?.action == ACTION_HEARTBEAT) {
+            if (AppPrefs.heartbeatEnabled && AppPrefs.serviceEnabled) {
+                showButton()
+                scheduleNextHeartbeat()
+            } else {
+                stopSelf()
+                return START_NOT_STICKY
+            }
+            return START_STICKY
+        }
         if (intent?.action == ACTION_STOP) {
+            // 密码锁定：通知栏停止入口也需验证，拉起主界面弹密码框
+            if (AppPrefs.lockEnabled) {
+                NekoLog.warn("密码锁定：停止服务需在应用内验证密码")
+                try {
+                    val i = Intent(this, com.nekotype.app.ui.MainActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        putExtra(com.nekotype.app.ui.MainActivity.EXTRA_STOP_REQUEST, true)
+                    }
+                    startActivity(i)
+                } catch (_: Throwable) { }
+                return START_STICKY
+            }
             AppPrefs.serviceEnabled = false
             NekoLog.info("服务已停止")
             stopSelf()
@@ -166,7 +247,35 @@ class FloatingButtonService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
+    /**
+     * 防杀后台：任务被从最近任务划掉时，若开启了密码锁定或隐藏模式则延时重启服务，
+     * 配合隐藏模式让 NekoType 划掉后自动复活（部分 ROM 限制立即重启，延时 1.5s；
+     * 用前台服务拉起，Android 12 对 FGS 的后台启动豁免更多）。
+     */
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        if (AppPrefs.lockEnabled || AppPrefs.hiddenModeEnabled) {
+            NekoLog.ok("检测到任务被划掉，防杀后台：延时自动重启服务")
+            android.os.Handler(mainLooper).postDelayed({
+                try {
+                    val i = Intent(this, FloatingButtonService::class.java)
+                    i.action = ACTION_RESTART
+                    if (Build.VERSION.SDK_INT >= 26) {
+                        startForegroundService(i)
+                    } else {
+                        startService(i)
+                    }
+                } catch (_: Throwable) {
+                    try {
+                        startService(Intent(this, FloatingButtonService::class.java).apply { action = ACTION_RESTART })
+                    } catch (_: Throwable) { }
+                }
+            }, 1500)
+        }
+    }
+
     override fun onDestroy() {
+        cancelHeartbeat()
         hideButton()
         instance = null
         super.onDestroy()
@@ -175,6 +284,64 @@ class FloatingButtonService : Service() {
     // 注意：不能在属性初始化时用 packageName（服务构造期间 Context 尚未挂载会 NPE），
     // 必须惰性取值
     private val ACTION_STOP by lazy { "$packageName.action.STOP_FLOATING" }
+    private val ACTION_RESTART by lazy { "$packageName.action.RESTART_FLOATING" }
+    private val ACTION_HEARTBEAT by lazy { "$packageName.action.HEARTBEAT" }
+
+    // ---------- 心跳保活（皆成同款，用户开关控制） ----------
+
+    private val HEARTBEAT_INTERVAL_MS = 60_000L
+
+    private fun startHeartbeat() {
+        if (AppPrefs.heartbeatEnabled && AppPrefs.serviceEnabled) {
+            scheduleNextHeartbeat()
+        }
+    }
+
+    private fun scheduleNextHeartbeat() {
+        try {
+            val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            // 用 getForegroundService：Android 12 允许精确闹钟触发前台服务启动（豁免场景），
+            // 华为等 ROM 拦截后台启动的概率更低
+            val pi = if (Build.VERSION.SDK_INT >= 26) {
+                PendingIntent.getForegroundService(
+                    this, 1001,
+                    Intent(this, FloatingButtonService::class.java).apply { action = ACTION_HEARTBEAT },
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+            } else {
+                PendingIntent.getService(
+                    this, 1001,
+                    Intent(this, FloatingButtonService::class.java).apply { action = ACTION_HEARTBEAT },
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+            }
+            // 精确闹钟 + 允许待机唤醒（省电模式下也能触发）
+            am.setExactAndAllowWhileIdle(AlarmManager.RTC, System.currentTimeMillis() + HEARTBEAT_INTERVAL_MS, pi)
+        } catch (_: Throwable) {
+            // 部分 ROM 禁精确闹钟 → 回退普通闹钟
+            try {
+                val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                val pi = PendingIntent.getService(
+                    this, 1001,
+                    Intent(this, FloatingButtonService::class.java).apply { action = ACTION_HEARTBEAT },
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                am.set(AlarmManager.RTC, System.currentTimeMillis() + HEARTBEAT_INTERVAL_MS, pi)
+            } catch (_: Throwable) { }
+        }
+    }
+
+    private fun cancelHeartbeat() {
+        try {
+            val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val pi = PendingIntent.getService(
+                this, 1001,
+                Intent(this, FloatingButtonService::class.java).apply { action = ACTION_HEARTBEAT },
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            am.cancel(pi)
+        } catch (_: Throwable) { }
+    }
 
     // ---------- 通知 ----------
 
@@ -199,10 +366,14 @@ class FloatingButtonService : Service() {
             this, 0, open,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        val stopIntent = Intent(this, FloatingButtonService::class.java).apply {
-            action = ACTION_STOP
+        // 停止按钮直接拉起 MainActivity（点通知启动 Activity 有后台豁免权；
+        // 不能从服务 startActivity —— Android 12 会拦截后台启动）。
+        // 密码锁定开启时在 App 内验证后才真正停止。
+        val stopIntent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            putExtra(MainActivity.EXTRA_STOP_REQUEST, true)
         }
-        val stopPi = PendingIntent.getService(
+        val stopPi = PendingIntent.getActivity(
             this, 1, stopIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -219,6 +390,11 @@ class FloatingButtonService : Service() {
     // ---------- 悬浮按钮 ----------
 
     private fun showButton() {
+        // 强制篡改模式与悬浮按钮互斥：强制篡改开启时不显示悬浮球（服务 + 通知保留）
+        if (AppPrefs.forceKeyboardEnabled) {
+            hideButton()
+            return
+        }
         collapsed = false
         if (button == null) {
             addButton()

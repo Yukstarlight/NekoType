@@ -1,3 +1,33 @@
+/*
+ * NekoType
+ *
+ * BSD 2-Clause License
+ *
+ * Copyright (c) 2026, Yukstarlight
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.nekotype.app.ui
 
 import android.Manifest
@@ -18,6 +48,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.materialswitch.MaterialSwitch
@@ -46,8 +77,16 @@ import rikka.shizuku.Shizuku
  */
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        /** 外部停止请求标记（通知栏/磁贴触发，密码锁定验证用） */
+        const val EXTRA_STOP_REQUEST = "nekotype_stop_request"
+    }
+
     private lateinit var binding: ActivityMainBinding
     private val shizukuRequestCode = 1001
+
+    /** 程序化恢复开关状态时置位，避免触发免责声明弹窗 */
+    private var restoringSwitch = false
 
     private val shizukuListener = Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
         if (requestCode == shizukuRequestCode) {
@@ -66,11 +105,31 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // 主题：super 前设置夜间模式（recreate 后保持），super 后设置星空主题（浅色版）
+        when (AppPrefs.themeMode) {
+            "dark", "star" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        }
         super.onCreate(savedInstanceState)
+        if (AppPrefs.themeMode == "star") {
+            setTheme(R.style.Theme_NekoType_Star)
+        }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         BgUtils.apply(binding.root)
         NekoLog.nav("应用启动（NekoType ${versionName()}）")
+
+        // 防篡改：签名被改 / Hook 框架 → 拒绝运行并提示
+        if (AppPrefs.tampered) {
+            AlertDialog.Builder(this)
+                .setTitle("安全警告")
+                .setMessage("检测到 NekoType 已被篡改（签名不匹配或运行在 Hook 框架下）。\n\n为保护你的安全与密码锁有效性，本应用已停止运行。\n请从官方渠道重新安装。")
+                .setPositiveButton("退出") { _, _ -> finish() }
+                .setCancelable(false)
+                .show()
+            return
+        }
 
         try {
             Shizuku.addRequestPermissionResultListener(shizukuListener)
@@ -115,16 +174,9 @@ class MainActivity : AppCompatActivity() {
             openOverlaySettings()
         }
         binding.btnStep5Shizuku.setOnClickListener { handleShizuku() }
-        binding.btnStep5Basic.setOnClickListener {
-            AppPrefs.privilegeMode = "basic"
-            NekoLog.adjust("已切换到基础模式")
-            toast("已切换到基础模式（仅悬浮窗 + 无障碍）")
-            refreshStatus()
-        }
 
         // ---- 系统能力 ----
         binding.btnBatteryPriv.setOnClickListener { grantBatteryPrivileged() }
-        binding.btnRoot.setOnClickListener { testRoot() }
 
         // ---- 规则预设 ----
         binding.btnSelectRule.setOnClickListener { selectPresetDialog() }
@@ -139,6 +191,83 @@ class MainActivity : AppCompatActivity() {
         binding.swAutoSend.setOnCheckedChangeListener { _, v -> AppPrefs.autoSend = v }
         binding.swHaptic.setOnCheckedChangeListener { _, v -> AppPrefs.hapticEnabled = v }
         binding.swSnap.setOnCheckedChangeListener { _, v -> AppPrefs.snapEdges = v }
+        binding.swSilentModify.setOnCheckedChangeListener { _, v ->
+            AppPrefs.silentModifyEnabled = v
+            NekoLog.adjust(if (v) "开启静默修改（Shizuku 直写）" else "关闭静默修改")
+            if (v) toast("静默修改已开启（需 Shizuku 或 Root 模式）")
+        }
+        binding.swPunctTrigger.setOnCheckedChangeListener { _, v ->
+            AppPrefs.punctTriggerEnabled = v
+            NekoLog.adjust(if (v) "开启标点触发（打完一句才改）" else "关闭标点触发")
+        }
+        binding.swEmoticon.setOnCheckedChangeListener { _, v ->
+            AppPrefs.emoticonEnabled = v
+            NekoLog.adjust(if (v) "开启随机颜文字（每条自动追加）" else "关闭随机颜文字")
+        }
+        binding.swForceKeyboard.setOnCheckedChangeListener { _, v ->
+            if (restoringSwitch) return@setOnCheckedChangeListener
+            if (AppPrefs.lockEnabled) {
+                // 密码锁定：开关强制篡改键盘需验证密码，取消则恢复原状态
+                showVerifyLockPasswordDialog(
+                    if (v) "开启强制篡改键盘需要验证密码" else "关闭强制篡改键盘需要验证密码",
+                    onOk = {
+                        if (v) enableForceKeyboard() else disableForceKeyboard()
+                    },
+                    onCancel = { restoreForceSwitch() }
+                )
+                return@setOnCheckedChangeListener
+            }
+            if (v) enableForceKeyboard() else disableForceKeyboard()
+        }
+
+        binding.swLock.setOnCheckedChangeListener { _, v ->
+            if (restoringSwitch) return@setOnCheckedChangeListener
+            if (v) {
+                onLockEnableRequested()
+            } else {
+                onLockDisableRequested()
+            }
+        }
+        binding.swCrashRestart.setOnCheckedChangeListener { _, v ->
+            AppPrefs.crashRestartEnabled = v
+            NekoLog.adjust(if (v) "开启崩溃自启" else "关闭崩溃自启")
+        }
+
+        binding.swHiddenMode.setOnCheckedChangeListener { _, v ->
+            if (restoringSwitch) return@setOnCheckedChangeListener
+            if (v) {
+                // 开启隐藏模式：需密码锁定
+                if (!AppPrefs.lockEnabled) {
+                    toast("请先开启密码锁定")
+                    restoreHiddenSwitch()
+                    return@setOnCheckedChangeListener
+                }
+                showVerifyLockPasswordDialog(
+                    "开启隐藏模式需要验证密码",
+                    onOk = { applyHiddenMode(true) },
+                    onCancel = { restoreHiddenSwitch() }
+                )
+            } else {
+                showVerifyLockPasswordDialog(
+                    "关闭隐藏模式需要验证密码",
+                    onOk = { applyHiddenMode(false) },
+                    onCancel = { restoreHiddenSwitch() }
+                )
+            }
+        }
+        binding.swHeartbeat.setOnCheckedChangeListener { _, v ->
+            if (restoringSwitch) return@setOnCheckedChangeListener
+            // 关闭心跳保活需验证密码（防止别人关掉防杀手段）；开启不需要
+            if (!v && AppPrefs.lockEnabled) {
+                showVerifyLockPasswordDialog(
+                    "关闭心跳保活需要验证密码",
+                    onOk = { applyHeartbeat(false) },
+                    onCancel = { restoreHeartbeatSwitch() }
+                )
+                return@setOnCheckedChangeListener
+            }
+            applyHeartbeat(v)
+        }
 
         // ---- 预览 ----
         binding.btnPreview.setOnClickListener { runPreview() }
@@ -146,6 +275,11 @@ class MainActivity : AppCompatActivity() {
         requestNotificationPermission()
         refreshStatus()
         renderRules()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
     }
 
     override fun onResume() {
@@ -161,6 +295,35 @@ class MainActivity : AppCompatActivity() {
                 NekoLog.ok("悬浮窗权限已授予，服务自动启动")
             }
         }
+        // 外部停止请求（通知栏/磁贴）：密码锁定验证后才允许停止
+        if (intent?.getBooleanExtra(EXTRA_STOP_REQUEST, false) == true) {
+            intent?.removeExtra(EXTRA_STOP_REQUEST)
+            handleExternalStopRequest()
+        }
+    }
+
+    /** 通知栏/磁贴发起的停止请求：锁定开启时验证密码；隐藏模式下验证通过后恢复图标 */
+    private fun handleExternalStopRequest() {
+        if (AppPrefs.lockEnabled) {
+            NekoLog.info("外部停止请求：需要验证密码")
+            showVerifyLockPasswordDialog("停止服务需要验证密码") {
+                // 隐藏模式：恢复桌面图标（这是隐藏模式的唯一恢复路口）
+                if (AppPrefs.hiddenModeEnabled) {
+                    AppPrefs.hiddenModeEnabled = false
+                    SysPower.setHiddenMode(false)
+                    SysPower.setUninstallBlockedByAdmin(false)
+                    NekoLog.adjust("隐藏模式已关闭，桌面图标已恢复")
+                }
+                AppPrefs.serviceEnabled = false
+                FloatingButtonService.stop(this)
+                refreshStatus()
+                toast("服务已停止")
+            }
+        } else {
+            AppPrefs.serviceEnabled = false
+            FloatingButtonService.stop(this)
+            refreshStatus()
+        }
     }
 
     override fun onDestroy() {
@@ -175,6 +338,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun toggleService() {
         val enabled = !AppPrefs.serviceEnabled
+        if (!enabled) {
+            // 停止服务：密码锁定开启时需验证密码
+            if (AppPrefs.lockEnabled) {
+                showVerifyLockPasswordDialog("停止服务需要验证密码") { doToggleService(false) }
+                return
+            }
+        }
+        doToggleService(enabled)
+    }
+
+    private fun doToggleService(enabled: Boolean) {
         AppPrefs.serviceEnabled = enabled
         if (enabled) {
             if (Settings.canDrawOverlays(this)) {
@@ -191,6 +365,229 @@ class MainActivity : AppCompatActivity() {
             NekoLog.info("用户停止服务")
         }
         refreshStatus()
+    }
+
+    // ---------- 密码锁定 ----------
+
+    /** 用户开启密码锁定：首次设置密码，之后需验证旧密码 */
+    private fun onLockEnableRequested() {
+        if (AppPrefs.hasLockPassword()) {
+            showVerifyLockPasswordDialog("开启密码锁定需要验证密码") { enableLock() }
+        } else {
+            showSetLockPasswordDialog()
+        }
+    }
+
+    /** 用户关闭密码锁定：需验证密码 */
+    private fun onLockDisableRequested() {
+        showVerifyLockPasswordDialog("关闭密码锁定需要验证密码") { disableLock() }
+    }
+
+    private fun enableLock() {
+        AppPrefs.lockEnabled = true
+        // 密码锁定 = 强制开机自启（重启后服务自动回来）
+        AppPrefs.autoStartEnabled = true
+        NekoLog.adjust("密码锁定已开启（开机自启已联动开启）")
+        toast("密码锁定已开启，开机自启已联动开启")
+        renderRules()
+        // 开启密码锁定后：询问是否开启隐藏模式
+        askHiddenMode()
+    }
+
+    /** 开启密码锁定后询问是否开启隐藏模式（不强制） */
+    private fun askHiddenMode() {
+        if (AppPrefs.hiddenModeEnabled) return
+        AlertDialog.Builder(this)
+            .setTitle("隐藏模式")
+            .setMessage(
+                "是否开启「隐藏模式」？\n\n" +
+                        "开启后：\n" +
+                        "· 桌面图标消失，后台无法显示，别人找不到、杀不掉\n" +
+                        "· 应用名称保持原名（不加密）\n" +
+                        "· 心跳保活自动开启，通知栏「停止服务」为唯一恢复入口\n\n" +
+                        "⚠️ 强烈建议（备用入口）：\n" +
+                        "1. 下拉通知栏，把「NekoType」磁贴添加到快捷设置面板——即使服务被杀，磁贴也能点开恢复\n" +
+                        "2. 华为手机：设置 → 应用 → 应用启动管理 → NekoType → 设为「手动管理」并允许自启动/后台活动，否则系统会拦截服务复活\n\n" +
+                        "可在行为与样式中随时关闭（需密码）。"
+            )
+            .setPositiveButton("开启") { _, _ -> applyHiddenMode(true) }
+            .setNegativeButton("暂不", null)
+            .show()
+    }
+
+    /** 隐藏模式：隐藏/恢复桌面图标（Shizuku pm hide 优先，回退 alias；设备管理员防卸载） */
+    private fun applyHiddenMode(enabled: Boolean) {
+        if (enabled) {
+            // 前置条件 1：服务必须已启动并常驻 —— 通知栏「停止服务」是唯一恢复入口
+            if (!AppPrefs.serviceEnabled || !Settings.canDrawOverlays(this)) {
+                toast("请先点击「启动服务」让悬浮服务常驻，再开启隐藏模式\n（通知栏「停止服务」+ 密码是唯一恢复入口）")
+                restoreHiddenSwitch()
+                return
+            }
+            // 前置条件 2：设备管理员必须已激活（防卸载 + 皆成同款路线）
+            if (!SysPower.isDeviceAdminActive()) {
+                toast("请先激活设备管理员（权限引导第 2 步），再开启隐藏模式")
+                restoreHiddenSwitch()
+                return
+            }
+        }
+        AppPrefs.hiddenModeEnabled = enabled
+        // 设备管理员：阻止卸载
+        val adminOk = SysPower.setUninstallBlockedByAdmin(enabled)
+        if (!adminOk && enabled) {
+            NekoLog.warn("设备管理员阻止卸载未生效")
+        }
+        if (enabled) {
+            // 关键：隐藏模式必须保证服务常驻 —— 自动开启心跳保活，
+            // pm hide / 系统杀进程后 60 秒内自动复活，通知栏入口永不丢
+            if (!AppPrefs.heartbeatEnabled) {
+                AppPrefs.heartbeatEnabled = true
+                NekoLog.ok("隐藏模式：心跳保活已自动开启")
+                FloatingButtonService.start(this)
+            }
+            // 隐藏方式：Shizuku pm hide（Hail 同款，图标即时消失）优先；无 Shizuku 回退 alias
+            if (SysPower.privilegedChannelReady()) {
+                lifecycleScope.launch {
+                    val r = withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(true) }
+                    if (!r.success) {
+                        NekoLog.warn("Shizuku 隐藏失败（${r.output.take(60)}），回退 alias 方式")
+                        SysPower.setHiddenMode(true)
+                    } else {
+                        NekoLog.ok("Shizuku 隐藏成功（pm hide）")
+                    }
+                }
+            } else {
+                SysPower.setHiddenMode(true)
+            }
+            NekoLog.adjust("开启隐藏模式：桌面图标已隐藏")
+            toast("隐藏模式已开启：图标已隐藏\n心跳保活已自动开启，通知栏「停止服务」+ 密码可恢复")
+        } else {
+            // 恢复：Shizuku unhide 优先，回退 alias 启用
+            if (SysPower.privilegedChannelReady()) {
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(false) }
+                }
+            } else {
+                SysPower.setHiddenMode(false)
+            }
+            NekoLog.adjust("关闭隐藏模式：桌面图标已恢复")
+            toast("隐藏模式已关闭，桌面图标已恢复")
+        }
+        renderRules()
+    }
+
+    private fun disableLock() {
+        AppPrefs.lockEnabled = false
+        // 关闭密码锁定时同时恢复隐藏模式（否则应用没有可见入口）
+        if (AppPrefs.hiddenModeEnabled) {
+            AppPrefs.hiddenModeEnabled = false
+            SysPower.setHiddenMode(false)
+            SysPower.setUninstallBlockedByAdmin(false)
+            NekoLog.adjust("隐藏模式已随密码锁定一并关闭，桌面图标已恢复")
+            toast("隐藏模式已关闭，桌面图标已恢复")
+        }
+        NekoLog.adjust("密码锁定已关闭")
+        toast("密码锁定已关闭")
+        renderRules()
+    }
+
+    /** 首次设置密码对话框（两次输入一致） */
+    private fun showSetLockPasswordDialog() {
+        val et = EditText(this).apply {
+            hint = "设置锁定密码"
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+        }
+        val et2 = EditText(this).apply {
+            hint = "再次输入确认"
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+        }
+        val box = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(48, 16, 48, 8)
+            addView(et)
+            addView(et2)
+        }
+        AlertDialog.Builder(this)
+            .setTitle("设置密码")
+            .setMessage("首次开启无需旧密码。密码仅以哈希保存在本地，请牢记。")
+            .setView(box)
+            .setPositiveButton("确定") { _, _ ->
+                val p1 = et.text.toString()
+                val p2 = et2.text.toString()
+                if (p1.isEmpty()) { toast("密码不能为空"); binding.swLock.isChecked = false; return@setPositiveButton }
+                if (p1 != p2) { toast("两次输入不一致"); binding.swLock.isChecked = false; return@setPositiveButton }
+                AppPrefs.setLockPassword(p1)
+                enableLock()
+            }
+            .setNegativeButton("取消") { _, _ ->
+                restoringSwitch = true
+                binding.swLock.isChecked = false
+                restoringSwitch = false
+            }
+            .setOnCancelListener {
+                restoringSwitch = true
+                binding.swLock.isChecked = false
+                restoringSwitch = false
+            }
+            .show()
+    }
+
+    /** 验证密码对话框（成功回调 onOk；取消回调 onCancel，默认恢复密码锁开关） */
+    private fun showVerifyLockPasswordDialog(
+        title: String,
+        onCancel: (() -> Unit)? = null,
+        onOk: () -> Unit
+    ) {
+        val et = EditText(this).apply {
+            hint = "输入锁定密码"
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+        }
+        val box = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(48, 16, 48, 8)
+            addView(et)
+        }
+        val cancelAction = { (onCancel ?: { restoreLockSwitch() }).invoke() }
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(title)
+            .setView(box)
+            .setPositiveButton("确定", null)
+            .setNegativeButton("取消") { _, _ -> cancelAction() }
+            .setOnCancelListener { cancelAction() }
+            .create()
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                if (AppPrefs.verifyLockPassword(et.text.toString())) {
+                    dialog.dismiss()
+                    onOk()
+                } else {
+                    toast("密码错误")
+                    et.text.clear()
+                }
+            }
+        }
+        dialog.show()
+    }
+
+    /** 恢复密码锁开关为实际状态（开启/关闭操作被取消时） */
+    private fun restoreLockSwitch() {
+        restoringSwitch = true
+        binding.swLock.isChecked = AppPrefs.lockEnabled
+        restoringSwitch = false
+    }
+
+    /** 恢复强制篡改键盘开关为实际状态 */
+    private fun restoreForceSwitch() {
+        restoringSwitch = true
+        binding.swForceKeyboard.isChecked = AppPrefs.forceKeyboardEnabled
+        restoringSwitch = false
+    }
+
+    /** 恢复隐藏模式开关为实际状态 */
+    private fun restoreHiddenSwitch() {
+        restoringSwitch = true
+        binding.swHiddenMode.isChecked = AppPrefs.hiddenModeEnabled
+        restoringSwitch = false
     }
 
     // ---------- 悬浮窗授权 ----------
@@ -248,23 +645,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun testRoot() {
-        lifecycleScope.launch {
-            val root = withContext(Dispatchers.IO) { SysPower.isRootAvailable() }
-            if (!root) {
-                binding.tvPrivLog.text = "未检测到 Root（Magisk / KernelSU / APatch）"
-                NekoLog.warn("未检测到 Root")
-                toast("未检测到 Root")
-                return@launch
-            }
-            val r = withContext(Dispatchers.IO) { SysPower.execShell("id") }
-            binding.tvPrivLog.text = "通道: ${r.channel}\n输出: ${r.output}"
-            NekoLog.ok("Root 可用，通道 ${r.channel}")
-            toast("Root 可用，通道: ${r.channel}")
-            refreshStatus()
-        }
-    }
-
     // ---------- 规则预设 ----------
 
     private fun selectPresetDialog() {
@@ -311,6 +691,18 @@ class MainActivity : AppCompatActivity() {
         binding.swAutoSend.isChecked = AppPrefs.autoSend
         binding.swHaptic.isChecked = AppPrefs.hapticEnabled
         binding.swSnap.isChecked = AppPrefs.snapEdges
+        binding.swSilentModify.isChecked = AppPrefs.silentModifyEnabled
+        binding.swPunctTrigger.isChecked = AppPrefs.punctTriggerEnabled
+        binding.swEmoticon.isChecked = AppPrefs.emoticonEnabled
+        binding.swLock.isChecked = AppPrefs.lockEnabled
+        binding.swHiddenMode.isChecked = AppPrefs.hiddenModeEnabled
+        binding.swHeartbeat.isChecked = AppPrefs.heartbeatEnabled
+        binding.swCrashRestart.isChecked = AppPrefs.crashRestartEnabled
+        if (binding.swForceKeyboard.isChecked != AppPrefs.forceKeyboardEnabled) {
+            restoringSwitch = true
+            binding.swForceKeyboard.isChecked = AppPrefs.forceKeyboardEnabled
+            restoringSwitch = false
+        }
 
         val list = binding.llRuleList
         list.removeAllViews()
@@ -329,6 +721,76 @@ class MainActivity : AppCompatActivity() {
                 list.addView(divider)
             }
         }
+    }
+
+    /**
+     * 开启强制篡改：先弹免责声明；开关只是开启设置，
+     * 点击「启动服务」后才真正生效（服务启动后悬浮球隐藏、自动篡改开始）。
+     */
+    private fun enableForceKeyboard() {
+        showForceKeyboardDisclaimer()
+    }
+
+    /** 关闭强制篡改：恢复悬浮按钮 */
+    private fun disableForceKeyboard() {
+        AppPrefs.forceKeyboardEnabled = false
+        FloatingButtonService.reload()
+        NekoLog.adjust("关闭强制篡改键盘，已恢复悬浮按钮模式")
+        toast("已关闭强制篡改，恢复悬浮按钮模式")
+    }
+
+    /** 应用心跳保活开关 */
+    private fun applyHeartbeat(enabled: Boolean) {
+        AppPrefs.heartbeatEnabled = enabled
+        NekoLog.adjust(if (enabled) "开启心跳保活（每 60 秒拉活服务）" else "关闭心跳保活")
+        if (enabled && AppPrefs.serviceEnabled) {
+            FloatingButtonService.start(this)
+        } else if (!enabled) {
+            FloatingButtonService.cancelHeartbeatGlobal(this)
+        }
+    }
+
+    /** 恢复心跳保活开关为实际状态 */
+    private fun restoreHeartbeatSwitch() {
+        restoringSwitch = true
+        binding.swHeartbeat.isChecked = AppPrefs.heartbeatEnabled
+        restoringSwitch = false
+    }
+
+    /** 强制篡改键盘启用前的免责声明（不确认则自动回退开关） */
+    private fun showForceKeyboardDisclaimer() {
+        AlertDialog.Builder(this)
+            .setTitle("免责声明")
+            .setMessage(
+                "「强制篡改键盘」开启后，在使用原生键盘输入时，输入框内容将被自动按你的规则篡改，并可能自动发送。\n\n" +
+                        "请务必确认：\n" +
+                        "1. 本功能仅用于本人设备、合法合规的个人用途；\n" +
+                        "2. 开启后，所有应用的输入内容都可能被自动改写（包括聊天、搜索、评论等场景），请注意区分场景使用；\n" +
+                        "3. 禁止用于骚扰、诈骗、伪造信息、冒充他人等非法用途，由此产生的全部后果由使用者自行承担；\n" +
+                        "4. 需要保持无障碍服务开启；随时可关闭本开关恢复正常输入。\n\n" +
+                        "点击「我已知晓并同意」即表示你已阅读并接受以上内容。"
+            )
+            .setPositiveButton("我已知晓并同意") { _, _ ->
+                AppPrefs.forceKeyboardEnabled = true
+                // 开关只是开启设置：服务运行中立即生效（隐藏悬浮球）；未启动则等点击「启动服务」后生效
+                if (AppPrefs.serviceEnabled) {
+                    FloatingButtonService.reload()
+                }
+                NekoLog.adjust("开启强制篡改键盘（已确认免责声明，启动服务后生效）")
+                toast(if (AppPrefs.serviceEnabled) "强制篡改键盘已开启" else "强制篡改键盘已开启，点击「启动服务」后生效")
+            }
+            .setNegativeButton("取消") { _, _ ->
+                restoringSwitch = true
+                binding.swForceKeyboard.isChecked = false
+                restoringSwitch = false
+                NekoLog.warn("强制篡改键盘未启用（未确认免责声明）")
+            }
+            .setOnCancelListener {
+                restoringSwitch = true
+                binding.swForceKeyboard.isChecked = false
+                restoringSwitch = false
+            }
+            .show()
     }
 
     /** 动态构建单条规则行 */
@@ -355,6 +817,8 @@ class MainActivity : AppCompatActivity() {
             RuleType.REPLACE -> "${rule.value} → ${rule.replaceTo}"
             RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX ->
                 "${rule.value.ifEmpty { "默认池" }} · ${rule.chance}%"
+            RuleType.RANDOM_EMOTICON ->
+                "${rule.value.ifEmpty { "内置颜文字库" }} · ${rule.chance}%"
             else -> rule.value
         }
         val tvValue = TextView(this).apply {
@@ -381,17 +845,29 @@ class MainActivity : AppCompatActivity() {
         }
         row.addView(edit)
 
-        // 开关
+        // 开关（密码锁定：需验证）
         val sw = MaterialSwitch(this).apply {
             isChecked = rule.enabled
             setOnCheckedChangeListener { _, checked ->
+                if (AppPrefs.lockEnabled) {
+                    showVerifyLockPasswordDialog(
+                        "开关规则需要验证密码",
+                        onOk = {
+                            AppPrefs.updateRule(rule.id) { it.copy(enabled = checked) }
+                            NekoLog.rule("规则「${rule.type.label} ${rule.value.take(20)}」已${if (checked) "启用" else "停用"}")
+                            renderRules()
+                        },
+                        onCancel = { renderRules() } // 取消：恢复开关显示
+                    )
+                    return@setOnCheckedChangeListener
+                }
                 AppPrefs.updateRule(rule.id) { it.copy(enabled = checked) }
                 NekoLog.rule("规则「${rule.type.label} ${rule.value.take(20)}」已${if (checked) "启用" else "停用"}")
             }
         }
         row.addView(sw)
 
-        // 删除
+        // 删除（密码锁定：需验证）
         val del = TextView(this).apply {
             text = "✕"
             textSize = 15f
@@ -399,9 +875,16 @@ class MainActivity : AppCompatActivity() {
             gravity = Gravity.CENTER
             setPadding(24, 8, 12, 8)
             setOnClickListener {
-                NekoLog.rule("删除规则：${rule.type.label} ${rule.value.take(20)}")
-                AppPrefs.removeRule(rule.id)
-                renderRules()
+                val doDelete = {
+                    NekoLog.rule("删除规则：${rule.type.label} ${rule.value.take(20)}")
+                    AppPrefs.removeRule(rule.id)
+                    renderRules()
+                }
+                if (AppPrefs.lockEnabled) {
+                    showVerifyLockPasswordDialog("删除规则需要验证密码", onOk = doDelete, onCancel = {})
+                } else {
+                    doDelete()
+                }
             }
         }
         row.addView(del)
@@ -411,7 +894,23 @@ class MainActivity : AppCompatActivity() {
 
     // ---------- 添加 / 编辑规则 ----------
 
+    /** 规则编辑锁一次性放行标记（验证通过后本次会话允许打开对话框） */
+    private var ruleLockOk = false
+
     private fun showAddRuleDialog(editRule: NekoRule? = null) {
+        // 密码锁定：添加/编辑规则需验证密码（验证通过后本次放行）
+        if (AppPrefs.lockEnabled && !ruleLockOk) {
+            showVerifyLockPasswordDialog(
+                "添加/编辑规则需要验证密码",
+                onOk = {
+                    ruleLockOk = true
+                    showAddRuleDialog(editRule)
+                },
+                onCancel = {}
+            )
+            return
+        }
+        ruleLockOk = false
         // 类型选择器（左侧）
         val typeGroup = RadioGroup(this).apply {
             orientation = RadioGroup.VERTICAL
@@ -454,8 +953,8 @@ class MainActivity : AppCompatActivity() {
         fun refreshFields(type: RuleType) {
             fields.removeAllViews()
             when (type) {
-                RuleType.PREFIX, RuleType.SUFFIX -> fields.addView(etValue)
-                RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX -> {
+                RuleType.PREFIX, RuleType.SUFFIX, RuleType.SUFFIX_EACH -> fields.addView(etValue)
+                RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX, RuleType.RANDOM_EMOTICON -> {
                     fields.addView(etValue)
                     fields.addView(etChance)
                 }
@@ -469,8 +968,8 @@ class MainActivity : AppCompatActivity() {
         // 编辑模式：预填当前规则内容
         if (editRule != null) {
             when (editRule.type) {
-                RuleType.PREFIX, RuleType.SUFFIX -> etValue.setText(editRule.value)
-                RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX -> {
+                RuleType.PREFIX, RuleType.SUFFIX, RuleType.SUFFIX_EACH -> etValue.setText(editRule.value)
+                RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX, RuleType.RANDOM_EMOTICON -> {
                     etValue.setText(editRule.value)
                     etChance.setText(editRule.chance.toString())
                 }
@@ -499,7 +998,7 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton(if (isEdit) "保存" else "添加") { _, _ ->
                 val type = RuleType.entries[typeGroup.checkedRadioButtonId - 1000]
                 val base = when (type) {
-                    RuleType.PREFIX, RuleType.SUFFIX -> {
+                    RuleType.PREFIX, RuleType.SUFFIX, RuleType.SUFFIX_EACH -> {
                         val v = etValue.text.toString().trim()
                         if (v.isEmpty()) { toast("内容不能为空"); return@setPositiveButton }
                         NekoRule(editRule?.id ?: "r_${System.currentTimeMillis()}", type, v,
@@ -508,6 +1007,13 @@ class MainActivity : AppCompatActivity() {
                     RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX -> {
                         val v = etValue.text.toString().trim()
                         if (v.isEmpty()) { toast("随机池不能为空"); return@setPositiveButton }
+                        val chance = etChance.text.toString().toIntOrNull()?.coerceIn(1, 100) ?: 50
+                        NekoRule(editRule?.id ?: "r_${System.currentTimeMillis()}", type, v,
+                            chance = chance, enabled = editRule?.enabled ?: true)
+                    }
+                    RuleType.RANDOM_EMOTICON -> {
+                        // 颜文字池可留空 = 使用内置颜文字库
+                        val v = etValue.text.toString().trim()
                         val chance = etChance.text.toString().toIntOrNull()?.coerceIn(1, 100) ?: 50
                         NekoRule(editRule?.id ?: "r_${System.currentTimeMillis()}", type, v,
                             chance = chance, enabled = editRule?.enabled ?: true)
@@ -538,7 +1044,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun runPreview() {
         val sample = binding.etPreviewInput.text.toString().ifEmpty { "你好，这是一条测试消息！" }
-        binding.tvPreviewOutput.text = TextTransformEngine.transform(sample)
+        binding.tvPreviewOutput.text = TextTransformEngine.transform(sample).text
     }
 
     // ---------- 状态刷新 ----------

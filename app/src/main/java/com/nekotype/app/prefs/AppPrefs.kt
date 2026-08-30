@@ -1,3 +1,33 @@
+/*
+ * NekoType
+ *
+ * BSD 2-Clause License
+ *
+ * Copyright (c) 2026, Yukstarlight
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.nekotype.app.prefs
 
 import android.content.Context
@@ -21,11 +51,39 @@ object AppPrefs {
 
     // ================= 规则类型 =================
 
+    /**
+     * 内置颜文字库（随机颜文字规则留空时使用）：
+     * 猫系原创（NekoType 专属，条目不与竞品重复）+ 经典日式颜文字。
+     */
+    fun builtinEmoticons(): List<String> = listOf(
+        // NekoType 原创猫系（全新条目，不撞车）
+        "(=ΦωΦ=)", "(=ↀωↀ=)", "(ฅ´・ω・`ฅ)", "ฅ(^・ω・^)ฅ", "(ฅ₌ω₌ฅ)",
+        "٩(ฅ́•ฅ̀*)۶", "ฅ(>ω<ฅ)", "(=^◕ω◕^=)", "ฅ(•ω•ฅ)", "ฅ(´▽`ฅ)",
+        "(=^ᴗ^=)", "ฅ(๑•̀ㅁ•́ฅ)", "ヾ(ฅ•ω•ฅ)ノ", "ฅ(´ω`ฅ)", "喵ฅ(＾・ω・＾ฅ)",
+        "(=；ω；=)ฅ", "ฅ(≧◡≦)ฅ", "(ฅᵔωᵔฅ)", "ฅ^•.₃•^ฅ", "ฅ(≧▽≦)ฅ",
+        // 经典日式颜文字
+        "(＾▽＾)", "(*≧▽≦)", "ヾ(≧▽≦*)o", "ヽ(●´∀`●)ﾉ", "(*^▽^*)",
+        "(｡•̀ᴗ-)✧", "(•̀ᴗ•́)و", "(￣▽￣)ノ", "(*≧ω≦)", "╰(*´︶`*)╯",
+        "(๑•̀ㅂ•́)و✧", "(◕‿◕✿)", "(●´ω｀●)", "(´･ω･`)", "(ノ◕ヮ◕)ノ*:･ﾟ✧",
+        "(っ˘ω˘ς)", "(≧∇≦)ﾉ", "(＾ω＾)", "(｡♥‿♥｡)", "(≧▽≦)",
+        "ヾ(•ω•`)o", "(*´∀`*)", "(・∀・)", "(*´▽`*)", "(￣ω￣;)",
+        "ヽ(>∀<☆)ノ", "⊂(・▽・⊂)", "(*/ω＼*)", "(｀・ω・´)", "o(≧▽≦)o",
+        "ヾ(＾∇＾)", "(◍•ᴗ•◍)", "✧(≖ ◡ ≖✿)", "(*˘︶˘*).｡.:*♡", "(˶ᵔ ᵕ ᵔ˶)",
+        "(*´ω｀*)", "(っ´ω`)っ", "(´｡• ᵕ •｡`)", "ʕ•ᴥ•ʔ", "(￣▽￣)ゞ"
+    )
+
+    /** 行为与样式：随机颜文字总开关（开启后每条消息自动加随机颜文字，喵喵同款） */
+    var emoticonEnabled: Boolean
+        get() = sp.getBoolean("emoticon", false)
+        set(v) = sp.edit().putBoolean("emoticon", v).apply()
+
     enum class RuleType(val label: String) {
         PREFIX("前缀"),
         SUFFIX("后缀"),
         RANDOM_PREFIX("随机前缀"),
         RANDOM_SUFFIX("随机后缀"),
+        SUFFIX_EACH("每句后缀"),
+        RANDOM_EMOTICON("随机颜文字"),
         REPLACE("替换文本");
 
         companion object {
@@ -257,6 +315,23 @@ object AppPrefs {
         get() = sp.getBoolean("snap_edges", true)
         set(v) = sp.edit().putBoolean("snap_edges", v).apply()
 
+    // ================= 行为与样式（增强） =================
+
+    /** 静默修改：写回被目标应用拒绝时，通过 Shizuku 直接注入文本（无弹窗、无提示） */
+    var silentModifyEnabled: Boolean
+        get() = sp.getBoolean("silent_modify", false)
+        set(v) = sp.edit().putBoolean("silent_modify", v).apply()
+
+    /** 强制篡改键盘：原生键盘输入时自动按规则篡改文本（无需点悬浮按钮） */
+    var forceKeyboardEnabled: Boolean
+        get() = sp.getBoolean("force_keyboard", false)
+        set(v) = sp.edit().putBoolean("force_keyboard", v).apply()
+
+    /** 标点触发模式：强制篡改时，输入以标点结尾（。！？,）才触发篡改（喵喵同款：打完一句才改） */
+    var punctTriggerEnabled: Boolean
+        get() = sp.getBoolean("punct_trigger", false)
+        set(v) = sp.edit().putBoolean("punct_trigger", v).apply()
+
     // ================= 悬浮按钮位置 =================
     var buttonX: Int
         get() = sp.getInt("button_x", -1)
@@ -330,8 +405,10 @@ object AppPrefs {
             when (r.type) {
                 RuleType.PREFIX -> sb.append("前缀：${r.value}\n")
                 RuleType.SUFFIX -> sb.append("后缀：${r.value}\n")
+                RuleType.SUFFIX_EACH -> sb.append("每句后缀：${r.value}\n")
                 RuleType.RANDOM_PREFIX -> sb.append("随机前缀：${r.value.split("|").joinToString(" ")}  ${r.chance}%\n")
                 RuleType.RANDOM_SUFFIX -> sb.append("随机后缀：${r.value.split("|").joinToString(" ")}  ${r.chance}%\n")
+                RuleType.RANDOM_EMOTICON -> sb.append("随机颜文字：${r.value.ifEmpty { "内置库" }.split("|").joinToString(" ")}  ${r.chance}%\n")
                 RuleType.REPLACE -> sb.append("文本替换：${r.value}  ${r.replaceTo}\n")
             }
         }
@@ -341,6 +418,16 @@ object AppPrefs {
         sb.append("改写后自动发送：${onOff(autoSend)}\n")
         sb.append("点击震动反馈：${onOff(hapticEnabled)}\n")
         sb.append("拖拽边缘自动吸附：${onOff(snapEdges)}\n")
+        sb.append("静默修改：${onOff(silentModifyEnabled)}\n")
+        sb.append("强制篡改键盘：${onOff(forceKeyboardEnabled)}\n")
+        sb.append("标点触发：${onOff(punctTriggerEnabled)}\n")
+        sb.append("随机颜文字：${onOff(emoticonEnabled)}\n")
+        sb.append("应用黑名单：${onOff(blacklistEnabled)}\n")
+        sb.append("黑名单应用：").append(blacklist().joinToString(",")).append("\n")
+        sb.append("心跳保活：${onOff(heartbeatEnabled)}\n")
+        sb.append("崩溃自启：${onOff(crashRestartEnabled)}\n")
+        sb.append("密码锁定：${onOff(lockEnabled)}\n")
+        sb.append("隐藏模式：${onOff(hiddenModeEnabled)}\n")
         sb.append("----------------------------------------\n")
         sb.append("外观：${themeText(themeMode)}\n")
         sb.append("按钮大小：$fabSizeDp\n")
@@ -428,6 +515,11 @@ object AppPrefs {
                         val v = line.removePrefix("后缀：").trim()
                         if (v.isNotEmpty()) newRules.add(NekoRule("i_${System.currentTimeMillis()}_${newRules.size}", RuleType.SUFFIX, v))
                     }
+                    inRules && line.startsWith("每句后缀：") -> {
+                        anyData = true
+                        val v = line.removePrefix("每句后缀：").trim()
+                        if (v.isNotEmpty()) newRules.add(NekoRule("i_${System.currentTimeMillis()}_${newRules.size}", RuleType.SUFFIX_EACH, v))
+                    }
                     inRules && line.startsWith("随机前缀：") -> {
                         anyData = true
                         parseRandomRule(line.removePrefix("随机前缀："), RuleType.RANDOM_PREFIX, newRules)
@@ -435,6 +527,17 @@ object AppPrefs {
                     inRules && line.startsWith("随机后缀：") -> {
                         anyData = true
                         parseRandomRule(line.removePrefix("随机后缀："), RuleType.RANDOM_SUFFIX, newRules)
+                    }
+                    inRules && line.startsWith("随机颜文字：") -> {
+                        anyData = true
+                        val rest = line.removePrefix("随机颜文字：").trim()
+                        if (rest.contains("内置库")) {
+                            // 导出时空池显示为"内置库" → 导回时空 value（用内置颜文字库）
+                            val chance = Regex("(\\d+)%").find(rest)?.groupValues?.get(1)?.toIntOrNull()?.coerceIn(1, 100) ?: 50
+                            newRules.add(NekoRule("i_${System.currentTimeMillis()}_${newRules.size}", RuleType.RANDOM_EMOTICON, "", chance = chance))
+                        } else {
+                            parseRandomRule(rest, RuleType.RANDOM_EMOTICON, newRules)
+                        }
                     }
                     inRules && line.startsWith("文本替换：") -> {
                         anyData = true
@@ -449,6 +552,20 @@ object AppPrefs {
                     inBehaviors && line.startsWith("改写后自动发送：") -> autoSend = onOffValue(line.removePrefix("改写后自动发送："))
                     inBehaviors && line.startsWith("点击震动反馈：") -> hapticEnabled = onOffValue(line.removePrefix("点击震动反馈："))
                     inBehaviors && line.startsWith("拖拽边缘自动吸附：") -> snapEdges = onOffValue(line.removePrefix("拖拽边缘自动吸附："))
+                    inBehaviors && line.startsWith("静默修改：") -> silentModifyEnabled = onOffValue(line.removePrefix("静默修改："))
+                    inBehaviors && line.startsWith("强制篡改键盘：") -> forceKeyboardEnabled = onOffValue(line.removePrefix("强制篡改键盘："))
+                    inBehaviors && line.startsWith("标点触发：") -> punctTriggerEnabled = onOffValue(line.removePrefix("标点触发："))
+                    inBehaviors && line.startsWith("随机颜文字：") -> emoticonEnabled = onOffValue(line.removePrefix("随机颜文字："))
+                    inBehaviors && line.startsWith("应用黑名单：") -> blacklistEnabled = onOffValue(line.removePrefix("应用黑名单："))
+                    inBehaviors && line.startsWith("黑名单应用：") -> {
+                        val pkgs = line.removePrefix("黑名单应用：").split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                        if (pkgs.isNotEmpty()) {
+                            sp.edit().putStringSet("blacklist_packages", pkgs.toSet()).apply()
+                        }
+                    }
+                    inBehaviors && line.startsWith("心跳保活：") -> heartbeatEnabled = onOffValue(line.removePrefix("心跳保活："))
+                    inBehaviors && line.startsWith("崩溃自启：") -> crashRestartEnabled = onOffValue(line.removePrefix("崩溃自启："))
+                    // 密码锁定 / 隐藏模式：安全状态，导入配置不触碰（防止导入配置被用来解锁）
                     line.startsWith("外观：") -> { anyData = true; themeMode = themeValue(line.removePrefix("外观：")) }
                     line.startsWith("按钮大小：") -> { anyData = true; line.removePrefix("按钮大小：").trim().toIntOrNull()?.let { fabSizeDp = it } }
                     line.startsWith("按钮透明度：") -> { anyData = true; line.removePrefix("按钮透明度：").trim().toIntOrNull()?.let { fabOpacity = it } }
@@ -486,6 +603,232 @@ object AppPrefs {
     var serviceEnabled: Boolean
         get() = sp.getBoolean("service_enabled", false)
         set(v) = sp.edit().putBoolean("service_enabled", v).apply()
+
+    /** 篡改检测标志（签名不匹配 / Hook 框架）：为 true 时各入口拒绝运行 */
+    var tampered: Boolean
+        get() = sp.getBoolean("tampered", false)
+        set(v) = sp.edit().putBoolean("tampered", v).apply()
+
+    // ================= 密码锁定（防杀后台） =================
+
+    /**
+     * 密码锁定状态：由加密载荷派生（lock_payload 存在即锁定）。
+     * 不直接存 XML 布尔值——防止通过编辑 SharedPreferences XML 把 false 改成 true 绕过。
+     * 关闭锁 = 清除加密载荷（需密码验证后调用）。
+     */
+    var lockEnabled: Boolean
+        get() = lockPayload.isNotEmpty() || lockHash.isNotEmpty()
+        set(v) {
+            if (!v) {
+                // 关闭锁：清除密码数据（含旧格式）
+                sp.edit()
+                    .remove("lock_payload")
+                    .remove("lock_hash")
+                    .remove("lock_salt")
+                    .apply()
+            }
+            // 开启不写任何字段：状态完全由 payload 派生
+        }
+
+    /** 隐藏模式：隐藏桌面图标（后台无法显示，别人杀不掉；通知栏停止可恢复） */
+    var hiddenModeEnabled: Boolean
+        get() = sp.getBoolean("hidden_mode", false)
+        set(v) = sp.edit().putBoolean("hidden_mode", v).apply()
+
+    /** 应用黑名单：这些应用内不自动篡改（强制篡改键盘 / 静默修改自动注入不生效） */
+    var blacklistEnabled: Boolean
+        get() = sp.getBoolean("blacklist_enabled", false)
+        set(v) = sp.edit().putBoolean("blacklist_enabled", v).apply()
+
+    /** 黑名单包名集合 */
+    fun blacklist(): Set<String> = sp.getStringSet("blacklist_packages", emptySet())!!
+
+    fun isBlacklisted(pkg: String): Boolean =
+        blacklistEnabled && sp.getStringSet("blacklist_packages", emptySet())!!.contains(pkg)
+
+    fun addBlacklist(pkg: String) {
+        val s = sp.getStringSet("blacklist_packages", emptySet())!!.toMutableSet()
+        s.add(pkg)
+        sp.edit().putStringSet("blacklist_packages", s).apply()
+    }
+
+    fun removeBlacklist(pkg: String) {
+        val s = sp.getStringSet("blacklist_packages", emptySet())!!.toMutableSet()
+        s.remove(pkg)
+        sp.edit().putStringSet("blacklist_packages", s).apply()
+    }
+
+    /** Shizuku 隐藏：隐藏模式用 Shizuku pm hide（图标即时消失，Hail同款）；关闭则用普通方式（alias） */
+    var shizukuHideEnabled: Boolean
+        get() = sp.getBoolean("shizuku_hide", false)
+        set(v) = sp.edit().putBoolean("shizuku_hide", v).apply()
+
+    /** 心跳保活：AlarmManager 定时唤醒拉活服务（皆成同款；耗电略增，默认关） */
+    var heartbeatEnabled: Boolean
+        get() = sp.getBoolean("heartbeat", false)
+        set(v) = sp.edit().putBoolean("heartbeat", v).apply()
+
+    /** 崩溃自启：进程崩溃时自动拉起悬浮服务（皆成同款；默认开，无害） */
+    var crashRestartEnabled: Boolean
+        get() = sp.getBoolean("crash_restart", true)
+        set(v) = sp.edit().putBoolean("crash_restart", v).apply()
+
+    /** 随机盐（hex，Argon2 兼容旧格式时用） */
+    private var lockSalt: String
+        get() = sp.getString("lock_salt", "")!!
+        set(v) = sp.edit().putString("lock_salt", v).apply()
+
+    /** 密码哈希：Argon2id 编码串（含盐与参数，自校验）；旧版本为 SHA-256 hex */
+    private var lockHash: String
+        get() = sp.getString("lock_hash", "")!!
+        set(v) = sp.edit().putString("lock_hash", v).apply()
+
+    /**
+     * Keystore 加密的密码载荷：密码哈希用系统安全芯片（AndroidKeyStore）的 AES 密钥加密后存储。
+     * root 改了 prefs 也解不开、验不过；篡改（解密失败）视为仍锁定，防绕过。
+     */
+    private var lockPayload: String
+        get() = sp.getString("lock_payload", "")!!
+        set(v) = sp.edit().putString("lock_payload", v).apply()
+
+    /** Argon2id 实例（JNI，进程内复用） */
+    private val argon2 by lazy { com.lambdapioneer.argon2kt.Argon2Kt() }
+
+    private val LOCK_KEY_ALIAS = "nekotype_lock_key"
+
+    /** AndroidKeyStore：生成/读取不可导出的 AES-GCM 密钥（硬件级保护） */
+    private fun lockKey(): javax.crypto.SecretKey? = try {
+        val ks = java.security.KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
+        if (ks.containsAlias(LOCK_KEY_ALIAS)) {
+            ks.getKey(LOCK_KEY_ALIAS, null) as javax.crypto.SecretKey
+        } else {
+            val gen = javax.crypto.KeyGenerator.getInstance(
+                android.security.keystore.KeyProperties.KEY_ALGORITHM_AES,
+                "AndroidKeyStore"
+            )
+            gen.init(
+                android.security.keystore.KeyGenParameterSpec.Builder(
+                    LOCK_KEY_ALIAS,
+                    android.security.keystore.KeyProperties.PURPOSE_ENCRYPT or
+                            android.security.keystore.KeyProperties.PURPOSE_DECRYPT
+                )
+                    .setBlockModes(android.security.keystore.KeyProperties.BLOCK_MODE_GCM)
+                    .setEncryptionPaddings(android.security.keystore.KeyProperties.ENCRYPTION_PADDING_NONE)
+                    .build()
+            )
+            gen.generateKey()
+        }
+    } catch (_: Throwable) {
+        null
+    }
+
+    /** AES-GCM 加密：base64(iv + 密文) */
+    private fun encryptPayload(plain: String): String? {
+        return try {
+            val key = lockKey() ?: return null
+            val cipher = javax.crypto.Cipher.getInstance("AES/GCM/NoPadding")
+            cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, key)
+            val iv = cipher.iv
+            val ct = cipher.doFinal(plain.toByteArray())
+            val out = ByteArray(iv.size + ct.size)
+            System.arraycopy(iv, 0, out, 0, iv.size)
+            System.arraycopy(ct, 0, out, iv.size, ct.size)
+            android.util.Base64.encodeToString(out, android.util.Base64.NO_WRAP)
+        } catch (_: Throwable) {
+            null
+        }
+    }
+
+    /** AES-GCM 解密；失败（密钥缺失/数据被篡改）返回 null */
+    private fun decryptPayload(encoded: String): String? {
+        return try {
+            val key = lockKey() ?: return null
+            val raw = android.util.Base64.decode(encoded, android.util.Base64.NO_WRAP)
+            val iv = raw.copyOfRange(0, 12)
+            val ct = raw.copyOfRange(12, raw.size)
+            val cipher = javax.crypto.Cipher.getInstance("AES/GCM/NoPadding")
+            cipher.init(javax.crypto.Cipher.DECRYPT_MODE, key, javax.crypto.spec.GCMParameterSpec(128, iv))
+            String(cipher.doFinal(ct))
+        } catch (_: Throwable) {
+            null
+        }
+    }
+
+    /** 是否已设置过密码（载荷存在即视为有锁——即使被篡改也按锁定处理，防绕过） */
+    fun hasLockPassword(): Boolean = lockPayload.isNotEmpty() || lockHash.isNotEmpty()
+
+    /** 设置/重置密码（首次开启无需旧密码）；Argon2id 慢哈希 + Keystore 硬件加密存储 */
+    fun setLockPassword(pwd: String) {
+        val salt = ByteArray(16).also { java.security.SecureRandom().nextBytes(it) }
+        val hash = try {
+            val res = argon2.hash(
+                mode = com.lambdapioneer.argon2kt.Argon2Mode.ARGON2_ID,
+                password = pwd.toByteArray(),
+                salt = salt,
+                tCostInIterations = 2,
+                mCostInKibibyte = 8192,
+                parallelism = 1,
+                hashLengthInBytes = 32
+            )
+            Charsets.UTF_8.decode(res.encodedOutput).toString()
+        } catch (_: Throwable) {
+            "" // JNI 不可用时回退
+        }
+        if (hash.isNotEmpty()) {
+            // 优先 Keystore 加密存储
+            val payload = encryptPayload(hash)
+            if (payload != null) {
+                sp.edit()
+                    .putString("lock_payload", payload)
+                    .remove("lock_hash")
+                    .remove("lock_salt")
+                    .apply()
+                return
+            }
+        }
+        // Keystore/Argon2 不可用：回退旧格式（SHA-256）
+        lockSalt = salt.joinToString("") { "%02x".format(it) }
+        lockHash = if (hash.isNotEmpty()) hash else sha256(lockSalt + pwd)
+    }
+
+    /** 校验密码：优先 Keystore 载荷（篡改/解密失败一律拒绝）；兼容旧格式 */
+    fun verifyLockPassword(pwd: String): Boolean {
+        val payload = lockPayload
+        if (payload.isNotEmpty()) {
+            val hash = decryptPayload(payload) ?: return false // 被篡改/密钥丢失：拒绝
+            return try {
+                argon2.verify(
+                    mode = com.lambdapioneer.argon2kt.Argon2Mode.ARGON2_ID,
+                    encoded = hash,
+                    password = pwd.toByteArray()
+                )
+            } catch (_: Throwable) {
+                false
+            }
+        }
+        val stored = lockHash
+        if (stored.isEmpty()) return false
+        return if (stored.startsWith("\$argon2")) {
+            try {
+                argon2.verify(
+                    mode = com.lambdapioneer.argon2kt.Argon2Mode.ARGON2_ID,
+                    encoded = stored,
+                    password = pwd.toByteArray()
+                )
+            } catch (_: Throwable) {
+                false
+            }
+        } else {
+            lockSalt.isNotEmpty() && sha256(lockSalt + pwd) == stored
+        }
+    }
+
+    private fun sha256(input: String): String = try {
+        val digest = java.security.MessageDigest.getInstance("SHA-256")
+        digest.digest(input.toByteArray()).joinToString("") { "%02x".format(it) }
+    } catch (_: Throwable) {
+        ""
+    }
 
     // ================= 运行模式 =================
     var privilegeMode: String

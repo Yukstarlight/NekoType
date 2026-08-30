@@ -29,12 +29,28 @@
             android:name=".ui.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:launchMode="singleTask"
             android:theme="@style/Theme.NekoType.Main">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- 桌面图标入口（隐藏模式：禁用此 alias 即图标消失；MainActivity 仍可被显式 Intent 启动） -->
+        <activity-alias
+            android:name=".MainActivityAlias"
+            android:targetActivity=".ui.MainActivity"
+            android:exported="true"
+            android:enabled="true"
+            android:label="@string/app_name"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
+        </activity-alias>
 
         <activity
             android:name=".ui.SettingsActivity"
@@ -47,6 +63,12 @@
             android:exported="false"
             android:label="@string/log_label"
             android:theme="@style/Theme.NekoType" />
+
+        <activity
+            android:name=".ui.BlacklistActivity"
+            android:exported="false"
+            android:label="应用黑名单"
+            android:theme="@style/Theme.NekoType.Main" />
 
         <!-- Accessibility Service -->
         <service

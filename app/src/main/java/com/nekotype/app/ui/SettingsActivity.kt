@@ -1,3 +1,33 @@
+/*
+ * NekoType
+ *
+ * BSD 2-Clause License
+ *
+ * Copyright (c) 2026, Yukstarlight
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.nekotype.app.ui
 
 import android.content.ClipData
@@ -40,7 +70,16 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySettingsBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // 主题：super 前设置夜间模式（recreate 后保持），super 后设置星空主题
+        when (AppPrefs.themeMode) {
+            "dark", "star" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        }
         super.onCreate(savedInstanceState)
+        if (AppPrefs.themeMode == "star") {
+            setTheme(R.style.Theme_NekoType_Star)
+        }
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         BgUtils.apply(binding.root)
@@ -79,19 +118,16 @@ class SettingsActivity : AppCompatActivity() {
         // ---- 外观（主题） ----
         binding.themeGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
-                AppPrefs.themeMode = when (checkedId) {
+                val mode = when (checkedId) {
                     R.id.btnThemeDark -> "dark"
-                    R.id.btnThemeLight -> "light"
                     else -> "system"
                 }
-                val mode = when (AppPrefs.themeMode) {
-                    "dark" -> AppCompatDelegate.MODE_NIGHT_YES
-                    "light" -> AppCompatDelegate.MODE_NIGHT_NO
-                    else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-                }
-                AppCompatDelegate.setDefaultNightMode(mode)
-                NekoLog.adjust("外观切换为：${themeLabel(AppPrefs.themeMode)}")
-                refreshTheme()
+                switchTheme(mode)
+            }
+        }
+        binding.themeGroup2.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked) {
+                switchTheme("star")
             }
         }
 
@@ -146,6 +182,13 @@ class SettingsActivity : AppCompatActivity() {
         // ---- 开机自启 ----
         binding.swAutoStart.isChecked = AppPrefs.autoStartEnabled
         binding.swAutoStart.setOnCheckedChangeListener { _, checked ->
+            if (!checked && AppPrefs.lockEnabled) {
+                // 密码锁定：开机自启保持开启（防杀后台的一部分，重启后自动复活）
+                NekoLog.warn("密码锁定中：开机自启保持开启")
+                toast("密码锁定中，开机自启保持开启")
+                binding.swAutoStart.isChecked = true
+                return@setOnCheckedChangeListener
+            }
             AppPrefs.autoStartEnabled = checked
             NekoLog.adjust(if (checked) "开启开机自启" else "关闭开机自启")
         }
@@ -172,16 +215,10 @@ class SettingsActivity : AppCompatActivity() {
         }
         binding.btnImportConfig.setOnClickListener { showImportDialog() }
 
-        binding.modeGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (isChecked) {
-                AppPrefs.privilegeMode = when (checkedId) {
-                    R.id.btnModeShizuku -> "shizuku"
-                    R.id.btnModeRoot -> "root"
-                    else -> "basic"
-                }
-                NekoLog.adjust("运行模式切换为：${modeLabel(AppPrefs.privilegeMode)}")
-                refreshMode()
-            }
+        // ---- 应用黑名单 ----
+        binding.btnBlacklist.setOnClickListener {
+            NekoLog.nav("打开应用黑名单")
+            startActivity(Intent(this, BlacklistActivity::class.java))
         }
 
         // ---- 支持与反馈 ----
@@ -196,7 +233,6 @@ class SettingsActivity : AppCompatActivity() {
             tryOpenQqGroup()
         }
 
-        refreshMode()
         refreshTheme()
         refreshVersion()
         refreshStatsDaily()
@@ -219,7 +255,6 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        refreshMode()
         refreshTheme()
         refreshStatsDaily()
         // Root 检测会拉起 su 进程，放后台线程
@@ -280,12 +315,7 @@ class SettingsActivity : AppCompatActivity() {
                     NekoLog.ok("配置导入成功")
                     toast("配置导入成功")
                     // 主题可能变化，重新应用
-                    val mode = when (AppPrefs.themeMode) {
-                        "dark" -> AppCompatDelegate.MODE_NIGHT_YES
-                        "light" -> AppCompatDelegate.MODE_NIGHT_NO
-                        else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-                    }
-                    AppCompatDelegate.setDefaultNightMode(mode)
+                    applyThemeMode()
                     refreshStatsDaily()
                     BgUtils.apply(binding.root)
                 }
@@ -294,45 +324,59 @@ class SettingsActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun themeLabel(m: String): String = when (m) {
-        "dark" -> "深色"
-        "light" -> "浅色"
-        else -> "跟随系统"
+    /** 切换主题：保存 + 应用 + 刷新选中态（setDefaultNightMode 变化触发重建，主题在 onCreate 重新应用） */
+    private fun switchTheme(mode: String) {
+        AppPrefs.themeMode = mode
+        applyThemeMode()
+        NekoLog.adjust("外观切换为：${themeLabel(mode)}")
+        refreshTheme()
     }
 
-    private fun modeLabel(m: String): String = when (m) {
-        "shizuku" -> "Shizuku"
-        "root" -> "Root"
-        else -> "基础"
-    }
-
-    private fun refreshMode() {
-        val mode = AppPrefs.privilegeMode
-        binding.modeGroup.check(
-            when (mode) {
-                "shizuku" -> R.id.btnModeShizuku
-                "root" -> R.id.btnModeRoot
-                else -> R.id.btnModeBasic
+    /** 应用主题（含星空模式：深色夜空 + 紫金星光） */
+    private fun applyThemeMode() {
+        when (AppPrefs.themeMode) {
+            "star" -> {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                setTheme(R.style.Theme_NekoType_Star)
             }
-        )
-        binding.tvModeHint.text = when (mode) {
-            "shizuku" -> "Shizuku 模式：系统命令经 Shizuku（shell 权限）执行。需安装 Shizuku 并授权（无线调试/ADB）。"
-            "root" -> "Root 模式：系统命令经 su 执行。需 Magisk / KernelSU / APatch。"
-            else -> "基础模式：仅悬浮窗 + 无障碍，核心变换发送功能不受影响；不执行系统命令。"
+            "dark" -> {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                setTheme(R.style.Theme_NekoType)
+            }
+            "light" -> {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                setTheme(R.style.Theme_NekoType)
+            }
+            else -> {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+                setTheme(R.style.Theme_NekoType)
+            }
         }
     }
 
+    private fun themeLabel(m: String): String = when (m) {
+        "dark" -> "深色"
+        "light" -> "浅色"
+        "star" -> "浅色星空"
+        else -> "跟随系统"
+    }
+
     private fun refreshTheme() {
+        // themeGroup：跟随系统 / 深色；themeGroup2：浅色星空
+        val m = AppPrefs.themeMode
         binding.themeGroup.check(
-            when (AppPrefs.themeMode) {
+            when (m) {
                 "dark" -> R.id.btnThemeDark
-                "light" -> R.id.btnThemeLight
                 else -> R.id.btnThemeSystem
             }
         )
-        binding.tvThemeHint.text = when (AppPrefs.themeMode) {
+        binding.themeGroup2.check(
+            if (m == "star") R.id.btnThemeStar else -1
+        )
+        binding.tvThemeHint.text = when (m) {
             "dark" -> "深色模式：纯黑界面"
             "light" -> "浅色模式：明亮界面"
+            "star" -> "浅色星空：浅色底 + 紫金星光（Yukstarlight 配色）"
             else -> "跟随系统：随系统深色/浅色设置自动切换"
         }
     }
@@ -345,13 +389,6 @@ class SettingsActivity : AppCompatActivity() {
         sb.append("Shizuku：").append(if (SysPower.isShizukuAvailable()) "✓ 可用" else "✗ 未检测到").append('\n')
         sb.append("Root：").append(if (rootOk) "✓ 可用" else "✗ 未检测到").append('\n')
         sb.append("设备管理员：").append(if (SysPower.isDeviceAdminActive()) "✓ 已激活" else "✗ 未激活").append('\n')
-        sb.append("运行模式：").append(
-            when (AppPrefs.privilegeMode) {
-                "shizuku" -> "Shizuku"
-                "root" -> "Root"
-                else -> "基础"
-            }
-        ).append('\n')
         sb.append("服务状态：").append(if (AppPrefs.serviceEnabled) "● 运行中" else "○ 已停止").append('\n')
         sb.append("累计变换：").append(AppPrefs.transformCount).append(" 次")
         return sb.toString()
@@ -395,7 +432,7 @@ class SettingsActivity : AppCompatActivity() {
             val info = packageManager.getPackageInfo(packageName, 0)
             val version = "${info.versionName} (${if (Build.VERSION.SDK_INT >= 28) info.longVersionCode else info.versionCode})"
             val subject = "NekoType 建议反馈"
-            val body = "版本：$version\n设备：${Build.MANUFACTURER} ${Build.MODEL} · Android ${Build.VERSION.RELEASE}\n运行模式：${AppPrefs.privilegeMode}\n\n建议/问题：\n"
+            val body = "版本：$version\n设备：${Build.MANUFACTURER} ${Build.MODEL} · Android ${Build.VERSION.RELEASE}\nShizuku：${if (SysPower.isShizukuPermissionGranted()) "已授权" else "未授权"}\n\n建议/问题：\n"
             val intent = Intent(Intent.ACTION_SENDTO).apply {
                 data = Uri.parse("mailto:TR114512@qq.com")
                 putExtra(Intent.EXTRA_SUBJECT, subject)

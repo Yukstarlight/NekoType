@@ -11,8 +11,8 @@ android {
         applicationId "com.nekotype.app"
         minSdk 26
         targetSdk 34
-        versionCode 16
-        versionName "2.5.5"
+        versionCode 21
+        versionName "2.6.0"
     }
 
     // 签名配置：keystore.properties 存在且 keystore 文件存在时才启用签名，
@@ -71,4 +71,6 @@ dependencies {
     // Shizuku API (system-level enhancement via adb shell permission)
     implementation 'dev.rikka.shizuku:api:13.1.5'
     implementation 'dev.rikka.shizuku:provider:13.1.5'
+    // Argon2id 密码哈希（2022 哈希之王：内存硬 + 抗 GPU 暴力破解，OWASP 首选）
+    implementation 'com.lambdapioneer.argon2kt:argon2kt:1.5.0'
 }

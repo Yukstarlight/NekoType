@@ -18,9 +18,9 @@
             android:layout_height="wrap_content"
             app:cardCornerRadius="20dp"
             app:cardElevation="1dp"
-            app:strokeColor="@color/divider"
+            app:strokeColor="?attr/colorOutlineVariant"
             app:strokeWidth="1dp"
-            app:cardBackgroundColor="@color/surface_card_glass">
+            app:cardBackgroundColor="?attr/colorSurface">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -56,14 +56,22 @@
                         android:layout_weight="1"
                         android:minHeight="44dp"
                         android:text="深色"/>
+                </com.google.android.material.button.MaterialButtonToggleGroup>
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/themeGroup2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="true"
+                    app:selectionRequired="false"
+                    android:layout_marginTop="8dp">
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnThemeLight"
+                        android:id="@+id/btnThemeStar"
                         style="@style/Widget.Material3.Button.TonalButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:minHeight="44dp"
-                        android:text="浅色"/>
+                        android:text="浅色星空"/>
                 </com.google.android.material.button.MaterialButtonToggleGroup>
                 <TextView
                     android:id="@+id/tvThemeHint"
@@ -76,7 +84,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="@color/divider"
+                    android:background="?attr/colorOutlineVariant"
                     android:layout_marginTop="12dp"/>
 
                 <LinearLayout
@@ -125,9 +133,9 @@
             android:layout_height="wrap_content"
             app:cardCornerRadius="20dp"
             app:cardElevation="1dp"
-            app:strokeColor="@color/divider"
+            app:strokeColor="?attr/colorOutlineVariant"
             app:strokeWidth="1dp"
-            app:cardBackgroundColor="@color/surface_card_glass"
+            app:cardBackgroundColor="?attr/colorSurface"
             android:layout_marginTop="14dp">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -212,7 +220,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="@color/divider"
+                    android:background="?attr/colorOutlineVariant"
                     android:layout_marginTop="8dp"/>
 
                 <LinearLayout
@@ -267,78 +275,15 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- 运行模式 -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="1dp"
-            app:strokeColor="@color/divider"
-            app:strokeWidth="1dp"
-            app:cardBackgroundColor="@color/surface_card_glass">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="更换运行模式"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface"/>
-                <com.google.android.material.button.MaterialButtonToggleGroup
-                    android:id="@+id/modeGroup"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:singleSelection="true"
-                    app:selectionRequired="true"
-                    android:layout_marginTop="12dp">
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnModeBasic"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:minHeight="44dp"
-                        android:text="基础"/>
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnModeShizuku"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:minHeight="44dp"
-                        android:text="Shizuku"/>
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnModeRoot"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:minHeight="44dp"
-                        android:text="Root"/>
-                </com.google.android.material.button.MaterialButtonToggleGroup>
-                <TextView
-                    android:id="@+id/tvModeHint"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="12sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:layout_marginTop="8dp"/>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
         <!-- 高级 -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="20dp"
             app:cardElevation="1dp"
-            app:strokeColor="@color/divider"
+            app:strokeColor="?attr/colorOutlineVariant"
             app:strokeWidth="1dp"
-            app:cardBackgroundColor="@color/surface_card_glass"
+            app:cardBackgroundColor="?attr/colorSurface"
             android:layout_marginTop="14dp">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -390,9 +335,9 @@
             android:layout_height="wrap_content"
             app:cardCornerRadius="20dp"
             app:cardElevation="1dp"
-            app:strokeColor="@color/divider"
+            app:strokeColor="?attr/colorOutlineVariant"
             app:strokeWidth="1dp"
-            app:cardBackgroundColor="@color/surface_card_glass"
+            app:cardBackgroundColor="?attr/colorSurface"
             android:layout_marginTop="14dp">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -424,9 +369,9 @@
             android:layout_height="wrap_content"
             app:cardCornerRadius="20dp"
             app:cardElevation="1dp"
-            app:strokeColor="@color/divider"
+            app:strokeColor="?attr/colorOutlineVariant"
             app:strokeWidth="1dp"
-            app:cardBackgroundColor="@color/surface_card_glass"
+            app:cardBackgroundColor="?attr/colorSurface"
             android:layout_marginTop="14dp">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -476,15 +421,56 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- 应用黑名单 -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="1dp"
+            app:strokeColor="?attr/colorOutlineVariant"
+            app:strokeWidth="1dp"
+            app:cardBackgroundColor="?attr/colorSurface"
+            android:layout_marginTop="14dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="应用黑名单"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="黑名单内的应用不自动篡改（强制篡改键盘 / 静默修改自动注入不生效），悬浮球手动不受限"
+                    android:textSize="11sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:layout_marginTop="4dp"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnBlacklist"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:minHeight="44dp"
+                    android:textSize="13sp"
+                    android:text="管理应用黑名单"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- 详细信息 -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="20dp"
             app:cardElevation="1dp"
-            app:strokeColor="@color/divider"
+            app:strokeColor="?attr/colorOutlineVariant"
             app:strokeWidth="1dp"
-            app:cardBackgroundColor="@color/surface_card_glass"
+            app:cardBackgroundColor="?attr/colorSurface"
             android:layout_marginTop="14dp">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -516,9 +502,9 @@
             android:layout_height="wrap_content"
             app:cardCornerRadius="20dp"
             app:cardElevation="1dp"
-            app:strokeColor="@color/divider"
+            app:strokeColor="?attr/colorOutlineVariant"
             app:strokeWidth="1dp"
-            app:cardBackgroundColor="@color/surface_card_glass"
+            app:cardBackgroundColor="?attr/colorSurface"
             android:layout_marginTop="14dp">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -550,9 +536,9 @@
             android:layout_height="wrap_content"
             app:cardCornerRadius="20dp"
             app:cardElevation="1dp"
-            app:strokeColor="@color/divider"
+            app:strokeColor="?attr/colorOutlineVariant"
             app:strokeWidth="1dp"
-            app:cardBackgroundColor="@color/surface_card_glass"
+            app:cardBackgroundColor="?attr/colorSurface"
             android:layout_marginTop="14dp">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -575,6 +561,15 @@
                     android:layout_marginTop="8dp"
                     android:text="QQ 群：1007865515\n邮箱：TR114512@qq.com"
                     android:textIsSelectable="true"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:lineSpacingExtra="5dp"
+                    android:layout_marginTop="10dp"
+                    android:text="开源协议：BSD 2-Clause License（BSD-2-Clause）\nCopyright (c) 2026, Yukstarlight\n详见项目 LICENSE 文件。"
+                    android:textIsSelectable="true"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -584,9 +579,9 @@
             android:layout_height="wrap_content"
             app:cardCornerRadius="20dp"
             app:cardElevation="1dp"
-            app:strokeColor="@color/divider"
+            app:strokeColor="?attr/colorOutlineVariant"
             app:strokeWidth="1dp"
-            app:cardBackgroundColor="@color/surface_card_glass"
+            app:cardBackgroundColor="?attr/colorSurface"
             android:layout_marginTop="14dp">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -662,9 +657,9 @@
             android:layout_height="wrap_content"
             app:cardCornerRadius="20dp"
             app:cardElevation="1dp"
-            app:strokeColor="@color/divider"
+            app:strokeColor="?attr/colorOutlineVariant"
             app:strokeWidth="1dp"
-            app:cardBackgroundColor="@color/surface_card_glass"
+            app:cardBackgroundColor="?attr/colorSurface"
             android:layout_marginTop="14dp">
             <LinearLayout
                 android:layout_width="match_parent"

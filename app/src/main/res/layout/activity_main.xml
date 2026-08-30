@@ -119,7 +119,7 @@
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/surface_card_glass"
+        android:background="?attr/colorSurface"
         app:tabIndicatorColor="?attr/colorPrimary"
         app:tabIndicatorFullWidth="false"
         app:tabSelectedTextColor="?attr/colorPrimary"
@@ -159,9 +159,9 @@
                     android:layout_height="wrap_content"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="1dp"
-                    app:strokeColor="@color/divider"
+                    app:strokeColor="?attr/colorOutlineVariant"
                     app:strokeWidth="1dp"
-                    app:cardBackgroundColor="@color/surface_card_glass">
+                    app:cardBackgroundColor="?attr/colorSurface">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -411,14 +411,6 @@
                                 android:minHeight="36dp"
                                 android:textSize="12sp"
                                 android:text="请求"/>
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnStep5Basic"
-                                style="@style/Widget.Material3.Button.TextButton"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:minHeight="36dp"
-                                android:textSize="12sp"
-                                android:text="基础模式"/>
                         </LinearLayout>
 
                         <TextView
@@ -508,16 +500,7 @@
                     android:layout_height="wrap_content"
                     android:minHeight="46dp"
                     android:textSize="13sp"
-                    android:text="一键免电（Shizuku / Root 直写）"/>
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnRoot"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:minHeight="46dp"
-                    android:textSize="13sp"
-                    android:text="Root 测试"/>
+                    android:text="一键免电（Shizuku 直写）"/>
                 <TextView
                     android:id="@+id/tvPrivLog"
                     android:layout_width="match_parent"
@@ -549,9 +532,9 @@
                     android:layout_height="wrap_content"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="1dp"
-                    app:strokeColor="@color/divider"
+                    app:strokeColor="?attr/colorOutlineVariant"
                     app:strokeWidth="1dp"
-                    app:cardBackgroundColor="@color/surface_card_glass">
+                    app:cardBackgroundColor="?attr/colorSurface">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -611,9 +594,9 @@
                     android:layout_height="wrap_content"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="1dp"
-                    app:strokeColor="@color/divider"
+                    app:strokeColor="?attr/colorOutlineVariant"
                     app:strokeWidth="1dp"
-                    app:cardBackgroundColor="@color/surface_card_glass"
+                    app:cardBackgroundColor="?attr/colorSurface"
                     android:layout_marginTop="14dp">
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -671,9 +654,9 @@
                     android:layout_height="wrap_content"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="1dp"
-                    app:strokeColor="@color/divider"
+                    app:strokeColor="?attr/colorOutlineVariant"
                     app:strokeWidth="1dp"
-                    app:cardBackgroundColor="@color/surface_card_glass"
+                    app:cardBackgroundColor="?attr/colorSurface"
                     android:layout_marginTop="14dp">
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -712,7 +695,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"/>
                         </LinearLayout>
-                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider"/>
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -733,7 +716,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"/>
                         </LinearLayout>
-                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider"/>
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -754,7 +737,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"/>
                         </LinearLayout>
-                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider"/>
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -775,7 +758,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"/>
                         </LinearLayout>
-                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider"/>
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -796,6 +779,222 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"/>
                         </LinearLayout>
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:paddingTop="6dp"
+                            android:paddingBottom="6dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="静默修改"
+                                android:textSize="15sp"
+                                android:textColor="?attr/colorOnSurface"/>
+                            <com.google.android.material.materialswitch.MaterialSwitch
+                                android:id="@+id/swSilentModify"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="通过 Shizuku/Root 直接注入文本，绕过部分应用限制，全程无弹窗（需 Shizuku 或 Root 模式）"
+                            android:textSize="11sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"/>
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:paddingTop="6dp"
+                            android:paddingBottom="6dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="强制篡改键盘"
+                                android:textSize="15sp"
+                                android:textColor="?attr/colorOnSurface"/>
+                            <com.google.android.material.materialswitch.MaterialSwitch
+                                android:id="@+id/swForceKeyboard"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="原生键盘输入时自动按规则篡改文本，无需点悬浮按钮（启用需确认免责声明）"
+                            android:textSize="11sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"/>
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:paddingTop="6dp"
+                            android:paddingBottom="6dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="标点触发"
+                                android:textSize="15sp"
+                                android:textColor="?attr/colorOnSurface"/>
+                            <com.google.android.material.materialswitch.MaterialSwitch
+                                android:id="@+id/swPunctTrigger"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="强制篡改时：输入以标点（。！？,）结尾才篡改，打完一句才改（手动点发送不受限）"
+                            android:textSize="11sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"/>
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:paddingTop="6dp"
+                            android:paddingBottom="6dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="随机颜文字"
+                                android:textSize="15sp"
+                                android:textColor="?attr/colorOnSurface"/>
+                            <com.google.android.material.materialswitch.MaterialSwitch
+                                android:id="@+id/swEmoticon"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="每条消息自动追加随机颜文字（含 NekoType 原创猫系颜文字；也可用「随机颜文字」规则自定义池）"
+                            android:textSize="11sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"/>
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:paddingTop="6dp"
+                            android:paddingBottom="6dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="密码锁定"
+                                android:textSize="15sp"
+                                android:textColor="?attr/colorOnSurface"/>
+                            <com.google.android.material.materialswitch.MaterialSwitch
+                                android:id="@+id/swLock"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="开启后停止服务需输入密码；配合设备管理员可防杀后台（从最近任务划掉后自动复活）。首次开启直接设置密码"
+                            android:textSize="11sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"/>
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:paddingTop="6dp"
+                            android:paddingBottom="6dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="心跳保活"
+                                android:textSize="15sp"
+                                android:textColor="?attr/colorOnSurface"/>
+                            <com.google.android.material.materialswitch.MaterialSwitch
+                                android:id="@+id/swHeartbeat"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="每 60 秒闹钟唤醒拉活服务，被系统杀了也能复活（耗电略增，建议配合隐藏模式使用）"
+                            android:textSize="11sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"/>
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:paddingTop="6dp"
+                            android:paddingBottom="6dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="崩溃自启"
+                                android:textSize="15sp"
+                                android:textColor="?attr/colorOnSurface"/>
+                            <com.google.android.material.materialswitch.MaterialSwitch
+                                android:id="@+id/swCrashRestart"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="进程崩溃时自动拉起悬浮服务，防止一次闪退导致服务失联（默认开启）"
+                            android:textSize="11sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"/>
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:paddingTop="6dp"
+                            android:paddingBottom="6dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="隐藏模式"
+                                android:textSize="15sp"
+                                android:textColor="?attr/colorOnSurface"/>
+                            <com.google.android.material.materialswitch.MaterialSwitch
+                                android:id="@+id/swHiddenMode"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="隐藏桌面图标，后台无法显示，别人杀不掉（应用名不加密）；仅通知栏「停止服务」+ 密码可恢复。需先开启密码锁定"
+                            android:textSize="11sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -805,9 +1004,9 @@
                     android:layout_height="wrap_content"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="1dp"
-                    app:strokeColor="@color/divider"
+                    app:strokeColor="?attr/colorOutlineVariant"
                     app:strokeWidth="1dp"
-                    app:cardBackgroundColor="@color/surface_card_glass"
+                    app:cardBackgroundColor="?attr/colorSurface"
                     android:layout_marginTop="14dp">
                     <LinearLayout
                         android:layout_width="match_parent"

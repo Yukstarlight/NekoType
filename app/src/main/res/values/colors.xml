@@ -56,4 +56,25 @@
     <color name="md_theme_onSurfaceVariant">@color/fg_1</color>
     <color name="fab_bg">@color/accent_blue</color>
     <color name="ic_bg">#E8E8EE</color>
+
+    <!-- 星空模式（深色夜空版：深蓝紫夜空 + 紫金星光，抄自 Yukstarlight-blog 配色） -->
+    <color name="star_primary">#C8A2FF</color>
+    <color name="star_onPrimary">#0A0E1E</color>
+    <color name="star_container">#1E2440</color>
+    <color name="star_onContainer">#E8ECFF</color>
+    <color name="star_secondary">#F5B042</color>
+    <color name="star_onSecondary">#05060D</color>
+    <color name="star_bg0">#0A0E1E</color>
+    <color name="star_bg1">#11162D</color>
+    <color name="star_bg2">#05060D</color>
+    <color name="star_fg0">#E8ECFF</color>
+    <color name="star_fg1">#A8B2D1</color>
+    <color name="star_fg2">#6C7795</color>
+    <color name="star_border">#2A3260</color>
+    <color name="star_hero_start">#0A0E1E</color>
+    <color name="star_hero_end">#1E2440</color>
+    <color name="star_hero_text">#E8ECFF</color>
+    <color name="star_hero_text_soft">#A8B2D1</color>
+    <color name="star_glass">#11162D</color>
+    <color name="star_glass_strong">#1E2440</color>
 </resources>

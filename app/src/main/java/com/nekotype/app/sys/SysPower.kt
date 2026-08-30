@@ -1,3 +1,33 @@
+/*
+ * NekoType
+ *
+ * BSD 2-Clause License
+ *
+ * Copyright (c) 2026, Yukstarlight
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.nekotype.app.sys
 
 import android.app.admin.DevicePolicyManager
@@ -170,19 +200,12 @@ object SysPower {
 
     // ---------- 通用命令执行 ----------
 
-    /** 当前运行模式：basic / shizuku / root */
-    fun currentMode(): String = AppPrefs.privilegeMode
-
     /**
-     * 按用户选择的运行模式执行命令，只走所选通道（不再自动乱试）。
+     * 执行系统命令：只走 Shizuku 通道（唯一特权通道，已移除基础/Root 模式选择）。
      * 请勿在主线程调用。
      */
     fun execShell(cmd: String): ExecResult {
-        return when (AppPrefs.privilegeMode) {
-            "root" -> rootExec(cmd) ?: ExecResult(false, "Root 通道不可用（未检测到 su / Magisk / KernelSU / APatch）", "none")
-            "shizuku" -> shizukuExec(cmd) ?: ExecResult(false, "Shizuku 通道不可用（未运行或未授权）", "none")
-            else -> ExecResult(false, "基础模式：不执行系统命令，仅使用悬浮窗 + 无障碍", "none")
-        }
+        return shizukuExec(cmd) ?: ExecResult(false, "Shizuku 通道不可用（未运行或未授权）", "none")
     }
 
     private fun rootExec(cmd: String): ExecResult? {
@@ -203,6 +226,87 @@ object SysPower {
             ExecResult(true, out.trim(), "shizuku")
         } catch (_: Throwable) {
             null
+        }
+    }
+
+    // ---------- 静默修改（文本注入） ----------
+
+    /** 文本是否可被 shell input 注入（仅 ASCII；含引号/百分号的做转义处理） */
+    fun isInjectionSafe(text: String): Boolean =
+        text.isNotEmpty() && text.all { it.code < 128 } && !text.contains("%s")
+
+    /**
+     * 通过 Shizuku 静默注入文本到当前聚焦输入框：
+     * 先全选（CTRL+A，Android 10+）再 input text 替换全文。
+     * 全程无弹窗、无剪贴板提示。仅支持 ASCII；中文/长文本请走无障碍通道。
+     */
+    fun shizukuInjectText(text: String): ExecResult {
+        val escaped = text.replace("'", "\\'")
+        // CTRL_LEFT(113) + A(29) 全选；input keycombination 需 Android 10+，失败则回退无障碍由调用方处理
+        val cmd = "input keycombination 113 29; input text '$escaped'"
+        return execShell(cmd)
+    }
+
+    /** Shizuku 通道当前是否可用（静默修改的前提） */
+    fun privilegedChannelReady(): Boolean = isShizukuAvailable() && isShizukuPermissionGranted()
+
+    // ---------- 隐藏模式（隐藏桌面图标） ----------
+
+    /**
+     * Shizuku 隐藏/恢复自身（Hail「雹」同款 pm hide）：
+     * 图标立即从桌面消失（launcher 即时刷新，无华为缓存问题）。
+     * 注意：pm hide 会终止当前进程，但已注册的心跳闹钟仍可拉起服务保持通知栏入口。
+     * 请勿在主线程调用（会阻塞）。
+     */
+    fun shizukuHideSelf(hidden: Boolean): ExecResult {
+        val pkg = NekoTypeApp.instance.packageName
+        return execShell(if (hidden) "pm hide $pkg" else "pm unhide $pkg")
+    }
+
+    /**
+     * 隐藏/恢复桌面图标：通过禁用/启用 activity-alias 的 LAUNCHER 入口实现（皆成同款，
+     * 无需 Shizuku/设备管理员——应用可禁用自身组件）。
+     * 隐藏后桌面图标消失，但 MainActivity 仍可被显式 Intent（通知栏/磁贴）拉起。
+     */
+    fun setHiddenMode(hidden: Boolean) {
+        try {
+            val pm = NekoTypeApp.instance.packageManager
+            val alias = ComponentName(NekoTypeApp.instance, "com.nekotype.app.MainActivityAlias")
+            pm.setComponentEnabledSetting(
+                alias,
+                if (hidden) PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+                else PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP
+            )
+            // 部分桌面（如华为）不主动刷新图标缓存，主动广播通知刷新，
+            // 避免残留图标点击后跳「应用信息」
+            try {
+                val i = Intent(
+                    Intent.ACTION_PACKAGE_CHANGED,
+                    android.net.Uri.parse("package:${NekoTypeApp.instance.packageName}")
+                )
+                i.putExtra(Intent.EXTRA_CHANGED_COMPONENT_NAME, alias.flattenToString())
+                NekoTypeApp.instance.sendBroadcast(i)
+            } catch (_: Throwable) { }
+        } catch (_: Throwable) { }
+    }
+
+    /**
+     * 隐藏模式下的卸载保护：设备管理员激活时阻止卸载（与皆成孩子端同款，
+     * 必须先取消激活才能卸载，别人删不掉）。
+     * @param enabled true=阻止卸载，false=恢复
+     */
+    fun setUninstallBlockedByAdmin(enabled: Boolean): Boolean {
+        return try {
+            val dpm = NekoTypeApp.instance.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+            if (dpm.isAdminActive(adminComponent)) {
+                dpm.setUninstallBlocked(adminComponent, NekoTypeApp.instance.packageName, enabled)
+                true
+            } else {
+                false
+            }
+        } catch (_: Throwable) {
+            false
         }
     }
 }

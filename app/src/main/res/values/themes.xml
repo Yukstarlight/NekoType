@@ -33,4 +33,23 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
+
+    <!-- 星空模式：深蓝紫夜空 + 紫金星光（配色抄自 Yukstarlight-blog） -->
+    <style name="Theme.NekoType.Star" parent="Theme.NekoType.Main">
+        <item name="colorPrimary">@color/star_primary</item>
+        <item name="colorOnPrimary">@color/star_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/star_container</item>
+        <item name="colorOnPrimaryContainer">@color/star_onContainer</item>
+        <item name="colorSecondary">@color/star_secondary</item>
+        <item name="colorOnSecondary">@color/star_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/star_container</item>
+        <item name="colorOnSecondaryContainer">@color/star_onContainer</item>
+        <item name="colorSurface">#B311162D</item>
+        <item name="colorOnSurface">@color/star_fg0</item>
+        <item name="colorOnSurfaceVariant">@color/star_fg1</item>
+        <item name="colorOutlineVariant">@color/star_border</item>
+        <item name="android:statusBarColor">@color/star_bg0</item>
+        <item name="android:navigationBarColor">@color/star_bg0</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
 </resources>
