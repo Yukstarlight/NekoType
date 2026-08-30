@@ -228,9 +228,9 @@ class SettingsActivity : AppCompatActivity() {
             sendFeedbackEmail()
         }
         binding.btnCopyGroup.setOnClickListener {
-            NekoLog.info("复制 QQ 群号：1007865515")
+            NekoLog.info("复制 QQ 频道号：1007865515")
             copyToClipboard("1007865515")
-            tryOpenQqGroup()
+            tryOpenQqChannel()
         }
 
         refreshTheme()
@@ -445,8 +445,8 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    /** 复制群号，并尝试拉起 QQ 群卡片 */
-    private fun tryOpenQqGroup() {
+    /** 复制频道号，并尝试拉起 QQ 频道卡片 */
+    private fun tryOpenQqChannel() {
         try {
             val intent = Intent(
                 Intent.ACTION_VIEW,
@@ -454,7 +454,7 @@ class SettingsActivity : AppCompatActivity() {
             )
             startActivity(intent)
         } catch (_: Throwable) {
-            toast("群号已复制：1007865515，请在 QQ 中搜索加入")
+            toast("频道号已复制：1007865515，请在 QQ 中搜索加入")
         }
     }
 
