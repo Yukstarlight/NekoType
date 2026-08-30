@@ -559,7 +559,7 @@
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:lineSpacingExtra="6dp"
                     android:layout_marginTop="8dp"
-                    android:text="QQ 频道：1007865515\n邮箱：TR114512@qq.com"
+                    android:text="QQ 频道：pd43973125\n邮箱：TR114512@qq.com"
                     android:textIsSelectable="true"/>
                 <TextView
                     android:layout_width="match_parent"
@@ -636,7 +636,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="QQ 频道：1007865515"
+                        android:text="QQ 频道：pd43973125"
                         android:textSize="14sp"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.button.MaterialButton

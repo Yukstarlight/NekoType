@@ -228,8 +228,8 @@ class SettingsActivity : AppCompatActivity() {
             sendFeedbackEmail()
         }
         binding.btnCopyGroup.setOnClickListener {
-            NekoLog.info("复制 QQ 频道号：1007865515")
-            copyToClipboard("1007865515")
+            NekoLog.info("复制 QQ 频道号：pd43973125")
+            copyToClipboard("pd43973125")
             tryOpenQqChannel()
         }
 
@@ -445,16 +445,16 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    /** 复制频道号，并尝试拉起 QQ 频道卡片 */
+    /** 复制频道号，并尝试拉起 QQ 频道 */
     private fun tryOpenQqChannel() {
         try {
             val intent = Intent(
                 Intent.ACTION_VIEW,
-                Uri.parse("mqqapi://card/show_pslcard?src_type=internal&version=1&uin=1007865515&card_type=group&source=external")
+                Uri.parse("https://pd.qq.com/s/pd43973125")
             )
             startActivity(intent)
         } catch (_: Throwable) {
-            toast("频道号已复制：1007865515，请在 QQ 中搜索加入")
+            toast("频道号已复制：pd43973125，请在 QQ 中搜索加入")
         }
     }
 
