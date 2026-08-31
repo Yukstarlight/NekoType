@@ -4,6 +4,7 @@ import android.content.Intent
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import com.nekotype.app.overlay.FloatingButtonService
+import com.nekotype.app.R
 import com.nekotype.app.prefs.AppPrefs
 import com.nekotype.app.ui.MainActivity
 import com.nekotype.app.util.NekoLog
@@ -45,7 +46,7 @@ class NekoTypeTileService : TileService() {
         val tile = qsTile ?: return
         val on = AppPrefs.serviceEnabled
         tile.state = if (on) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
-        tile.label = if (on) "NekoType 运行中" else "NekoType"
+        tile.label = if (on) getString(R.string.u172) else "NekoType"
         tile.updateTile()
     }
 }

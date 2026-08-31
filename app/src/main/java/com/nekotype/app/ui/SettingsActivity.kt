@@ -63,9 +63,9 @@ class SettingsActivity : AppCompatActivity() {
                     AppPrefs.customBackgroundPath = out.absolutePath
                     BgUtils.apply(binding.root)
                     NekoLog.adjust("更换自定义背景成功")
-                    toast("自定义背景已应用")
+                    toast(getString(R.string.u1))
                 } catch (_: Throwable) {
-                    toast("背景设置失败")
+                    toast(getString(R.string.u38))
                 }
             }
         }
@@ -73,14 +73,14 @@ class SettingsActivity : AppCompatActivity() {
             try {
                 bgPicker.launch("image/*")
             } catch (_: Throwable) {
-                toast("无法打开图片选择器")
+                toast(getString(R.string.u33))
             }
         }
         binding.btnClearBg.setOnClickListener {
             AppPrefs.customBackgroundPath = ""
             BgUtils.apply(binding.root)
             NekoLog.adjust("恢复默认背景")
-            toast("已恢复默认背景")        }
+            toast(getString(R.string.u41))        }
 
         // ---- 外观（主题） ----
         binding.themeGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
@@ -148,7 +148,7 @@ class SettingsActivity : AppCompatActivity() {
             if (!checked && AppPrefs.lockEnabled) {
                 // 密码锁定：开机自启保持开启（防杀后台的一部分，重启后自动复活）
                 NekoLog.warn("密码锁定中：开机自启保持开启")
-                toast("密码锁定中，开机自启保持开启")
+                toast(getString(R.string.u20))
                 binding.swAutoStart.isChecked = true
                 return@setOnCheckedChangeListener
             }
@@ -160,7 +160,7 @@ class SettingsActivity : AppCompatActivity() {
         binding.btnExportConfig.setOnClickListener {
             val text = AppPrefs.exportConfigText()
             if (text.isEmpty()) {
-                toast("导出失败")
+                toast(getString(R.string.u40))
                 return@setOnClickListener
             }
             // 先复制到剪贴板兜底，再弹出分享
@@ -171,10 +171,10 @@ class SettingsActivity : AppCompatActivity() {
             NekoLog.info("导出配置")
             val send = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
-                putExtra(Intent.EXTRA_SUBJECT, "NekoType 配置")
+                putExtra(Intent.EXTRA_SUBJECT, getString(R.string.u123))
                 putExtra(Intent.EXTRA_TEXT, text)
             }
-            startActivity(Intent.createChooser(send, "分享 NekoType 配置"))
+            startActivity(Intent.createChooser(send, getString(R.string.u124)))
         }
         binding.btnImportConfig.setOnClickListener { showImportDialog() }
 
@@ -191,8 +191,8 @@ class SettingsActivity : AppCompatActivity() {
             sendFeedbackEmail()
         }
         binding.btnCopyGroup.setOnClickListener {
-            NekoLog.info("复制 QQ 频道号：pd43973125")
-            copyToClipboard("pd43973125")
+            NekoLog.info("复制 QQ 频道号：4ldb0biz5")
+            copyToClipboard("4ldb0biz5")
             tryOpenQqChannel()
         }
 
@@ -201,19 +201,53 @@ class SettingsActivity : AppCompatActivity() {
         refreshStatsDaily()
     }
 
-    /** 右上角菜单：「日志」入口（位于 NekoType 设置标题右侧） */
+    /** 右上角菜单：「语言」+「日志」入口（语言在左，日志在右） */
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menu.add(0, 1, 0, "日志").setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+        menu.add(0, 2, 0, getString(R.string.u125)).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+        menu.add(0, 1, 1, getString(R.string.u126)).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
         return super.onCreateOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == 2) {
+            showLanguageDialog()
+            return true
+        }
         if (item.itemId == 1) {
             NekoLog.nav("打开日志页")
             startActivity(Intent(this, LogActivity::class.java))
             return true
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    /** 语言切换对话框：简体中文 / 繁體中文 / English（确定后应用） */
+    private fun showLanguageDialog() {
+        val tags = arrayOf("zh", "zh-TW", "en")
+        val langs = arrayOf("简体中文", "繁體中文", "English")
+        val checked = when (AppCompatDelegate.getApplicationLocales().toLanguageTags()) {
+            "zh-TW" -> 1
+            "en" -> 2
+            else -> 0
+        }
+        var chosen = checked
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.u52))
+            .setSingleChoiceItems(langs, checked) { _, which ->
+                chosen = which
+            }
+            .setPositiveButton(getString(R.string.u71)) { _, _ ->
+                try {
+                    AppCompatDelegate.setApplicationLocales(
+                        androidx.core.os.LocaleListCompat.forLanguageTags(tags[chosen])
+                    )
+                    NekoLog.adjust("语言切换为：${langs[chosen]}")
+                } catch (_: Throwable) {
+                    toast(getString(R.string.u14))
+                }
+            }
+            .setNegativeButton(getString(R.string.u72), null)
+            .show()
     }
 
     override fun onResume() {
@@ -238,13 +272,13 @@ class SettingsActivity : AppCompatActivity() {
         val fmt = java.text.SimpleDateFormat("MM-dd", java.util.Locale.getDefault())
         val today = fmt.format(java.util.Date())
         val sb = StringBuilder()
-        sb.append("今日变换：").append(stats[today] ?: 0).append(" 次（累计 ").append(AppPrefs.transformCount).append(" 次）\n\n最近 7 天：\n")
+        sb.append(getString(R.string.u127, stats[today] ?: 0, AppPrefs.transformCount))
         val cal = java.util.Calendar.getInstance()
         for (i in 6 downTo 0) {
             cal.timeInMillis = System.currentTimeMillis()
             cal.add(java.util.Calendar.DAY_OF_YEAR, -i)
             val day = fmt.format(cal.time)
-            sb.append("  ").append(day).append("：").append(stats[day] ?: 0).append(" 次\n")
+            sb.append(getString(R.string.u128, day, stats[day] ?: 0))
         }
         binding.tvStatsDaily.text = sb.toString()
     }
@@ -252,7 +286,7 @@ class SettingsActivity : AppCompatActivity() {
     /** 导入配置对话框（可从剪贴板粘贴） */
     private fun showImportDialog() {
         val et = EditText(this).apply {
-            hint = "粘贴 NekoType 配置文本"
+            hint = getString(R.string.u129)
             minLines = 4
             maxLines = 6
             gravity = android.view.Gravity.TOP
@@ -268,18 +302,18 @@ class SettingsActivity : AppCompatActivity() {
         // 自定义布局：输入框 + 导入/取消按钮（按钮固定可见，不受系统对话框按钮渲染问题影响）
         var dialogRef: AlertDialog? = null
         val btnImport = com.google.android.material.button.MaterialButton(this).apply {
-            text = "导入"
+            text = getString(R.string.u130)
             layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             setOnClickListener {
                 val text = et.text.toString().trim()
-                if (text.isEmpty()) { toast("内容为空"); return@setOnClickListener }
+                if (text.isEmpty()) { toast(getString(R.string.u9)); return@setOnClickListener }
                 val err = AppPrefs.importConfigText(text)
                 if (err != null) {
                     NekoLog.error("导入配置失败：$err")
                     toast(err)
                 } else {
                     NekoLog.ok("配置导入成功")
-                    toast("配置导入成功")
+                    toast(getString(R.string.u0))
                     applyThemeMode()
                     refreshStatsDaily()
                     BgUtils.apply(binding.root)
@@ -288,7 +322,7 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
         val btnCancel = com.google.android.material.button.MaterialButton(this).apply {
-            text = "取消"
+            text = getString(R.string.u72)
             layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             setOnClickListener { dialogRef?.dismiss() }
         }
@@ -309,8 +343,8 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         val dialog = AlertDialog.Builder(this)
-            .setTitle("导入配置")
-            .setMessage("粘贴从「导出配置」得到的文本")
+            .setTitle(getString(R.string.u39))
+            .setMessage(getString(R.string.u42))
             .setView(content)
             .create()
         dialogRef = dialog
@@ -348,9 +382,9 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun themeLabel(m: String): String = when (m) {
-        "dark" -> "深色"
-        "light" -> "浅色"
-        else -> "跟随系统"
+        "dark" -> getString(R.string.u131)
+        "light" -> getString(R.string.u132)
+        else -> getString(R.string.u133)
     }
 
     private fun refreshTheme() {
@@ -362,22 +396,22 @@ class SettingsActivity : AppCompatActivity() {
             }
         )
         binding.tvThemeHint.text = when (AppPrefs.themeMode) {
-            "dark" -> "深色模式：纯黑界面"
-            "light" -> "浅色模式：明亮界面"
-            else -> "跟随系统：随系统深色/浅色设置自动切换"
+            "dark" -> getString(R.string.u134)
+            "light" -> getString(R.string.u135)
+            else -> getString(R.string.u136)
         }
     }
 
     private fun buildDetails(rootOk: Boolean): String {
         val sb = StringBuilder()
-        sb.append("悬浮窗权限：").append(if (Settings.canDrawOverlays(this)) "✓ 已授予" else "✗ 未授予").append('\n')
-        sb.append("无障碍服务：").append(if (isAccessibilityEnabled()) "✓ 已开启" else "✗ 未开启").append('\n')
-        sb.append("电池优化：").append(if (SysPower.isIgnoringBatteryOptimizations()) "✓ 已免电" else "✗ 未免电").append('\n')
-        sb.append("Shizuku：").append(if (SysPower.isShizukuAvailable()) "✓ 可用" else "✗ 未检测到").append('\n')
-        sb.append("Root：").append(if (rootOk) "✓ 可用" else "✗ 未检测到").append('\n')
-        sb.append("设备管理员：").append(if (SysPower.isDeviceAdminActive()) "✓ 已激活" else "✗ 未激活").append('\n')
-        sb.append("服务状态：").append(if (AppPrefs.serviceEnabled) "● 运行中" else "○ 已停止").append('\n')
-        sb.append("累计变换：").append(AppPrefs.transformCount).append(" 次")
+        sb.append(getString(R.string.u137)).append(if (Settings.canDrawOverlays(this)) getString(R.string.u138) else getString(R.string.u139)).append('\n')
+        sb.append(getString(R.string.u140)).append(if (isAccessibilityEnabled()) getString(R.string.u141) else getString(R.string.u142)).append('\n')
+        sb.append(getString(R.string.u143)).append(if (SysPower.isIgnoringBatteryOptimizations()) getString(R.string.u144) else getString(R.string.u145)).append('\n')
+        sb.append(getString(R.string.u146)).append(if (SysPower.isShizukuAvailable()) getString(R.string.u147) else getString(R.string.u148)).append('\n')
+        sb.append(getString(R.string.u149)).append(if (rootOk) getString(R.string.u147) else getString(R.string.u148)).append('\n')
+        sb.append(getString(R.string.u150)).append(if (SysPower.isDeviceAdminActive()) getString(R.string.u151) else getString(R.string.u152)).append('\n')
+        sb.append(getString(R.string.u153)).append(if (AppPrefs.serviceEnabled) getString(R.string.u97) else getString(R.string.u98)).append('\n')
+        sb.append(getString(R.string.u154, AppPrefs.transformCount))
         return sb.toString()
     }
 
@@ -385,7 +419,7 @@ class SettingsActivity : AppCompatActivity() {
         val info = packageManager.getPackageInfo(packageName, 0)
         val versionName = info.versionName ?: "?"
         val versionCode = if (Build.VERSION.SDK_INT >= 28) info.longVersionCode.toString() else info.versionCode.toString()
-        binding.tvVersion.text = "版本名：$versionName\n版本号：$versionCode\n最低系统：Android 8.0（API 26）\n目标系统：Android 14（API 34）\n包名：$packageName"
+        binding.tvVersion.text = getString(R.string.u155, versionName, versionCode, packageName)
     }
 
     private fun isAccessibilityEnabled(): Boolean {
@@ -406,10 +440,10 @@ class SettingsActivity : AppCompatActivity() {
             adjustViewBounds = true
         }
         AlertDialog.Builder(this)
-            .setTitle("赞助支持")
-            .setMessage("喜欢 NekoType 的话，赞助一下开发者吧！")
+            .setTitle(getString(R.string.u44))
+            .setMessage(getString(R.string.u31))
             .setView(img)
-            .setPositiveButton("关闭", null)
+            .setPositiveButton(getString(R.string.u156), null)
             .show()
     }
 
@@ -418,31 +452,30 @@ class SettingsActivity : AppCompatActivity() {
         try {
             val info = packageManager.getPackageInfo(packageName, 0)
             val version = "${info.versionName} (${if (Build.VERSION.SDK_INT >= 28) info.longVersionCode else info.versionCode})"
-            val subject = "NekoType 建议反馈"
-            val body = "版本：$version\n设备：${Build.MANUFACTURER} ${Build.MODEL} · Android ${Build.VERSION.RELEASE}\nShizuku：${if (SysPower.isShizukuPermissionGranted()) "已授权" else "未授权"}\n\n建议/问题：\n"
+            val subject = getString(R.string.u157)
+            val body = getString(R.string.u158, version, Build.MANUFACTURER, Build.MODEL, Build.VERSION.RELEASE, if (SysPower.isShizukuPermissionGranted()) getString(R.string.u109) else getString(R.string.u108))
             val intent = Intent(Intent.ACTION_SENDTO).apply {
                 data = Uri.parse("mailto:TR114512@qq.com")
                 putExtra(Intent.EXTRA_SUBJECT, subject)
                 putExtra(Intent.EXTRA_TEXT, body)
             }
-            startActivity(Intent.createChooser(intent, "发送反馈"))
+            startActivity(Intent.createChooser(intent, getString(R.string.u159)))
         } catch (_: Throwable) {
-            toast("未找到邮件应用，请手动发送至 TR114512@qq.com")
+            toast(getString(R.string.u58))
             copyToClipboard("TR114512@qq.com")
         }
     }
 
-    /** 复制群号，并尝试拉起 QQ 群卡片 */
     /** 复制频道号，并尝试拉起 QQ 频道 */
     private fun tryOpenQqChannel() {
         try {
             val intent = Intent(
                 Intent.ACTION_VIEW,
-                Uri.parse("https://pd.qq.com/s/pd43973125")
+                Uri.parse("https://pd.qq.com/s/4ldb0biz5?b=9")
             )
             startActivity(intent)
         } catch (_: Throwable) {
-            toast("频道号已复制：pd43973125，请在 QQ 中搜索加入")
+            toast(getString(R.string.u57))
         }
     }
 
@@ -450,7 +483,7 @@ class SettingsActivity : AppCompatActivity() {
         try {
             val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             cm.setPrimaryClip(ClipData.newPlainText("nekotype", text))
-            toast("已复制：$text")
+            toast(getString(R.string.u15, text))
         } catch (_: Throwable) { }
     }
 

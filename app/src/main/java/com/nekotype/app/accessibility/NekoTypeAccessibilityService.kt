@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import com.nekotype.app.overlay.FloatingButtonService
+import com.nekotype.app.R
 import com.nekotype.app.prefs.AppPrefs
 import com.nekotype.app.sys.SysPower
 import com.nekotype.app.transform.TextTransformEngine
@@ -176,8 +177,8 @@ class NekoTypeAccessibilityService : AccessibilityService() {
             val appLabel = try {
                 if (pkg != null) {
                     packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
-                } else "未知应用"
-            } catch (_: Throwable) { pkg ?: "未知应用" }
+                } else getString(R.string.u163)
+            } catch (_: Throwable) { pkg ?: getString(R.string.u163) }
             NekoLog.ok("在「$appLabel」中已变换发送（${ruleCount} 条规则生效，累计 ${AppPrefs.transformCount} 次）")
 
             if (AppPrefs.autoSend) {
@@ -297,8 +298,8 @@ class NekoTypeAccessibilityService : AccessibilityService() {
             val appLabel = try {
                 val pkg = src.packageName?.toString()
                 if (pkg != null) packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
-                else "未知应用"
-            } catch (_: Throwable) { "未知应用" }
+                else getString(R.string.u163)
+            } catch (_: Throwable) { getString(R.string.u163) }
             NekoLog.ok("强制篡改键盘：在「$appLabel」自动变换为「${r.text}」")
 
             if (AppPrefs.autoSend) {

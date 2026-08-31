@@ -2,6 +2,7 @@ package com.nekotype.app.prefs
 
 import android.content.Context
 import com.nekotype.app.NekoTypeApp
+import com.nekotype.app.R
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -47,14 +48,14 @@ object AppPrefs {
         get() = sp.getBoolean("emoticon", false)
         set(v) = sp.edit().putBoolean("emoticon", v).apply()
 
-    enum class RuleType(val label: String) {
-        PREFIX("前缀"),
-        SUFFIX("后缀"),
-        RANDOM_PREFIX("随机前缀"),
-        RANDOM_SUFFIX("随机后缀"),
-        SUFFIX_EACH("每句后缀"),
-        RANDOM_EMOTICON("随机颜文字"),
-        REPLACE("替换文本");
+    enum class RuleType(val label: String, val resId: Int) {
+        PREFIX("前缀", com.nekotype.app.R.string.rule_prefix),
+        SUFFIX("后缀", com.nekotype.app.R.string.rule_suffix),
+        RANDOM_PREFIX("随机前缀", com.nekotype.app.R.string.rule_rand_prefix),
+        RANDOM_SUFFIX("随机后缀", com.nekotype.app.R.string.rule_rand_suffix),
+        SUFFIX_EACH("每句后缀", com.nekotype.app.R.string.rule_suffix_each),
+        RANDOM_EMOTICON("随机颜文字", com.nekotype.app.R.string.rule_emoticon),
+        REPLACE("替换文本", com.nekotype.app.R.string.rule_replace);
 
         companion object {
             fun fromName(name: String): RuleType =
@@ -438,7 +439,7 @@ object AppPrefs {
         return try {
             val o = JSONObject(text)
             if (o.optString("app") != "NekoType") {
-                "不是有效的 NekoType 配置文件"
+                NekoTypeApp.instance.getString(R.string.u174)
             } else {
                 o.optJSONArray("rules")?.let { replaceRulesJson(it.toString()) }
                 o.optJSONObject("behaviors")?.let { b ->
@@ -457,7 +458,7 @@ object AppPrefs {
                 null
             }
         } catch (t: Throwable) {
-            "导入失败：${t.message}"
+            NekoTypeApp.instance.getString(R.string.u175, t.message)
         }
     }
 
@@ -544,12 +545,12 @@ object AppPrefs {
                     line.startsWith("开机自启：") -> { anyData = true; autoStartEnabled = onOffValue(line.removePrefix("开机自启：")) }
                 }
             }
-            if (!anyData) return "无法识别配置内容"
+            if (!anyData) return NekoTypeApp.instance.getString(R.string.u176)
             // 用解析出的规则替换当前预设的规则
             updateActivePreset { it.copy(rules = newRules) }
             return null
         } catch (t: Throwable) {
-            return "导入失败：${t.message}"
+            return NekoTypeApp.instance.getString(R.string.u175, t.message)
         }
     }
 

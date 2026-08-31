@@ -320,9 +320,9 @@ class FloatingButtonService : Service() {
             val mgr = getSystemService(NotificationManager::class.java)
             if (mgr.getNotificationChannel(CHANNEL_ID) == null) {
                 val ch = NotificationChannel(
-                    CHANNEL_ID, "NekoType 悬浮按钮",
+                    CHANNEL_ID, getString(R.string.u166),
                     NotificationManager.IMPORTANCE_LOW
-                ).apply { description = "保持 NekoType 悬浮按钮常驻" }
+                ).apply { description = getString(R.string.u167) }
                 mgr.createNotificationChannel(ch)
             }
         }
@@ -348,11 +348,11 @@ class FloatingButtonService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("NekoType 运行中")
-            .setContentText("悬浮按钮常驻屏幕边缘，点击自动改写并发送")
+            .setContentTitle(getString(R.string.notif_title))
+            .setContentText(getString(R.string.notif_text))
             .setSmallIcon(R.drawable.ic_neko)
             .setContentIntent(openPi)
-            .addAction(0, "停止服务", stopPi)
+            .addAction(0, getString(R.string.notif_stop), stopPi)
             .setOngoing(true)
             .build()
     }
@@ -435,7 +435,7 @@ class FloatingButtonService : Service() {
             if (glass) setImageAlpha(204)
             setOnClickListener { onNekoButtonClick() }
             setOnTouchListener(DragTouchListener(p))
-            contentDescription = "NekoType 变换发送按钮"
+            contentDescription = getString(R.string.u168)
         }
         params = p
         button = btn
@@ -538,16 +538,16 @@ class FloatingButtonService : Service() {
         when {
             !NekoTypeAccessibilityBridge.isServiceReady() -> {
                 NekoLog.warn("点击按钮：无障碍服务未开启")
-                Toast.makeText(this, "请先开启无障碍服务（App 权限引导第 1 步）", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.u169), Toast.LENGTH_SHORT).show()
             }
             !NekoTypeAccessibilityBridge.hasActiveNode() -> {
                 NekoLog.warn("点击按钮：未检测到输入框焦点")
-                Toast.makeText(this, "请先点一下输入框，再点本按钮", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.u170), Toast.LENGTH_SHORT).show()
             }
             else -> {
                 // 委托给无障碍服务桥接层：读取当前输入框 → 变换 → 写入 → 发送
                 NekoTypeAccessibilityBridge.requestTransformAndSend()
-                Toast.makeText(this, "✓ 已变换并发送", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.u171), Toast.LENGTH_SHORT).show()
             }
         }
         scheduleCollapse()

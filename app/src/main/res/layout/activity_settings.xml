@@ -29,7 +29,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="外观"
+                    android:text="@string/t74"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
@@ -47,7 +47,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:minHeight="44dp"
-                        android:text="跟随系统"/>
+                        android:text="@string/t75"/>
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnThemeDark"
                         style="@style/Widget.Material3.Button.TonalButton"
@@ -55,7 +55,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:minHeight="44dp"
-                        android:text="深色"/>
+                        android:text="@string/t76"/>
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnThemeLight"
                         style="@style/Widget.Material3.Button.TonalButton"
@@ -63,7 +63,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:minHeight="44dp"
-                        android:text="浅色"/>
+                        android:text="@string/t77"/>
                 </com.google.android.material.button.MaterialButtonToggleGroup>
                 <TextView
                     android:id="@+id/tvThemeHint"
@@ -89,7 +89,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="自定义背景"
+                        android:text="@string/t78"
                         android:textSize="15sp"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.button.MaterialButton
@@ -99,7 +99,7 @@
                         android:layout_height="wrap_content"
                         android:minWidth="0dp"
                         android:minHeight="0dp"
-                        android:text="选择图片"/>
+                        android:text="@string/t79"/>
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnClearBg"
                         style="@style/Widget.Material3.Button.TextButton"
@@ -107,12 +107,12 @@
                         android:layout_height="wrap_content"
                         android:minWidth="0dp"
                         android:minHeight="0dp"
-                        android:text="恢复默认"/>
+                        android:text="@string/t80"/>
                 </LinearLayout>
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="选择一张图片作为应用背景（仅保存在本地）"
+                    android:text="@string/t81"
                     android:textSize="11sp"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:paddingBottom="4dp"/>
@@ -137,7 +137,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="悬浮按钮"
+                    android:text="@string/t82"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
@@ -152,14 +152,14 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="大小"
+                        android:text="@string/t83"
                         android:textSize="14sp"
                         android:textColor="?attr/colorOnSurface"/>
                     <TextView
                         android:id="@+id/tvFabSize"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="56dp"
+                        android:text="@string/t84"
                         android:textSize="14sp"
                         android:textColor="?attr/colorPrimary"/>
                 </LinearLayout>
@@ -181,14 +181,14 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="透明度"
+                        android:text="@string/t85"
                         android:textSize="14sp"
                         android:textColor="?attr/colorOnSurface"/>
                     <TextView
                         android:id="@+id/tvFabOpacity"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="100%"
+                        android:text="@string/t86"
                         android:textSize="14sp"
                         android:textColor="?attr/colorPrimary"/>
                 </LinearLayout>
@@ -204,7 +204,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="修改后立即生效"
+                    android:text="@string/t87"
                     android:textSize="11sp"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="2dp"/>
@@ -225,7 +225,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="空闲时收起成小圆点"
+                        android:text="@string/t88"
                         android:textSize="15sp"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
@@ -236,7 +236,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="5 秒无操作自动缩成小圆点，点击展开"
+                    android:text="@string/t89"
                     android:textSize="11sp"
                     android:textColor="?attr/colorOnSurfaceVariant"/>
 
@@ -250,7 +250,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="柔光玻璃效果"
+                        android:text="@string/t90"
                         android:textSize="15sp"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
@@ -261,7 +261,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="半透明渐变 + 柔光高光（安全实现，不影响其他应用）"
+                    android:text="@string/t91"
                     android:textSize="11sp"
                     android:textColor="?attr/colorOnSurfaceVariant"/>
             </LinearLayout>
@@ -288,7 +288,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="高级"
+                    android:text="@string/t92"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"
@@ -304,7 +304,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="开机自启"
+                        android:text="@string/t93"
                         android:textSize="15sp"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
@@ -315,7 +315,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="开机后自动拉起悬浮服务（需开启服务后生效）"
+                    android:text="@string/t94"
                     android:textSize="11sp"
                     android:textColor="?attr/colorOnSurfaceVariant"/>
             </LinearLayout>
@@ -339,7 +339,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="每日统计"
+                    android:text="@string/t95"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
@@ -373,7 +373,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="数据"
+                    android:text="@string/t96"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
@@ -391,7 +391,7 @@
                         android:layout_marginEnd="6dp"
                         android:minHeight="44dp"
                         android:textSize="13sp"
-                        android:text="导出配置"/>
+                        android:text="@string/t97"/>
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnImportConfig"
                         style="@style/Widget.Material3.Button.TonalButton"
@@ -401,12 +401,12 @@
                         android:layout_marginStart="6dp"
                         android:minHeight="44dp"
                         android:textSize="13sp"
-                        android:text="导入配置"/>
+                        android:text="@string/t98"/>
                 </LinearLayout>
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="导出全部规则与设置（分享/换机），导入后立即生效"
+                    android:text="@string/t99"
                     android:textSize="11sp"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="6dp"/>
@@ -431,14 +431,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="应用黑名单"
+                    android:text="@string/t100"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="黑名单内的应用不自动篡改（强制篡改键盘 / 静默修改自动注入不生效），悬浮球手动不受限"
+                    android:text="@string/t101"
                     android:textSize="11sp"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="4dp"/>
@@ -450,7 +450,7 @@
                     android:layout_marginTop="10dp"
                     android:minHeight="44dp"
                     android:textSize="13sp"
-                    android:text="管理应用黑名单"/>
+                    android:text="@string/t102"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -472,7 +472,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="详细信息"
+                    android:text="@string/t103"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
@@ -506,7 +506,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="版本信息"
+                    android:text="@string/t104"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
@@ -540,7 +540,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="关于"
+                    android:text="@string/t105"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
@@ -551,7 +551,7 @@
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:lineSpacingExtra="6dp"
                     android:layout_marginTop="8dp"
-                    android:text="QQ 频道：pd43973125\n邮箱：TR114512@qq.com"
+                    android:text="@string/t106"
                     android:textIsSelectable="true"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -574,7 +574,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="支持与反馈"
+                    android:text="@string/t107"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
@@ -582,7 +582,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="赞助支持（点按可放大）"
+                    android:text="@string/t108"
                     android:textSize="12sp"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="10dp"/>
@@ -605,7 +605,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:minHeight="46dp"
-                    android:text="意见反馈"
+                    android:text="@string/t109"
                     android:textSize="13sp"/>
 
                 <LinearLayout
@@ -619,7 +619,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="QQ 频道：pd43973125"
+                        android:text="@string/t110"
                         android:textSize="14sp"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.button.MaterialButton
@@ -629,7 +629,7 @@
                         android:layout_height="wrap_content"
                         android:minWidth="0dp"
                         android:minHeight="0dp"
-                        android:text="复制群号"/>
+                        android:text="@string/t111"/>
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -652,7 +652,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="隐私政策"
+                    android:text="@string/t112"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
@@ -663,7 +663,7 @@
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:lineSpacingExtra="5dp"
                     android:layout_marginTop="8dp"
-                    android:text="本应用（NekoType）高度重视你的隐私，特此说明：\n\n1. 本地处理：所有消息文本的读取、变换、发送均在设备本地完成，应用不联网、不上传、不存储任何输入内容。\n\n2. 权限用途：\n· 无障碍：仅用于读取当前输入框文本、执行文本替换与触发发送；不读取密码框（系统对密码框本身不向无障碍服务暴露内容）。\n· 悬浮窗：用于显示悬浮按钮。\n· 电池优化：用于保持服务后台常驻。\n· 设备管理员 / Shizuku / Root：可选项，仅在你主动授权后用于执行系统命令（如电池优化白名单）。\n\n3. 第三方：本应用不含任何第三方统计、广告或追踪 SDK。\n\n4. 撤销权限：你可在系统设置中随时撤销任何已授予的权限。\n\n5. 联系方式：TR114512@qq.com"
+                    android:text="@string/t113"
                     android:textIsSelectable="true"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

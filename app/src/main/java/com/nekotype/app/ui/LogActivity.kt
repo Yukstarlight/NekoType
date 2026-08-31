@@ -45,7 +45,7 @@ class LogActivity : AppCompatActivity() {
         binding.swLogEnabled.isChecked = AppPrefs.logEnabled
         binding.swLogEnabled.setOnCheckedChangeListener { _, checked ->
             AppPrefs.logEnabled = checked
-            toast(if (checked) "日志记录已开启" else "日志记录已关闭")
+            toast(if (checked) getString(R.string.u116) else getString(R.string.u117))
             loadSysLog()
         }
 
@@ -87,9 +87,9 @@ class LogActivity : AppCompatActivity() {
             if (binding.scrollAppLog.visibility == View.VISIBLE) {
                 NekoLog.clear()
                 refreshAppLog()
-                toast("应用日志已清空")
+                toast(getString(R.string.u4))
             } else {
-                toast("系统日志由系统管理，无法清空（可点「刷新」更新）")
+                toast(getString(R.string.u37))
             }
         }
 
@@ -123,20 +123,20 @@ class LogActivity : AppCompatActivity() {
     /** 直接抓取本应用进程的底层系统日志（logcat），可开关轻汉化 */
     private fun loadSysLog() {
         if (!AppPrefs.logEnabled) {
-            binding.tvSysLog.text = "日志记录已关闭，可在上方开启"
+            binding.tvSysLog.text = getString(R.string.u118)
             return
         }
-        binding.tvSysLog.text = "正在读取系统日志…"
+        binding.tvSysLog.text = getString(R.string.u119)
         Thread {
             val text = try {
                 val pid = Process.myPid()
                 val p = Runtime.getRuntime().exec(arrayOf("logcat", "-d", "--pid=$pid", "-t", "500"))
                 val out = p.inputStream.bufferedReader().readText()
                 p.waitFor()
-                if (out.isBlank()) "（本应用进程暂无系统日志）"
+                if (out.isBlank()) getString(R.string.u120)
                 else if (AppPrefs.logLocalize) localizeLogcat(out) else out
             } catch (t: Throwable) {
-                "读取系统日志失败：${t.message}"
+                getString(R.string.u121, t.message)
             }
             runOnUiThread { binding.tvSysLog.text = text }
         }.start()
@@ -169,7 +169,7 @@ class LogActivity : AppCompatActivity() {
     private fun refreshAppLog() {
         val logs = NekoLog.entries()
         if (logs.isEmpty()) {
-            binding.tvLog.text = "暂无应用日志"
+            binding.tvLog.text = getString(R.string.u122)
             binding.tvLog.setTextColor(ContextCompat.getColor(this, R.color.fg_2))
             return
         }
@@ -209,13 +209,13 @@ class LogActivity : AppCompatActivity() {
         } else {
             NekoLog.entries().joinToString("\n") { "[${it.timeText()}] ${it.msg}" }
         }
-        if (text.isBlank() || text.contains("暂无") || text.contains("已关闭")) {
-            toast("暂无可复制的内容")
+        if (text.isBlank() || text == getString(R.string.u118) || text == getString(R.string.u120) || text == getString(R.string.u122)) {
+            toast(getString(R.string.u55))
             return
         }
         val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         cm.setPrimaryClip(ClipData.newPlainText("nekotype_log", text))
-        toast("日志已复制")
+        toast(getString(R.string.u47))
     }
 
     private fun toast(msg: String) {

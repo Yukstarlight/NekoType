@@ -50,12 +50,12 @@ class BlacklistActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.btnSelectAll).setOnClickListener {
             apps.forEach { AppPrefs.addBlacklist(it.first.packageName) }
             adapter.notifyDataSetChanged()
-            toast("已全选：${apps.size} 个应用加入黑名单")
+            toast(getString(R.string.u16, apps.size))
         }
         findViewById<TextView>(R.id.btnClearAll).setOnClickListener {
             apps.forEach { AppPrefs.removeBlacklist(it.first.packageName) }
             adapter.notifyDataSetChanged()
-            toast("已清空黑名单")
+            toast(getString(R.string.u48))
         }
 
         // 应用列表
@@ -78,8 +78,8 @@ class BlacklistActivity : AppCompatActivity() {
     private fun updateHint() {
         val cnt = AppPrefs.blacklist().size
         findViewById<TextView>(R.id.tvBlacklistHint).text =
-            if (AppPrefs.blacklistEnabled) "已启用：黑名单内 $cnt 个应用不自动篡改（悬浮球手动不受限）"
-            else "未启用：所有应用都自动篡改（可先开启开关）"
+            if (AppPrefs.blacklistEnabled) getString(R.string.u160, cnt)
+            else getString(R.string.u161)
     }
 
     private fun loadApps() {

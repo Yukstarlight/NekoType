@@ -17,14 +17,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="运行日志"
+            android:text="@string/t114"
             android:textSize="17sp"
             android:textStyle="bold"
             android:textColor="?attr/colorOnSurface"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="记录"
+            android:text="@string/t115"
             android:textSize="12sp"
             android:textColor="?attr/colorOnSurfaceVariant"/>
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -34,7 +34,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="轻汉化"
+            android:text="@string/t116"
             android:textSize="12sp"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:layout_marginStart="8dp"/>
@@ -58,7 +58,7 @@
             android:layout_height="wrap_content"
             android:minWidth="0dp"
             android:minHeight="0dp"
-            android:text="刷新"/>
+            android:text="@string/t117"/>
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnShrinkFont"
             style="@style/Widget.Material3.Button.TextButton"
@@ -66,7 +66,7 @@
             android:layout_height="wrap_content"
             android:minWidth="0dp"
             android:minHeight="0dp"
-            android:text="缩小字体"/>
+            android:text="@string/t118"/>
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnGrowFont"
             style="@style/Widget.Material3.Button.TextButton"
@@ -74,7 +74,7 @@
             android:layout_height="wrap_content"
             android:minWidth="0dp"
             android:minHeight="0dp"
-            android:text="放大字体"/>
+            android:text="@string/t119"/>
         <View
             android:layout_width="0dp"
             android:layout_height="1dp"
@@ -86,7 +86,7 @@
             android:layout_height="wrap_content"
             android:minWidth="0dp"
             android:minHeight="0dp"
-            android:text="复制"/>
+            android:text="@string/t120"/>
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnClearLog"
             style="@style/Widget.Material3.Button.TextButton"
@@ -94,7 +94,7 @@
             android:layout_height="wrap_content"
             android:minWidth="0dp"
             android:minHeight="0dp"
-            android:text="清空"/>
+            android:text="@string/t121"/>
     </LinearLayout>
 
     <!-- 模式切换：系统日志 / 应用日志 -->
@@ -112,7 +112,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:minHeight="40dp"
-            android:text="系统日志"/>
+            android:text="@string/t122"/>
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnModeApp"
             style="@style/Widget.Material3.Button.TonalButton"
@@ -120,7 +120,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:minHeight="40dp"
-            android:text="应用日志"/>
+            android:text="@string/t123"/>
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <!-- 日志内容 -->

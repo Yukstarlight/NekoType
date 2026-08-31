@@ -15,6 +15,7 @@ import android.os.Messenger
 import android.os.PowerManager
 import android.provider.Settings
 import com.nekotype.app.NekoTypeApp
+import com.nekotype.app.R
 import com.nekotype.app.admin.NekoTypeDeviceAdminReceiver
 import com.nekotype.app.prefs.AppPrefs
 import com.nekotype.app.shizuku.NekoShellService
@@ -137,7 +138,7 @@ object SysPower {
         try {
             val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
                 putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
-                putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "NekoType 需要设备管理员权限以获得更强的系统级能力（可选）。")
+                putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, NekoTypeApp.instance.getString(R.string.u162))
             }
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             NekoTypeApp.instance.startActivity(intent)
@@ -175,7 +176,7 @@ object SysPower {
      * 请勿在主线程调用。
      */
     fun execShell(cmd: String): ExecResult {
-        return shizukuExec(cmd) ?: ExecResult(false, "Shizuku 通道不可用（未运行或未授权）", "none")
+        return shizukuExec(cmd) ?: ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
     }
 
     private fun rootExec(cmd: String): ExecResult? {

@@ -22,14 +22,14 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="应用黑名单"
+                android:text="@string/t100"
                 android:textSize="17sp"
                 android:textStyle="bold"
                 android:textColor="?attr/colorOnSurface"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="启用"
+                android:text="@string/t124"
                 android:textSize="12sp"
                 android:textColor="?attr/colorOnSurfaceVariant"/>
             <com.google.android.material.materialswitch.MaterialSwitch
@@ -68,7 +68,7 @@
                 android:id="@+id/btnSelectAll"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="全选"
+                android:text="@string/t125"
                 android:textSize="13sp"
                 android:textColor="?attr/colorPrimary"
                 android:gravity="center"
@@ -78,7 +78,7 @@
                 android:id="@+id/btnClearAll"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="清空"
+                android:text="@string/t121"
                 android:textSize="13sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:gravity="center"
