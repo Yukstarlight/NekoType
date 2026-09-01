@@ -14,3 +14,7 @@ dist/
 .idea/
 *.iml
 captures/
+
+# 构建日志（勿提交）
+build_*.txt
+build_*.log
