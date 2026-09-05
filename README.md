@@ -45,7 +45,7 @@ NekoType 是一款运行在 Android 上的系统级消息处理工具，核心�
 
 ### 静默修改
 
-* 当部分应用（如微信）拒绝无障碍改写文本时，自动改用 **Shizuku直接注入**，全程**无弹窗、无剪贴板提示**，改完即走
+* 当部分应用（如微信）拒绝无障碍改写文本时，自动改用 **Shizuku 直接注入**，全程**无弹窗、无剪贴板提示**，改完即走
 * 中文文本自动回退无障碍通道，两种方式互为兜底，尽可能保证每一次改写都成功且安静
 
 ### 悬浮按钮
@@ -54,6 +54,22 @@ NekoType 是一款运行在 Android 上的系统级消息处理工具，核心�
 * 按住拖动自由摆放、自动**边缘吸附**、位置持久记忆
 * 点击 = 变换 + 发送（可关闭自动发送，仅改写文本）；常驻通知栏，一键停止
 * 可选**柔光玻璃效果**、**空闲收起成小圆点**（5 秒无操作自动缩起，点击展开）、自定义大小与透明度
+
+### Mist Unveils Infinite Tomorrows 集成终端
+
+内置**完整终端**（设置 → 打开终端）
+
+* 基于 **Termux 终端引擎**（terminal-emulator / terminal-view）深度集成，PTY 真实交互
+* 460+ 命令：ls/cat/grep/tar/vi…），输入 `toybox --help` 查看全部命令
+* 内置 **JetBrains Mono 等宽字体**（不随系统字体变化），纯黑背景，14dp 舒适字号
+* 键盘自动弹出、单击屏幕唤起、随键盘自动缩放；BACK 键先收键盘再退出
+* 后续可扩展接入完整 Linux（proot 装 rootfs / Kali）
+
+### 应用黑名单
+
+* 独立黑名单页（设置 → 应用黑名单），列出所有已安装应用，勾选即加入
+* 黑名单内的应用**不自动篡改**（强制篡改键盘 / 静默修改自动注入均不生效），悬浮球手动点击不受限
+* 支持搜索过滤、一键全选 / 清空，勾选行高亮显示
 
 ### 智能发送
 
@@ -121,13 +137,15 @@ NekoType 是一款运行在 Android 上的系统级消息处理工具，核心�
 | 读取 / 改写其他 App 的 EditText | `AccessibilityNodeInfo.ACTION_SET_TEXT`（官方无障碍 API，带验证重试） |
 | 触发发送 | 三级策略：发送按钮点击 → IME 动作 → 全局手势 |
 | 悬浮按钮 | `TYPE_APPLICATION_OVERLAY` + `FLAG_ALT_FOCUSABLE_IM`，拖放 + 位置持久化 + 边缘吸附 |
-| 系统命令执行 | Root（`su`）或 Shizuku UserService（**Messenger 方案**，Shizuku 13 已移除 `newProcess`） |
+| 系统命令执行 | Shizuku UserService（**固定动作架构**：不接受任意命令，只暴露免电/注入/隐藏等写死操作，杜绝命令注入；Shizuku 13 已移除 `newProcess`） |
 | 规则存储 | 本地 SharedPreferences + JSON 序列化，多套预设互不干扰 |
-| 静默注入 | Shizuku/Root 执行 `input text` 直写聚焦输入框，绕过应用对无障碍的限制 |
+| 静默注入 | Shizuku 固定动作（全选 + `input text`）直写聚焦输入框，绕过应用对无障碍的限制 |
 | 防叠加篡改 | 增量原文算法：记录用户真实输入 + 上次写回内容，只合并新增部分后重新变换 |
 | 密码锁 | Argon2id 哈希 + Keystore AES-GCM 加密存储，验证通过才放行敏感操作 |
 | 图标隐藏 | Shizuku `pm hide --user 0`（Hail 同款）优先，无 Shizuku 回退 activity-alias 禁用 |
 | 防篡改 | 签名 SHA-256 校验 + Xposed/Frida 框架检测，异常即停并提示 |
+| 集成终端 | 复用 Termux 终端引擎（terminal-emulator/view）+ JNI PTY 真实交互，内置 JetBrains Mono 字体 |
+| 快捷磁贴 | `TileService` 下拉面板快捷开关 |
 
 全部基于 Android 官方公开 API 实现，**无私有 API、无 Xposed、无 Hook、无任何注入框架**。
 
@@ -153,6 +171,7 @@ NekoType 是一款运行在 Android 上的系统级消息处理工具，核心�
 3. 在「规则」页点「添加规则」创建前缀/后缀/随机/替换规则，随时开关与删除；可切换多套预设。
 4. 想全自动？在「行为与样式」开启**强制篡改键盘**（原生键盘打字即自动篡改）与**静默修改**（Shizuku 直写无弹窗）。
 5. 右上角设置：更换运行模式、切换语言、查看运行日志、导出/导入配置、查看详细信息 / 版本号、意见反馈、赞助支持、隐私政策。
+6. 想用终端？设置页顶部 **打开终端**（Mist Unveils Infinite Tomorrows 集成终端），内置 Termux 引擎 + JetBrains Mono，即开即用。
 
 * * *
 
