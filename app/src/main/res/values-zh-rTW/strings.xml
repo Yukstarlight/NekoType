@@ -321,4 +321,10 @@
     <string name="u160">已啟用：黑名單內 %1$s 個應用不自動篡改（懸浮球手動不受限）</string>
     <string name="u161">未啟用：所有應用都自動篡改（可先開啟開關）</string>
     <string name="u162">NekoType 需要裝置管理員權限以獲得更強的系統級能力（可選）。</string>
+    <string name="paste_text">貼上</string>
+    <string name="copy_text">複製</string>
+    <string name="text_selection_more">更多…</string>
+    <string name="t_terminal_title">Mist Unveils Infinite Tomorrows 整合終端</string>
+    <string name="t_terminal_open">開啟終端</string>
+    <string name="t_terminal_launch">啟動 Mist Unveils Infinite Tomorrows 整合終端（Beta）</string>
 </resources>

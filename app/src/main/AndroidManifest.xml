@@ -37,6 +37,14 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ui.TerminalActivity"
+            android:exported="true"
+            android:label="@string/t_terminal_title"
+            android:theme="@style/Theme.NekoType.Main"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|screenSize" />
+
         <!-- 桌面图标入口（隐藏模式：禁用此 alias 即图标消失；MainActivity 仍可被显式 Intent 启动） -->
         <activity-alias
             android:name=".MainActivityAlias"

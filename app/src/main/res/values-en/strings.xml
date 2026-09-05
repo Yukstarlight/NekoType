@@ -321,4 +321,10 @@
     <string name="u160">Enabled: %1$s apps in blacklist will not auto-tamper (floating button manual not limited)</string>
     <string name="u161">Disabled: all apps auto-tamper (enable the switch first)</string>
     <string name="u162">NekoType needs Device Admin permission for stronger system-level capabilities (optional).</string>
+    <string name="paste_text">Paste</string>
+    <string name="copy_text">Copy</string>
+    <string name="text_selection_more">More…</string>
+    <string name="t_terminal_title">Mist Unveils Infinite Tomorrows Terminal</string>
+    <string name="t_terminal_open">Open Terminal</string>
+    <string name="t_terminal_launch">Launch Mist Unveils Infinite Tomorrows Terminal (Beta)</string>
 </resources>

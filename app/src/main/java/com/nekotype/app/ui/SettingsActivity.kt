@@ -190,6 +190,14 @@ class SettingsActivity : AppCompatActivity() {
             NekoLog.info("发起意见反馈（邮件）")
             sendFeedbackEmail()
         }
+        binding.btnOpenTerminalTop.setOnClickListener {
+            NekoLog.nav("打开内嵌终端（MUIT集成终端）")
+            startActivity(Intent(this, TerminalActivity::class.java))
+        }
+        binding.btnOpenTerminal.setOnClickListener {
+            NekoLog.nav("打开内嵌终端（MUIT集成终端）")
+            startActivity(Intent(this, TerminalActivity::class.java))
+        }
         binding.btnCopyGroup.setOnClickListener {
             NekoLog.info("复制 QQ 频道号：4ldb0biz5")
             copyToClipboard("4ldb0biz5")

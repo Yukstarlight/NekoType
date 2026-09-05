@@ -67,20 +67,22 @@ object SysPower {
     }
 
     /**
-     * 通过 Shizuku UserService 执行命令（Messenger 方式）：
-     * 绑定 NekoShellService（运行在 Shizuku 服务进程，shell 权限）→ 发送命令 → 等待回复 → 解绑。
+     * 通过 Shizuku UserService 执行【固定动作】（Messenger 方式，安全审计后重构）：
+     * 不再传输任意 shell 命令，只发送固定动作类型 + 受限参数，
+     * 由 NekoShellService 内部执行写死的命令。
      * 返回 null 表示绑定失败/超时/未授权。
      */
-    private fun runShizukuCommand(cmd: String): String? {
+    private fun runShizukuAction(action: Int, data: Bundle? = null): String? {
         val app = NekoTypeApp.instance
         val args = Shizuku.UserServiceArgs(ComponentName(app, NekoShellService::class.java))
         val latch = CountDownLatch(1)
         var result: String? = null
+        var ok = false
 
-        // 客户端 Handler：接收服务端返回的执行结果（回调在主线程）
         val clientHandler = object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: Message) {
                 if (msg.what == NekoShellService.MSG_RESULT) {
+                    ok = msg.data.getBoolean(NekoShellService.KEY_OK, false)
                     result = msg.data.getString(NekoShellService.KEY_OUT)
                     latch.countDown()
                 }
@@ -90,35 +92,27 @@ object SysPower {
 
         val connection = object : ServiceConnection {
             override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
-                if (binder == null) {
-                    latch.countDown()
-                    return
-                }
+                if (binder == null) { latch.countDown(); return }
                 try {
-                    val msg = Message.obtain(null, NekoShellService.MSG_EXEC)
-                    msg.data = Bundle().apply { putString(NekoShellService.KEY_CMD, cmd) }
+                    val msg = Message.obtain(null, action)
+                    msg.data = data ?: Bundle()
                     msg.replyTo = clientMessenger
                     Messenger(binder).send(msg)
                 } catch (_: Throwable) {
                     latch.countDown()
                 }
             }
-
-            override fun onServiceDisconnected(name: ComponentName?) {
-                latch.countDown()
-            }
+            override fun onServiceDisconnected(name: ComponentName?) { latch.countDown() }
         }
 
         try {
             Shizuku.bindUserService(args, connection)
             if (!latch.await(8, TimeUnit.SECONDS)) return null
-            return result
+            return if (ok) result ?: "" else null
         } catch (_: Throwable) {
             return null
         } finally {
-            try {
-                Shizuku.unbindUserService(args, connection, true)
-            } catch (_: Throwable) { }
+            try { Shizuku.unbindUserService(args, connection, true) } catch (_: Throwable) { }
         }
     }
 
@@ -165,36 +159,26 @@ object SysPower {
         } catch (_: Throwable) { }
     }
 
-    /** 通过 Root/Shizuku 直接写入电池优化白名单，无需弹窗 */
-    fun grantBatteryWhitelistPrivileged(): ExecResult =
-        execShell("dumpsys deviceidle whitelist +${NekoTypeApp.instance.packageName}")
-
-    // ---------- 通用命令执行 ----------
-
-    /**
-     * 执行系统命令：只走 Shizuku 通道（唯一特权通道，已移除基础/Root 模式选择）。
-     * 请勿在主线程调用。
-     */
-    fun execShell(cmd: String): ExecResult {
-        return shizukuExec(cmd) ?: ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
+    /** 通过 Root/Shizuku 直接写入电池优化白名单，无需弹窗（固定动作，无任意命令通道） */
+    fun grantBatteryWhitelistPrivileged(): ExecResult {
+        val r = shizukuAction(NekoShellService.MSG_BATTERY_WHITELIST) ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
+        return ExecResult(true, r, "shizuku")
     }
 
-    private fun rootExec(cmd: String): ExecResult? {
-        return try {
-            val p = ProcessBuilder("su", "-c", cmd).redirectErrorStream(true).start()
-            val out = p.inputStream.bufferedReader().readText()
-            p.waitFor(10, TimeUnit.SECONDS)
-            ExecResult(p.exitValue() == 0, out.trim(), "root")
-        } catch (_: Throwable) {
-            null
-        }
+    /** 诊断：执行 id 确认特权通道（固定动作专用，仅供状态页显示通道信息） */
+    fun execIdForStatus(): ExecResult {
+        // 状态页仅需确认通道可达，用免电白名单动作探测即可（不做任意命令）
+        val ok = shizukuAction(NekoShellService.MSG_BATTERY_WHITELIST) != null
+        return ExecResult(ok, if (ok) "shell" else "", "shizuku")
     }
 
-    private fun shizukuExec(cmd: String): ExecResult? {
+    /** Shizuku 通道当前是否可用（静默修改的前提） */
+    fun privilegedChannelReady(): Boolean = isShizukuAvailable() && isShizukuPermissionGranted()
+
+    private fun shizukuAction(action: Int, data: Bundle? = null): String? {
         return try {
             if (!isShizukuAvailable() || !isShizukuPermissionGranted()) return null
-            val out = runShizukuCommand(cmd) ?: return null
-            ExecResult(true, out.trim(), "shizuku")
+            runShizukuAction(action, data)
         } catch (_: Throwable) {
             null
         }
@@ -204,22 +188,23 @@ object SysPower {
 
     /** 文本是否可被 shell input 注入（仅 ASCII；含引号/百分号的做转义处理） */
     fun isInjectionSafe(text: String): Boolean =
-        text.isNotEmpty() && text.all { it.code < 128 } && !text.contains("%s")
+        text.isNotEmpty() && text.all { it.code in 0x20..0x7E && it != '\'' } && !text.contains("%s")
 
     /**
      * 通过 Shizuku 静默注入文本到当前聚焦输入框：
      * 先全选（CTRL+A，Android 10+）再 input text 替换全文。
      * 全程无弹窗、无剪贴板提示。仅支持 ASCII；中文/长文本请走无障碍通道。
+     * 安全：走固定动作（MSG_INJECT_SELECT_ALL / MSG_INJECT_TEXT），服务端白名单命令。
      */
     fun shizukuInjectText(text: String): ExecResult {
-        val escaped = text.replace("'", "\\'")
-        // CTRL_LEFT(113) + A(29) 全选；input keycombination 需 Android 10+，失败则回退无障碍由调用方处理
-        val cmd = "input keycombination 113 29; input text '$escaped'"
-        return execShell(cmd)
+        if (!isInjectionSafe(text)) return ExecResult(false, "not injectable", "none")
+        // 1. 全选（固定动作）
+        shizukuAction(NekoShellService.MSG_INJECT_SELECT_ALL)
+        // 2. 注入文本（固定动作，text 受限参数）
+        val out = shizukuAction(NekoShellService.MSG_INJECT_TEXT, Bundle().apply { putString("text", text) })
+            ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
+        return ExecResult(true, out, "shizuku")
     }
-
-    /** Shizuku 通道当前是否可用（静默修改的前提） */
-    fun privilegedChannelReady(): Boolean = isShizukuAvailable() && isShizukuPermissionGranted()
 
     // ---------- 隐藏模式（隐藏桌面图标） ----------
 
@@ -230,8 +215,9 @@ object SysPower {
      * 请勿在主线程调用（会阻塞）。
      */
     fun shizukuHideSelf(hidden: Boolean): ExecResult {
-        val pkg = NekoTypeApp.instance.packageName
-        return execShell(if (hidden) "pm hide $pkg" else "pm unhide $pkg")
+        val out = shizukuAction(NekoShellService.MSG_HIDE_SELF, Bundle().apply { putBoolean("hidden", hidden) })
+            ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
+        return ExecResult(true, out, "shizuku")
     }
 
     /**

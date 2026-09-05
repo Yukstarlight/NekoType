@@ -244,6 +244,11 @@ class NekoTypeAccessibilityService : AccessibilityService() {
             if (isBlacklistedApp(src)) return
             if (!src.refresh()) return
             if (!src.isEditable) return
+            // 内存防护：autoStates 按输入框 viewId 累积，超过上限清掉最旧的一半（防长期运行泄漏）
+            if (autoStates.size > 200) {
+                val stale = autoStates.keys.take(autoStates.size / 2)
+                stale.forEach { autoStates.remove(it) }
+            }
             val trim = src.text?.toString()?.trim().orEmpty()
             if (trim.isEmpty()) return
             // 标点触发模式（喵喵同款）：文本以标点结尾才篡改（打完一句才改）；

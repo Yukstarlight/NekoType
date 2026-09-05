@@ -11,8 +11,21 @@ android {
         applicationId "com.nekotype.app"
         minSdk 26
         targetSdk 34
-        versionCode 24
-        versionName "2.6.3"
+        versionCode 26
+        versionName "2.6.4"
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64'
+        }
+        externalNativeBuild {
+            ndkBuild {
+                arguments 'APP_PLATFORM=android-21'
+            }
+        }
+    }
+    externalNativeBuild {
+        ndkBuild {
+            path 'src/main/jni/Android.mk'
+        }
     }
 
     // 签名配置：keystore.properties 存在且 keystore 文件存在时才启用签名，

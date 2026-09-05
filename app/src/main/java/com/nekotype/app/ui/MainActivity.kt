@@ -575,7 +575,7 @@ class MainActivity : AppCompatActivity() {
             }
             SysPower.isShizukuPermissionGranted() -> {
                 lifecycleScope.launch {
-                    val r = withContext(Dispatchers.IO) { SysPower.execShell("id") }
+                    val r = withContext(Dispatchers.IO) { SysPower.execIdForStatus() }
                     binding.tvPrivLog.text = getString(R.string.u76, r.channel, r.output)
                     NekoLog.ok("Shizuku 已授权，通道 ${r.channel}")
                     toast(getString(R.string.u3))
