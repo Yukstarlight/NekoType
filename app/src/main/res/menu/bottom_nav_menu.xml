@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_nav_home"
+        android:title="@string/nav_home"/>
+    <item
+        android:id="@+id/nav_rules"
+        android:icon="@drawable/ic_nav_rules"
+        android:title="@string/nav_rules"/>
+    <item
+        android:id="@+id/nav_mode"
+        android:icon="@drawable/ic_nav_mode"
+        android:title="@string/nav_mode"/>
+    <item
+        android:id="@+id/nav_settings"
+        android:icon="@drawable/ic_nav_settings"
+        android:title="@string/nav_settings"/>
+    <item
+        android:id="@+id/nav_terminal"
+        android:icon="@drawable/ic_nav_terminal"
+        android:title="@string/t_terminal_open"/>
+</menu>

@@ -18,6 +18,7 @@ import com.nekotype.app.databinding.ActivityLogBinding
 import com.nekotype.app.prefs.AppPrefs
 import com.nekotype.app.util.BgUtils
 import com.nekotype.app.util.NekoLog
+import com.nekotype.app.util.ThemeHelper
 
 /**
  * 日志页：
@@ -32,6 +33,7 @@ class LogActivity : AppCompatActivity() {
     private val logListener = { refreshAppLog() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        ThemeHelper.apply(this)
         super.onCreate(savedInstanceState)
         binding = ActivityLogBinding.inflate(layoutInflater)
         setContentView(binding.root)

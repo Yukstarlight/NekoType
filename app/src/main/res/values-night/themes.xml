@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.NekoType" parent="Theme.Material3.DayNight">
+        <item name="colorPrimary">@color/accent_blue</item>
+        <item name="colorOnPrimary">@color/md_theme_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/glass_strong</item>
+        <item name="colorOnPrimaryContainer">@color/fg_0</item>
+        <item name="colorSecondary">@color/accent_purple</item>
+        <item name="colorOnSecondary">@color/md_theme_onPrimary</item>
+        <item name="colorSecondaryContainer">@color/glass_strong</item>
+        <item name="colorOnSecondaryContainer">@color/fg_0</item>
+        <item name="colorSurface">#55121212</item>
+        <item name="colorOnSurface">@color/fg_0</item>
+        <item name="colorOnSurfaceVariant">@color/fg_1</item>
+        <item name="colorOutlineVariant">@color/border_glass</item>
+        <item name="android:windowBackground">@color/bg_0</item>
+        <item name="android:statusBarColor">@color/bg_0</item>
+        <item name="android:navigationBarColor">@color/bg_0</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowAnimationStyle">@style/NekoWindowAnim</item>
+    </style>
+    <style name="Theme.NekoType.Main" parent="Theme.NekoType">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+</resources>

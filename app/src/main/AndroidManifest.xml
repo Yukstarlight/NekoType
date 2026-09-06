@@ -25,6 +25,20 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.NekoType">
 
+        <!-- 重构版主界面：底部导航 + 四 Fragment（首页/规则/模式/设置） -->
+        <activity
+            android:name=".ui.HomeActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.NekoType.Main">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- 旧版主界面（保留不删减，可通过代码显式启动） -->
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
@@ -45,10 +59,10 @@
             android:windowSoftInputMode="adjustResize"
             android:configChanges="orientation|screenSize" />
 
-        <!-- 桌面图标入口（隐藏模式：禁用此 alias 即图标消失；MainActivity 仍可被显式 Intent 启动） -->
+        <!-- 桌面图标入口（隐藏模式：禁用此 alias 即图标消失；HomeActivity 仍可被显式 Intent 启动） -->
         <activity-alias
             android:name=".MainActivityAlias"
-            android:targetActivity=".ui.MainActivity"
+            android:targetActivity=".ui.HomeActivity"
             android:exported="true"
             android:enabled="true"
             android:label="@string/app_name"

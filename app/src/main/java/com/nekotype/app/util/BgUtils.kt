@@ -32,7 +32,11 @@ object BgUtils {
             lastPath = path
         }
         view.background = if (lastBitmap != null) {
+            // 有自定义背景：优先显示，所有主题（含星空）都透出用户壁纸
             CoverDrawable(lastBitmap!!)
+        } else if (AppPrefs.themeMode == "star") {
+            // 无自定义背景且星空主题：显示星空极光背景
+            ContextCompat.getDrawable(view.context, R.drawable.bg_starfield)
         } else {
             ContextCompat.getDrawable(view.context, R.drawable.bg_gradient_app)
         }

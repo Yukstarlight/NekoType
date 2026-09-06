@@ -6,7 +6,7 @@ import android.service.quicksettings.TileService
 import com.nekotype.app.overlay.FloatingButtonService
 import com.nekotype.app.R
 import com.nekotype.app.prefs.AppPrefs
-import com.nekotype.app.ui.MainActivity
+import com.nekotype.app.ui.HomeActivity
 import com.nekotype.app.util.NekoLog
 
 /**
@@ -26,9 +26,9 @@ class NekoTypeTileService : TileService() {
         // 停止操作受密码锁定保护
         if (!enabled && AppPrefs.lockEnabled) {
             NekoLog.info("磁贴：密码锁定中，拉起验证")
-            val i = Intent(this, MainActivity::class.java).apply {
+            val i = Intent(this, HomeActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                putExtra(MainActivity.EXTRA_STOP_REQUEST, true)
+                putExtra(HomeActivity.EXTRA_STOP_REQUEST, true)
             }
             startActivityAndCollapse(i)
             return

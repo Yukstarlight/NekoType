@@ -25,7 +25,7 @@ import androidx.core.app.NotificationCompat
 import com.nekotype.app.R
 import com.nekotype.app.accessibility.NekoTypeAccessibilityBridge
 import com.nekotype.app.prefs.AppPrefs
-import com.nekotype.app.ui.MainActivity
+import com.nekotype.app.ui.HomeActivity
 import com.nekotype.app.util.NekoLog
 import kotlin.math.abs
 
@@ -197,9 +197,9 @@ class FloatingButtonService : Service() {
             if (AppPrefs.lockEnabled) {
                 NekoLog.warn("密码锁定：停止服务需在应用内验证密码")
                 try {
-                    val i = Intent(this, com.nekotype.app.ui.MainActivity::class.java).apply {
+                    val i = Intent(this, com.nekotype.app.ui.HomeActivity::class.java).apply {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        putExtra(com.nekotype.app.ui.MainActivity.EXTRA_STOP_REQUEST, true)
+                        putExtra(com.nekotype.app.ui.HomeActivity.EXTRA_STOP_REQUEST, true)
                     }
                     startActivity(i)
                 } catch (_: Throwable) { }
@@ -329,19 +329,19 @@ class FloatingButtonService : Service() {
     }
 
     private fun buildNotification(): Notification {
-        val open = Intent(this, MainActivity::class.java).apply {
+        val open = Intent(this, HomeActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
         val openPi = PendingIntent.getActivity(
             this, 0, open,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        // 停止按钮直接拉起 MainActivity（点通知启动 Activity 有后台豁免权；
+        // 停止按钮直接拉起 HomeActivity（点通知启动 Activity 有后台豁免权；
         // 不能从服务 startActivity —— Android 12 会拦截后台启动）。
         // 密码锁定开启时在 App 内验证后才真正停止。
-        val stopIntent = Intent(this, MainActivity::class.java).apply {
+        val stopIntent = Intent(this, HomeActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            putExtra(MainActivity.EXTRA_STOP_REQUEST, true)
+            putExtra(HomeActivity.EXTRA_STOP_REQUEST, true)
         }
         val stopPi = PendingIntent.getActivity(
             this, 1, stopIntent,

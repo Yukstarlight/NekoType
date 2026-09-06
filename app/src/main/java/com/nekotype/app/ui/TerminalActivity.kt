@@ -11,6 +11,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.nekotype.app.util.NekoLog
+import com.nekotype.app.util.ThemeHelper
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
 import com.termux.view.TerminalView
@@ -27,27 +28,30 @@ class TerminalActivity : AppCompatActivity(), TerminalSessionClient, TerminalVie
     private var session: TerminalSession? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        ThemeHelper.apply(this)
         super.onCreate(savedInstanceState)
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LOW_PROFILE
-        window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.BLACK))
         setContentView(com.nekotype.app.R.layout.activity_terminal)
         val tv = findViewById<com.termux.view.TerminalView>(com.nekotype.app.R.id.terminalView)
         terminalView = tv
         tv.setTerminalViewClient(this)
+        // 关闭按钮
+        findViewById<com.google.android.material.button.MaterialButton>(com.nekotype.app.R.id.btnCloseTerminal)?.setOnClickListener {
+            finish()
+        }
         // 字体大小：setTextSize 参数直接给 Paint.setTextSize（px），须把 dp 转 px
-        // 14dp 适中（16dp 偏大）
         val fontSizePx = (14 * resources.displayMetrics.density).toInt()
         tv.setTextSize(fontSizePx)
-        // 用内置 JetBrains Mono 等宽字体，不跟随系统字体（用户改过系统字体，显示会怪）
+        // 用内置 JetBrains Mono 等宽字体
         try {
             val tf = android.graphics.Typeface.createFromAsset(assets, "fonts/jetbrains_mono.ttf")
             tv.setTypeface(tf)
         } catch (_: Throwable) {
             tv.setTypeface(android.graphics.Typeface.MONOSPACE)
         }
-        // 纯黑背景
-        tv.setBackgroundColor(android.graphics.Color.BLACK)
-        // 让 TerminalView 可获取焦点（键盘输入前提）
+        // 星空色终端：透明背景透出星空，文字用亮青色
+        tv.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+        // 让 TerminalView 可获取焦点
         tv.isFocusable = true
         tv.isFocusableInTouchMode = true
         tv.requestFocus()

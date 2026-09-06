@@ -327,4 +327,52 @@
     <string name="t_terminal_title">Mist Unveils Infinite Tomorrows Terminal</string>
     <string name="t_terminal_open">Open Terminal</string>
     <string name="t_terminal_launch">Launch Mist Unveils Infinite Tomorrows Terminal (Beta)</string>
+
+    <!-- ===== Bottom Navigation ===== -->
+    <string name="nav_home">Home</string>
+    <string name="nav_rules">Rules</string>
+    <string name="nav_mode">Mode</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- ===== Mode Page ===== -->
+    <string name="mode_title">Run Mode</string>
+    <string name="mode_subtitle">Choose text transform trigger method, three modes are mutually exclusive</string>
+    <string name="mode_fab">Floating Ball Mode</string>
+    <string name="mode_fab_desc">Tap floating button to auto-transform and send, most intuitive</string>
+    <string name="mode_force_keyboard">Keyboard Tamper Mode</string>
+    <string name="mode_force_keyboard_desc">Auto-transform text while typing with native keyboard, no need to tap floating ball</string>
+    <string name="mode_punct_append">Punctuation Append Mode</string>
+    <string name="mode_punct_append_desc">Transform only when input ends with punctuation, more natural</string>
+    <string name="mode_current">Current Mode</string>
+    <string name="mode_applied">Switched to "%1$s"</string>
+    <string name="mode_force_disclaimer_title">Disclaimer</string>
+    <string name="mode_force_disclaimer">When "Keyboard Tamper Mode" is enabled, input box content will be automatically transformed according to your rules while typing with native keyboard, and may be auto-sent.</string>
+    <string name="mode_agree">I understand and agree</string>
+    <string name="mode_force_enabled">Keyboard Tamper Mode enabled</string>
+    <string name="mode_force_pending">Keyboard Tamper Mode enabled, effective after starting service</string>
+    <string name="mode_fab_restored">Switched back to Floating Ball Mode</string>
+
+    <!-- ===== Home Page ===== -->
+    <string name="home_welcome">Welcome to NekoType</string>
+    <string name="home_start_guide">Complete permission guide in order for first use</string>
+    <string name="home_service_running">Service Running</string>
+    <string name="home_service_stopped">Service Stopped</string>
+    <string name="home_start_service">Start Service</string>
+    <string name="home_stop_service">Stop Service</string>
+    <string name="home_total_transforms">Total transforms: %1$s</string>
+    <string name="home_permission_status">Permission Status</string>
+    <string name="home_system_capability">System Capability</string>
+    <string name="home_one_click_battery">One-click Battery Whitelist (Shizuku)</string>
+    <string name="home_wizard_done">Core permissions ready, you can start using!</string>
+
+    <!-- ===== Theme ===== -->
+    <string name="theme_star">Star</string>
+    <string name="theme_star_hint">Star dark theme enabled</string>
+
+    <!-- ===== Terminal ===== -->
+    <string name="terminal_title">Integrated Terminal</string>
+    <string name="terminal_close">Close</string>
+
+    <!-- ===== Language ===== -->
+    <string name="home_language">Language</string>
 </resources>

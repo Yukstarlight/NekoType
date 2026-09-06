@@ -1,10 +1,12 @@
 package com.nekotype.app
 
+import android.app.Activity
 import android.app.AlarmManager
 import android.app.Application
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import androidx.appcompat.app.AppCompatDelegate
 import com.nekotype.app.overlay.FloatingButtonService
 import com.nekotype.app.prefs.AppPrefs
@@ -54,10 +56,30 @@ class NekoTypeApp : Application() {
             // 继续走系统默认处理（不吞崩溃，正常退出）
             originalHandler?.uncaughtException(thread, throwable)
         }
-        // 应用主题（深色 / 浅色 / 跟随系统）
+        // 应用主题（深色 / 浅色 / 跟随系统 / 星空）
+        applyAppTheme()
+        // 星空主题需要在每个 Activity 创建前 setTheme
+        registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+                if (AppPrefs.themeMode == "star") {
+                    activity.setTheme(R.style.Theme_NekoType_Star)
+                }
+            }
+            override fun onActivityStarted(activity: Activity) {}
+            override fun onActivityResumed(activity: Activity) {}
+            override fun onActivityPaused(activity: Activity) {}
+            override fun onActivityStopped(activity: Activity) {}
+            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+            override fun onActivityDestroyed(activity: Activity) {}
+        })
+    }
+
+    /** 根据 themeMode 设置夜间模式（星空主题走深色） */
+    fun applyAppTheme() {
         val mode = when (AppPrefs.themeMode) {
             "dark" -> AppCompatDelegate.MODE_NIGHT_YES
             "light" -> AppCompatDelegate.MODE_NIGHT_NO
+            "star" -> AppCompatDelegate.MODE_NIGHT_YES
             else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         }
         AppCompatDelegate.setDefaultNightMode(mode)

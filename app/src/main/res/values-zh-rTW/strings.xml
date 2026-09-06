@@ -327,4 +327,52 @@
     <string name="t_terminal_title">Mist Unveils Infinite Tomorrows 整合終端</string>
     <string name="t_terminal_open">開啟終端</string>
     <string name="t_terminal_launch">啟動 Mist Unveils Infinite Tomorrows 整合終端（Beta）</string>
+
+    <!-- ===== 底部導航 ===== -->
+    <string name="nav_home">首頁</string>
+    <string name="nav_rules">規則</string>
+    <string name="nav_mode">模式</string>
+    <string name="nav_settings">設定</string>
+
+    <!-- ===== 模式頁 ===== -->
+    <string name="mode_title">運行模式</string>
+    <string name="mode_subtitle">選擇文字變換觸發方式，三種模式互斥</string>
+    <string name="mode_fab">懸浮球模式</string>
+    <string name="mode_fab_desc">點擊懸浮球自動變換並發送，最直觀</string>
+    <string name="mode_force_keyboard">篡改鍵盤模式</string>
+    <string name="mode_force_keyboard_desc">原生鍵盤打字時自動變換文字，無需點擊懸浮球</string>
+    <string name="mode_punct_append">斷句追加模式</string>
+    <string name="mode_punct_append_desc">輸入以標點結尾時才變換，更自然</string>
+    <string name="mode_current">當前模式</string>
+    <string name="mode_applied">已切換到「%1$s」</string>
+    <string name="mode_force_disclaimer_title">免責聲明</string>
+    <string name="mode_force_disclaimer">開啟「篡改鍵盤模式」後，使用原生鍵盤打字時輸入框內容會按你的規則自動變換，並可能自動發送。</string>
+    <string name="mode_agree">我已理解並同意</string>
+    <string name="mode_force_enabled">篡改鍵盤模式已開啟</string>
+    <string name="mode_force_pending">篡改鍵盤模式已開啟，啟動服務後生效</string>
+    <string name="mode_fab_restored">已切回懸浮球模式</string>
+
+    <!-- ===== 首頁 ===== -->
+    <string name="home_welcome">歡迎使用 NekoType</string>
+    <string name="home_start_guide">首次使用請按順序完成權限引導</string>
+    <string name="home_service_running">服務運行中</string>
+    <string name="home_service_stopped">服務已停止</string>
+    <string name="home_start_service">啟動服務</string>
+    <string name="home_stop_service">停止服務</string>
+    <string name="home_total_transforms">累計變換 %1$s 次</string>
+    <string name="home_permission_status">權限狀態</string>
+    <string name="home_system_capability">系統能力</string>
+    <string name="home_one_click_battery">一鍵免電（Shizuku 直寫）</string>
+    <string name="home_wizard_done">核心權限已就緒，可以開始使用了！</string>
+
+    <!-- ===== 主題 ===== -->
+    <string name="theme_star">星空</string>
+    <string name="theme_star_hint">已啟用星空深色主題</string>
+
+    <!-- ===== 終端 ===== -->
+    <string name="terminal_title">集成終端</string>
+    <string name="terminal_close">關閉</string>
+
+    <!-- ===== 語言 ===== -->
+    <string name="home_language">語言</string>
 </resources>

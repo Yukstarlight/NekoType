@@ -326,4 +326,48 @@
     <string name="t_terminal_title">Mist Unveils Infinite Tomorrows 集成终端</string>
     <string name="t_terminal_open">打开终端</string>
     <string name="t_terminal_launch">启动 Mist Unveils Infinite Tomorrows 集成终端（Beta）</string>
+
+    <!-- ===== 底部导航 ===== -->
+    <string name="nav_home">首页</string>
+    <string name="nav_rules">规则</string>
+    <string name="nav_mode">模式</string>
+    <string name="nav_settings">设置</string>
+
+    <!-- ===== 模式页 ===== -->
+    <string name="mode_title">运行模式</string>
+    <string name="mode_subtitle">选择文本变换的触发方式，三种模式互斥</string>
+    <string name="mode_fab">悬浮球模式</string>
+    <string name="mode_fab_desc">点击悬浮按钮自动改写并发送，最直观可控</string>
+    <string name="mode_force_keyboard">篡改键盘模式</string>
+    <string name="mode_force_keyboard_desc">原生键盘输入时自动按规则篡改文本，无需点悬浮球</string>
+    <string name="mode_punct_append">断句追加模式</string>
+    <string name="mode_punct_append_desc">输入以标点结尾才篡改追加，打完一句自动改，更自然</string>
+    <string name="mode_current">当前模式</string>
+    <string name="mode_applied">已切换到「%1$s」</string>
+    <string name="mode_force_disclaimer_title">免责声明</string>
+    <string name="mode_force_disclaimer">「篡改键盘模式」开启后，在使用原生键盘输入时，输入框内容将被自动按你的规则篡改，并可能自动发送。\n\n请务必确认：\n1. 本功能仅用于本人设备、合法合规的个人用途；\n2. 开启后，所有应用的输入内容都可能被自动改写（包括聊天、搜索、评论等场景），请注意区分场景使用；\n3. 禁止用于骚扰、诈骗、伪造信息、冒充他人等非法用途，由此产生的全部后果由使用者自行承担；\n4. 需要保持无障碍服务开启；随时可切换回悬浮球模式恢复正常输入。</string>
+    <string name="mode_agree">我已知晓并同意</string>
+    <string name="mode_force_enabled">篡改键盘模式已开启</string>
+    <string name="mode_force_pending">篡改键盘模式已开启，启动服务后生效</string>
+    <string name="mode_fab_restored">已切换回悬浮球模式</string>
+
+    <!-- ===== 首页 ===== -->
+    <string name="home_welcome">欢迎使用 NekoType</string>
+    <string name="home_start_guide">首次使用请按顺序完成权限引导</string>
+    <string name="home_service_running">服务运行中</string>
+    <string name="home_service_stopped">服务已停止</string>
+    <string name="home_start_service">启动服务</string>
+    <string name="home_stop_service">停止服务</string>
+    <string name="home_total_transforms">累计变换 %1$s 次</string>
+    <string name="home_permission_status">权限状态</string>
+    <string name="home_system_capability">系统能力</string>
+    <string name="home_one_click_battery">一键免电（Shizuku 直写）</string>
+    <string name="home_wizard_done">核心权限已就绪，可以开始使用了！</string>
+    <string name="theme_star">星空</string>
+    <string name="theme_star_hint">已启用星空深色主题</string>
+    <string name="terminal_title">集成终端</string>
+    <string name="terminal_close">关闭</string>
+
+    <!-- ===== 语言 ===== -->
+    <string name="home_language">语言</string>
 </resources>

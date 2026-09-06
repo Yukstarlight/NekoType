@@ -34,6 +34,7 @@ import com.nekotype.app.sys.SysPower
 import com.nekotype.app.transform.TextTransformEngine
 import com.nekotype.app.util.BgUtils
 import com.nekotype.app.util.NekoLog
+import com.nekotype.app.util.ThemeHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -81,6 +82,7 @@ class MainActivity : AppCompatActivity() {
             "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         }
+        ThemeHelper.apply(this)
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)

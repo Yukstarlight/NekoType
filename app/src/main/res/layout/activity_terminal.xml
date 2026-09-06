@@ -1,6 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.termux.view.TerminalView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/terminalView"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FF000000" />
+    android:orientation="vertical"
+    android:background="@drawable/bg_starfield">
+
+    <!-- 顶部标题栏 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="12dp"
+        android:background="#80000000">
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@drawable/ctw_icon"
+            android:scaleType="centerCrop"
+            android:background="@drawable/bg_pic_mask"
+            android:clipToOutline="true"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:text="@string/terminal_title"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#E0E0FF"/>
+
+        <TextView
+            android:id="@+id/tvTerminalStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="●"
+            android:textSize="10sp"
+            android:textColor="#4CAF50"
+            android:layout_marginEnd="8dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCloseTerminal"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:text="@string/terminal_close"
+            android:textColor="#B0B0D0"
+            android:textSize="13sp"/>
+    </LinearLayout>
+
+    <!-- 分隔线 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#305080A0"/>
+
+    <!-- 终端视图 -->
+    <com.termux.view.TerminalView
+        android:id="@+id/terminalView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#00000000"
+        android:padding="4dp"/>
+</LinearLayout>

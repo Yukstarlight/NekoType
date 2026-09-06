@@ -18,6 +18,7 @@ import com.nekotype.app.R
 import com.nekotype.app.prefs.AppPrefs
 import com.nekotype.app.util.BgUtils
 import com.nekotype.app.util.NekoLog
+import com.nekotype.app.util.ThemeHelper
 import java.util.Locale
 
 /**
@@ -30,6 +31,7 @@ class BlacklistActivity : AppCompatActivity() {
     private val apps = mutableListOf<Pair<ApplicationInfo, String>>() // appInfo + 应用名
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        ThemeHelper.apply(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_blacklist)
         BgUtils.apply(findViewById(R.id.root))
