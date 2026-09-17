@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <!-- 字体大小 -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/i4"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="4dp">
+        <SeekBar
+            android:id="@+id/seekFontSize"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:max="14"
+            android:progress="4"/>
+        <TextView
+            android:id="@+id/tvFontSizeVal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="14 sp"
+            android:textSize="13sp"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:minWidth="50dp"
+            android:gravity="end"/>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/i5"
+        android:textSize="11sp"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- 面板透明度 -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/i6"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="4dp">
+        <SeekBar
+            android:id="@+id/seekAlpha"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:max="100"
+            android:progress="50"/>
+        <TextView
+            android:id="@+id/tvAlphaVal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="50%"
+            android:textSize="13sp"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:minWidth="50dp"
+            android:gravity="end"/>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/i7"
+        android:textSize="11sp"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- 字体颜色 -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/i8"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp">
+        <!-- 预设颜色按钮 -->
+        <View
+            android:id="@+id/colorWhite"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_color_circle"
+            android:backgroundTint="#FFFFFF"
+            android:tag="#FFFFFF"/>
+        <View
+            android:id="@+id/colorGreen"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_color_circle"
+            android:backgroundTint="#00FF00"
+            android:tag="#00FF00"/>
+        <View
+            android:id="@+id/colorYellow"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_color_circle"
+            android:backgroundTint="#FFFF00"
+            android:tag="#FFFF00"/>
+        <View
+            android:id="@+id/colorCyan"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_color_circle"
+            android:backgroundTint="#00FFFF"
+            android:tag="#00FFFF"/>
+        <View
+            android:id="@+id/colorPink"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_color_circle"
+            android:backgroundTint="#FF80C0"
+            android:tag="#FF80C0"/>
+        <View
+            android:id="@+id/colorOrange"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_color_circle"
+            android:backgroundTint="#FFA500"
+            android:tag="#FFA500"/>
+        <View
+            android:id="@+id/colorCustom"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:background="@drawable/bg_color_circle"
+            android:backgroundTint="#808080"
+            android:tag="custom"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvColorVal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/i9"
+        android:textSize="12sp"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- 停止猫轰炸按钮 -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnStopBomb"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/i10"
+        android:textSize="14sp"
+        android:minHeight="44dp"/>
+
+</LinearLayout>

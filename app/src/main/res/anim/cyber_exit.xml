@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 赛博朋克退出动画：左侧滑出 + 淡出 + 轻微缩小 -->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:anim/accelerate_interpolator">
+    <translate
+        android:fromXDelta="0%"
+        android:toXDelta="-100%"
+        android:duration="220"/>
+    <alpha
+        android:fromAlpha="1.0"
+        android:toAlpha="0.0"
+        android:duration="220"/>
+    <scale
+        android:fromXScale="1.0"
+        android:toXScale="0.96"
+        android:fromYScale="1.0"
+        android:toYScale="0.96"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:duration="220"/>
+</set>

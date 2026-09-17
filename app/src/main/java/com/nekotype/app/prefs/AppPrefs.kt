@@ -51,15 +51,18 @@ object AppPrefs {
     enum class RuleType(val label: String, val resId: Int) {
         PREFIX("前缀", com.nekotype.app.R.string.rule_prefix),
         SUFFIX("后缀", com.nekotype.app.R.string.rule_suffix),
-        RANDOM_PREFIX("随机前缀", com.nekotype.app.R.string.rule_rand_prefix),
-        RANDOM_SUFFIX("随机后缀", com.nekotype.app.R.string.rule_rand_suffix),
-        SUFFIX_EACH("每句后缀", com.nekotype.app.R.string.rule_suffix_each),
-        RANDOM_EMOTICON("随机颜文字", com.nekotype.app.R.string.rule_emoticon),
+        RANDOM_PREFIX("随机前缀（固定）", com.nekotype.app.R.string.rule_rand_prefix),
+        RANDOM_PREFIX_ONCE("随机前缀（不固定）", com.nekotype.app.R.string.rule_rand_prefix_once),
+        RANDOM_SUFFIX("随机后缀（固定）", com.nekotype.app.R.string.rule_rand_suffix),
+        RANDOM_SUFFIX_ONCE("随机后缀（不固定）", com.nekotype.app.R.string.rule_rand_suffix_once),
         REPLACE("替换文本", com.nekotype.app.R.string.rule_replace);
 
         companion object {
-            fun fromName(name: String): RuleType =
-                entries.firstOrNull { it.name == name } ?: PREFIX
+            fun fromName(name: String): RuleType = when (name) {
+                // 已删除的旧类型「每句后缀」→ 归为普通后缀（兼容老数据/老导出）
+                "SUFFIX_EACH" -> SUFFIX
+                else -> entries.firstOrNull { it.name == name } ?: PREFIX
+            }
         }
     }
 
@@ -74,6 +77,8 @@ object AppPrefs {
         val replaceTo: String = "",
         /** 随机类型专用：触发概率 1-100 */
         val chance: Int = 50,
+        /** 优先级：1-100，**数字越大越先执行**；相同等级按规则列表顺序（默认 50 = 中性档） */
+        val priority: Int = 50,
         val enabled: Boolean = true
     ) {
         fun toJson(): JSONObject = JSONObject().apply {
@@ -82,18 +87,25 @@ object AppPrefs {
             put("value", value)
             put("replaceTo", replaceTo)
             put("chance", chance)
+            put("priority", priority)
             put("enabled", enabled)
         }
 
         companion object {
-            fun fromJson(o: JSONObject): NekoRule = NekoRule(
-                id = o.optString("id", "rule_${System.currentTimeMillis()}"),
-                type = RuleType.fromName(o.optString("type", "PREFIX")),
-                value = o.optString("value", ""),
-                replaceTo = o.optString("replaceTo", ""),
-                chance = o.optInt("chance", 50).coerceIn(1, 100),
-                enabled = o.optBoolean("enabled", true)
-            )
+            /** 返回 null = 该规则类型已移除（旧版「随机颜文字」规则 → 直接丢弃） */
+            fun fromJson(o: JSONObject): NekoRule? {
+                val typeName = o.optString("type", "PREFIX")
+                if (typeName == "RANDOM_EMOTICON") return null
+                return NekoRule(
+                    id = o.optString("id", "rule_${System.currentTimeMillis()}"),
+                    type = RuleType.fromName(typeName),
+                    value = o.optString("value", ""),
+                    replaceTo = o.optString("replaceTo", ""),
+                    chance = o.optInt("chance", 50).coerceIn(1, 100),
+                    priority = o.optInt("priority", 50).coerceIn(1, 100),
+                    enabled = o.optBoolean("enabled", true)
+                )
+            }
         }
     }
 
@@ -194,9 +206,26 @@ object AppPrefs {
         }
         return try {
             val arr = JSONArray(raw)
-            (0 until arr.length()).mapNotNull { i ->
+            val parsed = (0 until arr.length()).mapNotNull { i ->
                 try { RuleConfig.fromJson(arr.getJSONObject(i)) } catch (_: Throwable) { null }
             }
+            // 修复历史数据：预设 ID 重复会导致"切了没反应"（active_rule 只能命中第一个同名 ID）。
+            // 这里在读取时就地重发唯一 ID，老用户的坏数据读一次即自愈。
+            val seen = HashSet<String>()
+            var repaired = false
+            val fixed = parsed.map { cfg ->
+                if (cfg.id.isNotEmpty() && seen.add(cfg.id)) {
+                    cfg
+                } else {
+                    repaired = true
+                    var nid = "preset_fix_${System.currentTimeMillis()}_${seen.size}"
+                    var n = 1
+                    while (!seen.add(nid)) { nid = "preset_fix_${System.currentTimeMillis()}_${seen.size}_${n++}" }
+                    cfg.copy(id = nid)
+                }
+            }
+            if (repaired) saveRules(fixed)
+            fixed
         } catch (_: Throwable) {
             emptyList()
         }
@@ -239,7 +268,11 @@ object AppPrefs {
     fun activePresetName(): String = activePreset().name
 
     fun selectPreset(id: String) {
-        sp.edit().putString("active_rule", id).apply()
+        // 防御：写入不存在的 ID 会让 active_rule 永远命中不到，界面上就表现为"预设切不过去"（一直停在第一个）。
+        // 命中不到时回落到第一个真实存在的预设。
+        val list = rulesList()
+        val target = list.firstOrNull { it.id == id } ?: list.firstOrNull()
+        sp.edit().putString("active_rule", target?.id ?: "default").apply()
     }
 
     fun deletePreset(id: String) {
@@ -247,6 +280,63 @@ object AppPrefs {
         if (list.isEmpty()) return
         saveRules(list)
         if (activeId() == id) selectPreset(list.first().id)
+    }
+
+    /** 生成不与现有预设冲突的唯一 ID（导入时同一毫秒内连续建多个预设也不会撞 ID） */
+    private fun newPresetId(existing: List<RuleConfig>): String {
+        val base = System.currentTimeMillis()
+        var id = "preset_$base"
+        var n = 1
+        while (existing.any { it.id == id }) { id = "preset_${base}_${n++}" }
+        return id
+    }
+
+    /** 创建新预设并可选切换为当前 */
+    fun createPreset(name: String, rules: List<NekoRule>, switchTo: Boolean = true, styleSpaced: Boolean = false, styleUpper: Boolean = false): String {
+        val list0 = rulesList()
+        val id = newPresetId(list0)
+        val config = RuleConfig(id = id, name = name, rules = rules, styleSpaced = styleSpaced, styleUpper = styleUpper)
+        saveRules(list0 + config)
+        if (switchTo) selectPreset(id)
+        return id
+    }
+
+    /** 检查是否已存在同名预设 */
+    fun hasPresetName(name: String): Boolean = rulesList().any { it.name == name }
+
+    /** 指定预设的规则条数（预设选择列表显示用，便于判断切换是否生效） */
+    fun ruleCountOf(id: String): Int =
+        rulesList().firstOrNull { it.id == id }?.rules?.size ?: 0
+
+    // ================= 内置人设规则包 =================
+
+    /**
+     * 确保「病娇人设」内置预设存在（首次启动自动创建，已存在则跳过）。
+     * 在 NekoTypeApp.onCreate 中调用，用户可在规则页预设列表中选择切换。
+     */
+    fun ensureYanderePreset() {
+        if (hasPresetName("病娇人设")) return
+        val rules = listOf(
+            NekoRule("yd_prefix", RuleType.PREFIX, "呵呵..."),
+            NekoRule("yd_suffix", RuleType.SUFFIX, "♡"),
+            NekoRule(
+                "yd_rand_prefix", RuleType.RANDOM_PREFIX,
+                "你只能是我的|呵呵，又在看别人？|我盯着你哦|不许离开我|你的一切都是我的|为什么不回消息？|我会一直陪着你的|你逃不掉的|眼里只能有我",
+                chance = 55
+            ),
+            NekoRule(
+                "yd_rand_suffix", RuleType.RANDOM_SUFFIX,
+                "...呵呵|你逃不掉的♡|只能是我的|我好喜欢你啊|不许不理我|你的心只能属于我|呵呵，真可爱|想把你藏起来|永远在一起吧",
+                chance = 55
+            ),
+            NekoRule("yd_rep_1", RuleType.REPLACE, "喜欢", replaceTo = "只喜欢我一个吧"),
+            NekoRule("yd_rep_2", RuleType.REPLACE, "再见", replaceTo = "不许走"),
+            NekoRule("yd_rep_3", RuleType.REPLACE, "朋友", replaceTo = "只能有我一个"),
+            NekoRule("yd_rep_4", RuleType.REPLACE, "晚安", replaceTo = "梦里也只能想我"),
+            NekoRule("yd_rep_5", RuleType.REPLACE, "哈哈", replaceTo = "呵呵"),
+            NekoRule("yd_rep_6", RuleType.REPLACE, "嗯", replaceTo = "你在敷衍我吗")
+        )
+        createPreset(name = "病娇人设", rules = rules, switchTo = false, styleSpaced = false, styleUpper = false)
     }
 
     // ================= 规则 CRUD（作用于当前预设） =================
@@ -298,10 +388,40 @@ object AppPrefs {
         get() = sp.getBoolean("force_keyboard", false)
         set(v) = sp.edit().putBoolean("force_keyboard", v).apply()
 
-    /** 标点触发模式：强制篡改时，输入以标点结尾（。！？,）才触发篡改（喵喵同款：打完一句才改） */
+    /** 标点触发模式：强制篡改时，输入以标点结尾才触发篡改（喵喵同款：打完一句才改） */
     var punctTriggerEnabled: Boolean
         get() = sp.getBoolean("punct_trigger", false)
         set(v) = sp.edit().putBoolean("punct_trigger", v).apply()
+
+    /** 自定义触发标点（标点触发模式下生效），默认中英文常见标点 */
+    var punctTriggerChars: String
+        get() = sp.getString("punct_trigger_chars", "。！？!?,，…～~；;：:") ?: "。！？!?,，…～~；;：:"
+        set(v) = sp.edit().putString("punct_trigger_chars", v).apply()
+
+    /** 删除优化：用户正在删除文字时暂不改写（避免"后缀删不掉／越删越多"），停手后自动恢复 */
+    var deleteOptimizeEnabled: Boolean
+        get() = sp.getBoolean("delete_optimize", true)
+        set(v) = sp.edit().putBoolean("delete_optimize", v).apply()
+
+    /** 语音输入优化：语音输入时使用更长的停顿判定再接改写，避免说到一半被打断。
+     *  默认关（照抄喵喵助手）：开启会把停顿判定拉到 voiceDebounceMs，普通打字延迟明显变高 */
+    var voiceInputOptimizeEnabled: Boolean
+        get() = sp.getBoolean("voice_input_optimize", false)
+        set(v) = sp.edit().putBoolean("voice_input_optimize", v).apply()
+
+    /** 语音输入停顿判定毫秒数（300-5000，默认 1000） */
+    var voiceDebounceMs: Int
+        get() = sp.getInt("voice_debounce_ms", 1000)
+        set(v) = sp.edit().putInt("voice_debounce_ms", v.coerceIn(300, 5000)).apply()
+
+    /**
+     * 规则按等级全局执行（默认关）：
+     * 关 = 类别顺序不变（替换→前缀→随机前缀→后缀→随机后缀），仅**类别内**按等级排序；
+     * 开 = 所有类别打散，严格按等级从大到小逐条执行（可让替换在后缀之后等）。
+     */
+    var priorityGlobalEnabled: Boolean
+        get() = sp.getBoolean("priority_global", false)
+        set(v) = sp.edit().putBoolean("priority_global", v).apply()
 
     // ================= 悬浮按钮位置 =================
     var buttonX: Int
@@ -368,19 +488,31 @@ object AppPrefs {
         sp.edit().putString("rules_json", json).apply()
     }
 
-    /** 导出全部配置为可读文本（规则 + 行为 + 外观等） */
+    /** 导出全部配置为可读文本 v2（所有规则预设 + 行为 + 外观；兼容旧版单预设导入） */
     fun exportConfigText(): String {
         val sb = StringBuilder()
+        sb.append("NekoType 配置导出 v2\n")
+        val presets = rulesList()
+        if (presets.size > 1) {
+            sb.append("预设：").append(
+                presets.joinToString("、") { p -> if (p.id == activeId()) "${p.name}（当前）" else p.name }
+            ).append("\n")
+        }
         sb.append("规则------------------------\n")
-        rules().forEach { r ->
-            when (r.type) {
-                RuleType.PREFIX -> sb.append("前缀：${r.value}\n")
-                RuleType.SUFFIX -> sb.append("后缀：${r.value}\n")
-                RuleType.SUFFIX_EACH -> sb.append("每句后缀：${r.value}\n")
-                RuleType.RANDOM_PREFIX -> sb.append("随机前缀：${r.value.split("|").joinToString(" ")}  ${r.chance}%\n")
-                RuleType.RANDOM_SUFFIX -> sb.append("随机后缀：${r.value.split("|").joinToString(" ")}  ${r.chance}%\n")
-                RuleType.RANDOM_EMOTICON -> sb.append("随机颜文字：${r.value.ifEmpty { "内置库" }.split("|").joinToString(" ")}  ${r.chance}%\n")
-                RuleType.REPLACE -> sb.append("文本替换：${r.value}  ${r.replaceTo}\n")
+        presets.forEach { cfg ->
+            if (presets.size > 1) sb.append("[预设：${cfg.name}]\n")
+            cfg.rules.forEach { r ->
+                // 行首写入 [等级]，导入时按此还原优先级
+                val p = "[${r.priority}] "
+                when (r.type) {
+                    RuleType.PREFIX -> sb.append(p + "前缀：${r.value}\n")
+                    RuleType.SUFFIX -> sb.append(p + "后缀：${r.value}\n")
+                    RuleType.RANDOM_PREFIX -> sb.append(p + "随机前缀（固定）：${r.value.split("|").joinToString(" ")}  ${r.chance}%\n")
+                    RuleType.RANDOM_PREFIX_ONCE -> sb.append(p + "随机前缀（不固定）：${r.value.split("|").joinToString(" ")}  ${r.chance}%\n")
+                    RuleType.RANDOM_SUFFIX -> sb.append(p + "随机后缀（固定）：${r.value.split("|").joinToString(" ")}  ${r.chance}%\n")
+                    RuleType.RANDOM_SUFFIX_ONCE -> sb.append(p + "随机后缀（不固定）：${r.value.split("|").joinToString(" ")}  ${r.chance}%\n")
+                    RuleType.REPLACE -> sb.append(p + "文本替换：${r.value}  ${r.replaceTo}\n")
+                }
             }
         }
         sb.append("行为与样式----------------------\n")
@@ -392,11 +524,18 @@ object AppPrefs {
         sb.append("静默修改：${onOff(silentModifyEnabled)}\n")
         sb.append("强制篡改键盘：${onOff(forceKeyboardEnabled)}\n")
         sb.append("标点触发：${onOff(punctTriggerEnabled)}\n")
+        sb.append("删除优化：${onOff(deleteOptimizeEnabled)}\n")
+        sb.append("语音输入优化：${onOff(voiceInputOptimizeEnabled)}\n")
+        sb.append("语音停顿判定：$voiceDebounceMs\n")
+        sb.append("按等级全局执行：${onOff(priorityGlobalEnabled)}\n")
         sb.append("随机颜文字：${onOff(emoticonEnabled)}\n")
         sb.append("应用黑名单：${onOff(blacklistEnabled)}\n")
         sb.append("黑名单应用：").append(blacklist().joinToString(",")).append("\n")
         sb.append("心跳保活：${onOff(heartbeatEnabled)}\n")
         sb.append("崩溃自启：${onOff(crashRestartEnabled)}\n")
+        sb.append("猫娘用语：${onOff(nekoMode)}\n")
+        sb.append("自定义背景：${customBackgroundPath.ifEmpty { "无" }}\n")
+        sb.append("自定义悬浮图标：${customFabIconPath.ifEmpty { "无" }}\n")
         sb.append("密码锁定：${onOff(lockEnabled)}\n")
         sb.append("隐藏模式：${onOff(hiddenModeEnabled)}\n")
         sb.append("----------------------------------------\n")
@@ -405,6 +544,7 @@ object AppPrefs {
         sb.append("按钮透明度：$fabOpacity\n")
         sb.append("收起圆点：${onOff(fabCollapseEnabled)}\n")
         sb.append("柔光玻璃：${onOff(fabGlassEnabled)}\n")
+        if (buttonX >= 0 && buttonY >= 0) sb.append("按钮位置：$buttonX,$buttonY\n")
         sb.append("开机自启：${onOff(autoStartEnabled)}\n")
         return sb.toString()
     }
@@ -414,12 +554,16 @@ object AppPrefs {
     private fun themeText(m: String) = when (m) {
         "dark" -> "深色"
         "light" -> "浅色"
+        "star" -> "星空"
+        "neko" -> "猫娘"
         else -> "跟随系统"
     }
 
     private fun themeValue(s: String) = when (s.trim()) {
         "深色" -> "dark"
         "浅色" -> "light"
+        "星空" -> "star"
+        "猫娘" -> "neko"
         else -> "system"
     }
 
@@ -446,13 +590,27 @@ object AppPrefs {
                     autoSend = b.optBoolean("auto_send", autoSend)
                     hapticEnabled = b.optBoolean("haptic", hapticEnabled)
                     snapEdges = b.optBoolean("snap", snapEdges)
+                    styleSpaced = b.optBoolean("style_spaced", styleSpaced)
+                    styleUpper = b.optBoolean("style_upper", styleUpper)
+                    silentModifyEnabled = b.optBoolean("silent_modify", silentModifyEnabled)
+                    forceKeyboardEnabled = b.optBoolean("force_keyboard", forceKeyboardEnabled)
+                    punctTriggerEnabled = b.optBoolean("punct_trigger", punctTriggerEnabled)
+                    deleteOptimizeEnabled = b.optBoolean("delete_optimize", deleteOptimizeEnabled)
+                    voiceInputOptimizeEnabled = b.optBoolean("voice_input_optimize", voiceInputOptimizeEnabled)
+                    voiceDebounceMs = b.optInt("voice_debounce_ms", voiceDebounceMs)
+                    priorityGlobalEnabled = b.optBoolean("priority_global", priorityGlobalEnabled)
+                    emoticonEnabled = b.optBoolean("emoticon", emoticonEnabled)
+                    heartbeatEnabled = b.optBoolean("heartbeat", heartbeatEnabled)
+                    crashRestartEnabled = b.optBoolean("crash_restart", crashRestartEnabled)
+                    nekoMode = b.optBoolean("neko_mode", nekoMode)
+                    b.optString("custom_bg").takeIf { it.isNotEmpty() }?.let { customBackgroundPath = it }
+                    b.optString("custom_fab_icon").takeIf { it.isNotEmpty() }?.let { customFabIconPath = it }
                     fabSizeDp = b.optInt("fab_size", fabSizeDp)
                     fabOpacity = b.optInt("fab_opacity", fabOpacity)
                     fabCollapseEnabled = b.optBoolean("fab_collapse", fabCollapseEnabled)
                     fabGlassEnabled = b.optBoolean("fab_glass", fabGlassEnabled)
                     autoStartEnabled = b.optBoolean("auto_start", autoStartEnabled)
                     themeMode = b.optString("theme", themeMode)
-                    privilegeMode = b.optString("mode", privilegeMode)
                 }
                 o.optString("active_rule").takeIf { it.isNotEmpty() }?.let { selectPreset(it) }
                 null
@@ -464,6 +622,7 @@ object AppPrefs {
 
     /** 解析可读文本格式配置 */
     private fun importTextConfig(text: String): String? {
+        if (text.contains("NekoType 配置导出")) return importTextConfigV2(text)
         try {
             val newRules = mutableListOf<NekoRule>()
             var inRules = false
@@ -488,27 +647,35 @@ object AppPrefs {
                     }
                     inRules && line.startsWith("每句后缀：") -> {
                         anyData = true
+                        // 已删除的旧类型：老导出文件兼容，归为普通后缀
                         val v = line.removePrefix("每句后缀：").trim()
-                        if (v.isNotEmpty()) newRules.add(NekoRule("i_${System.currentTimeMillis()}_${newRules.size}", RuleType.SUFFIX_EACH, v))
+                        if (v.isNotEmpty()) newRules.add(NekoRule("i_${System.currentTimeMillis()}_${newRules.size}", RuleType.SUFFIX, v))
+                    }
+                    inRules && line.startsWith("随机前缀（固定）：") -> {
+                        anyData = true
+                        parseRandomRule(line.removePrefix("随机前缀（固定）："), RuleType.RANDOM_PREFIX, newRules)
+                    }
+                    inRules && line.startsWith("随机前缀（不固定）：") -> {
+                        anyData = true
+                        parseRandomRule(line.removePrefix("随机前缀（不固定）："), RuleType.RANDOM_PREFIX_ONCE, newRules)
                     }
                     inRules && line.startsWith("随机前缀：") -> {
                         anyData = true
+                        // 兼容旧版导出（未标注固定/不固定，默认固定）
                         parseRandomRule(line.removePrefix("随机前缀："), RuleType.RANDOM_PREFIX, newRules)
+                    }
+                    inRules && line.startsWith("随机后缀（固定）：") -> {
+                        anyData = true
+                        parseRandomRule(line.removePrefix("随机后缀（固定）："), RuleType.RANDOM_SUFFIX, newRules)
+                    }
+                    inRules && line.startsWith("随机后缀（不固定）：") -> {
+                        anyData = true
+                        parseRandomRule(line.removePrefix("随机后缀（不固定）："), RuleType.RANDOM_SUFFIX_ONCE, newRules)
                     }
                     inRules && line.startsWith("随机后缀：") -> {
                         anyData = true
+                        // 兼容旧版导出（未标注固定/不固定，默认固定）
                         parseRandomRule(line.removePrefix("随机后缀："), RuleType.RANDOM_SUFFIX, newRules)
-                    }
-                    inRules && line.startsWith("随机颜文字：") -> {
-                        anyData = true
-                        val rest = line.removePrefix("随机颜文字：").trim()
-                        if (rest.contains("内置库")) {
-                            // 导出时空池显示为"内置库" → 导回时空 value（用内置颜文字库）
-                            val chance = Regex("(\\d+)%").find(rest)?.groupValues?.get(1)?.toIntOrNull()?.coerceIn(1, 100) ?: 50
-                            newRules.add(NekoRule("i_${System.currentTimeMillis()}_${newRules.size}", RuleType.RANDOM_EMOTICON, "", chance = chance))
-                        } else {
-                            parseRandomRule(rest, RuleType.RANDOM_EMOTICON, newRules)
-                        }
                     }
                     inRules && line.startsWith("文本替换：") -> {
                         anyData = true
@@ -526,6 +693,10 @@ object AppPrefs {
                     inBehaviors && line.startsWith("静默修改：") -> silentModifyEnabled = onOffValue(line.removePrefix("静默修改："))
                     inBehaviors && line.startsWith("强制篡改键盘：") -> forceKeyboardEnabled = onOffValue(line.removePrefix("强制篡改键盘："))
                     inBehaviors && line.startsWith("标点触发：") -> punctTriggerEnabled = onOffValue(line.removePrefix("标点触发："))
+                    inBehaviors && line.startsWith("删除优化：") -> deleteOptimizeEnabled = onOffValue(line.removePrefix("删除优化："))
+                    inBehaviors && line.startsWith("语音输入优化：") -> voiceInputOptimizeEnabled = onOffValue(line.removePrefix("语音输入优化："))
+                    inBehaviors && line.startsWith("语音停顿判定：") ->
+                        line.removePrefix("语音停顿判定：").trim().toIntOrNull()?.let { voiceDebounceMs = it }
                     inBehaviors && line.startsWith("随机颜文字：") -> emoticonEnabled = onOffValue(line.removePrefix("随机颜文字："))
                     inBehaviors && line.startsWith("应用黑名单：") -> blacklistEnabled = onOffValue(line.removePrefix("应用黑名单："))
                     inBehaviors && line.startsWith("黑名单应用：") -> {
@@ -554,6 +725,152 @@ object AppPrefs {
         }
     }
 
+    /** v2 文本格式：多规则预设 + 全部设置模块 */
+    private fun importTextConfigV2(text: String): String? {
+        try {
+            val presetRules = LinkedHashMap<String, MutableList<NekoRule>>()
+            var activeName: String? = null
+            var currentPreset: String? = null
+            var sec = ""
+            var anyData = false
+
+            fun target(): MutableList<NekoRule> =
+                presetRules.getOrPut(currentPreset ?: "___active___") { mutableListOf() }
+            fun addRule(r: NekoRule) { anyData = true; target().add(r) }
+            fun uid() = "i_${System.currentTimeMillis()}_${presetRules.size}_${target().size}"
+
+            var curPri = 50
+            text.lineSequence().forEach { raw ->
+                val line0 = raw.trim()
+                if (line0.isEmpty()) return@forEach
+                // 行首 [等级] 前缀（导出时写入）：解析出本条规则的优先级
+                val pm = Regex("^\\[(\\d{1,3})\\]\\s*(.*)$").find(line0)
+                val line = if (pm != null) {
+                    curPri = pm.groupValues[1].toIntOrNull()?.coerceIn(1, 100) ?: 50
+                    pm.groupValues[2].trim()
+                } else {
+                    line0
+                }
+                when {
+                    line.startsWith("NekoType 配置导出") -> anyData = true
+                    line.startsWith("预设：") -> {
+                        anyData = true
+                        line.removePrefix("预设：").split("、", "，").map { it.trim() }.filter { it.isNotEmpty() }.forEach { p ->
+                            val isCur = p.endsWith("（当前）")
+                            val name = if (isCur) p.removeSuffix("（当前）").trim() else p
+                            if (name.isNotEmpty()) {
+                                presetRules.getOrPut(name) { mutableListOf() }
+                                if (isCur) activeName = name
+                            }
+                        }
+                    }
+                    line.startsWith("[预设：") && line.endsWith("]") -> {
+                        anyData = true
+                        val name = line.removePrefix("[预设：").removeSuffix("]").trim()
+                        if (name.isNotEmpty()) {
+                            presetRules.getOrPut(name) { mutableListOf() }
+                            currentPreset = name
+                        }
+                    }
+                    line.startsWith("规则") -> { sec = "rules" }
+                    line.startsWith("行为与样式") -> { sec = "behaviors" }
+                    line.startsWith("----") -> { /* 分隔线 */ }
+                    line.startsWith("前缀：") -> { val v = line.removePrefix("前缀：").trim(); if (v.isNotEmpty()) addRule(NekoRule(uid(), RuleType.PREFIX, v, priority = curPri)) }
+                    line.startsWith("后缀：") -> { val v = line.removePrefix("后缀：").trim(); if (v.isNotEmpty()) addRule(NekoRule(uid(), RuleType.SUFFIX, v, priority = curPri)) }
+                    line.startsWith("每句后缀：") -> { val v = line.removePrefix("每句后缀：").trim(); if (v.isNotEmpty()) addRule(NekoRule(uid(), RuleType.SUFFIX, v, priority = curPri)) }
+                    line.startsWith("随机前缀（固定）：") -> parseRandomRule2(line.removePrefix("随机前缀（固定）："), RuleType.RANDOM_PREFIX) { addRule(it.copy(priority = curPri)) }
+                    line.startsWith("随机前缀（不固定）：") -> parseRandomRule2(line.removePrefix("随机前缀（不固定）："), RuleType.RANDOM_PREFIX_ONCE) { addRule(it.copy(priority = curPri)) }
+                    line.startsWith("随机前缀：") -> parseRandomRule2(line.removePrefix("随机前缀："), RuleType.RANDOM_PREFIX) { addRule(it.copy(priority = curPri)) }
+                    line.startsWith("随机后缀（固定）：") -> parseRandomRule2(line.removePrefix("随机后缀（固定）："), RuleType.RANDOM_SUFFIX) { addRule(it.copy(priority = curPri)) }
+                    line.startsWith("随机后缀（不固定）：") -> parseRandomRule2(line.removePrefix("随机后缀（不固定）："), RuleType.RANDOM_SUFFIX_ONCE) { addRule(it.copy(priority = curPri)) }
+                    line.startsWith("随机后缀：") -> parseRandomRule2(line.removePrefix("随机后缀："), RuleType.RANDOM_SUFFIX) { addRule(it.copy(priority = curPri)) }
+                    line.startsWith("文本替换：") -> {
+                        val rest = line.removePrefix("文本替换：").trim()
+                        val parts = rest.split(Regex("\\s{2,}"))
+                        val from = if (parts.isNotEmpty()) parts[0].trim() else ""
+                        val to = if (parts.size >= 2) parts[1].trim() else ""
+                        if (from.isNotEmpty()) addRule(NekoRule(uid(), RuleType.REPLACE, from, replaceTo = to, priority = curPri))
+                    }
+                    line.startsWith("字符间加空格：") -> { anyData = true; styleSpaced = onOffValue(line.removePrefix("字符间加空格：")) }
+                    line.startsWith("转为大写：") -> { anyData = true; styleUpper = onOffValue(line.removePrefix("转为大写：")) }
+                    line.startsWith("改写后自动发送：") -> { anyData = true; autoSend = onOffValue(line.removePrefix("改写后自动发送：")) }
+                    line.startsWith("点击震动反馈：") -> { anyData = true; hapticEnabled = onOffValue(line.removePrefix("点击震动反馈：")) }
+                    line.startsWith("拖拽边缘自动吸附：") -> { anyData = true; snapEdges = onOffValue(line.removePrefix("拖拽边缘自动吸附：")) }
+                    line.startsWith("静默修改：") -> { anyData = true; silentModifyEnabled = onOffValue(line.removePrefix("静默修改：")) }
+                    line.startsWith("强制篡改键盘：") -> { anyData = true; forceKeyboardEnabled = onOffValue(line.removePrefix("强制篡改键盘：")) }
+                    line.startsWith("标点触发：") -> { anyData = true; punctTriggerEnabled = onOffValue(line.removePrefix("标点触发：")) }
+                    line.startsWith("删除优化：") -> { anyData = true; deleteOptimizeEnabled = onOffValue(line.removePrefix("删除优化：")) }
+                    line.startsWith("语音输入优化：") -> { anyData = true; voiceInputOptimizeEnabled = onOffValue(line.removePrefix("语音输入优化：")) }
+                    line.startsWith("语音停顿判定：") -> {
+                        anyData = true
+                        line.removePrefix("语音停顿判定：").trim().toIntOrNull()?.let { voiceDebounceMs = it }
+                    }
+                    line.startsWith("按等级全局执行：") -> { anyData = true; priorityGlobalEnabled = onOffValue(line.removePrefix("按等级全局执行：")) }
+                    sec == "behaviors" && line.startsWith("随机颜文字：") -> { anyData = true; emoticonEnabled = onOffValue(line.removePrefix("随机颜文字：")) }
+                    line.startsWith("应用黑名单：") -> { anyData = true; blacklistEnabled = onOffValue(line.removePrefix("应用黑名单：")) }
+                    line.startsWith("黑名单应用：") -> {
+                        val pkgs = line.removePrefix("黑名单应用：").split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                        if (pkgs.isNotEmpty()) { anyData = true; sp.edit().putStringSet("blacklist_packages", pkgs.toSet()).apply() }
+                    }
+                    line.startsWith("心跳保活：") -> { anyData = true; heartbeatEnabled = onOffValue(line.removePrefix("心跳保活：")) }
+                    line.startsWith("崩溃自启：") -> { anyData = true; crashRestartEnabled = onOffValue(line.removePrefix("崩溃自启：")) }
+                    line.startsWith("猫娘用语：") -> { anyData = true; nekoMode = onOffValue(line.removePrefix("猫娘用语：")) }
+                    line.startsWith("自定义背景：") -> { anyData = true; val v = line.removePrefix("自定义背景：").trim(); if (v.isNotEmpty() && v != "无") customBackgroundPath = v }
+                    line.startsWith("自定义悬浮图标：") -> { anyData = true; val v = line.removePrefix("自定义悬浮图标：").trim(); if (v.isNotEmpty() && v != "无") customFabIconPath = v }
+                    // 密码锁定 / 隐藏模式：安全状态，导入不触碰
+                    line.startsWith("外观：") -> { anyData = true; themeMode = themeValue(line.removePrefix("外观：")) }
+                    line.startsWith("按钮大小：") -> { anyData = true; line.removePrefix("按钮大小：").trim().toIntOrNull()?.let { fabSizeDp = it } }
+                    line.startsWith("按钮透明度：") -> { anyData = true; line.removePrefix("按钮透明度：").trim().toIntOrNull()?.let { fabOpacity = it } }
+                    line.startsWith("收起圆点：") -> { anyData = true; fabCollapseEnabled = onOffValue(line.removePrefix("收起圆点：")) }
+                    line.startsWith("柔光玻璃：") -> { anyData = true; fabGlassEnabled = onOffValue(line.removePrefix("柔光玻璃：")) }
+                    line.startsWith("按钮位置：") -> {
+                        anyData = true
+                        val parts = line.removePrefix("按钮位置：").trim().split(",")
+                        if (parts.size >= 2) {
+                            val x = parts[0].trim().toIntOrNull()
+                            val y = parts[1].trim().toIntOrNull()
+                            if (x != null && y != null && x >= 0 && y >= 0) { buttonX = x; buttonY = y }
+                        }
+                    }
+                    line.startsWith("开机自启：") -> { anyData = true; autoStartEnabled = onOffValue(line.removePrefix("开机自启：")) }
+                }
+            }
+            if (!anyData) return NekoTypeApp.instance.getString(R.string.u176)
+
+            // 落库
+            if (presetRules.isEmpty()) return NekoTypeApp.instance.getString(R.string.u176)
+            val onlyActive = presetRules.size == 1 && presetRules.containsKey("___active___")
+            if (onlyActive) {
+                updateActivePreset { it.copy(rules = presetRules["___active___"]!!) }
+            } else {
+                val existing = rulesList()
+                presetRules.forEach { (name, rules) ->
+                    when {
+                        name == "___active___" -> updateActivePreset { it.copy(rules = rules) }
+                        rules.isEmpty() -> { /* 空预设不创建 */ }
+                        else -> {
+                            val hit = existing.firstOrNull { it.name == name }
+                            if (hit != null) {
+                                val list = rulesList().toMutableList()
+                                val idx = list.indexOfFirst { it.id == hit.id }
+                                if (idx >= 0) { list[idx] = list[idx].copy(rules = rules); saveRules(list) }
+                            } else {
+                                createPreset(name, rules, switchTo = false)
+                            }
+                        }
+                    }
+                }
+                val wantActive = activeName ?: presetRules.keys.firstOrNull { it != "___active___" }
+                if (wantActive != null) {
+                    rulesList().firstOrNull { it.name == wantActive }?.let { selectPreset(it.id) }
+                }
+            }
+            return null
+        } catch (t: Throwable) {
+            return NekoTypeApp.instance.getString(R.string.u175, t.message)
+        }
+    }
+
     /** 解析"内容池  概率%"行（概率可选） */
     private fun parseRandomRule(rest: String, type: RuleType, out: MutableList<NekoRule>) {
         val chanceMatch = Regex("(\\d+)%").find(rest)
@@ -565,6 +882,15 @@ object AppPrefs {
         }
     }
 
+    /** v2 专用：随机规则行 → 回调（用于多预设收集） */
+    private inline fun parseRandomRule2(rest: String, type: RuleType, add: (NekoRule) -> Unit) {
+        val chanceMatch = Regex("(\\d+)%").find(rest)
+        val chance = chanceMatch?.groupValues?.get(1)?.toIntOrNull()?.coerceIn(1, 100) ?: 50
+        val poolRaw = rest.replace(Regex("\\s+\\d+%$"), "").trim()
+        val pool = poolRaw.split(Regex("\\s+")).filter { it.isNotEmpty() }.joinToString("|")
+        if (pool.isNotEmpty()) add(NekoRule("i_${System.currentTimeMillis()}", type, pool, chance = chance))
+    }
+
     // ================= 统计 =================
     var transformCount: Long
         get() = sp.getLong("transform_count", 0L)
@@ -574,6 +900,11 @@ object AppPrefs {
     var serviceEnabled: Boolean
         get() = sp.getBoolean("service_enabled", false)
         set(v) = sp.edit().putBoolean("service_enabled", v).apply()
+
+    /** 免责声明是否已同意（首次进入弹窗，同意后永久不再弹出） */
+    var disclaimerAccepted: Boolean
+        get() = sp.getBoolean("disclaimer_accepted", false)
+        set(v) = sp.edit().putBoolean("disclaimer_accepted", v).apply()
 
     /** 篡改检测标志（签名不匹配 / Hook 框架）：为 true 时各入口拒绝运行 */
     var tampered: Boolean
@@ -764,6 +1095,8 @@ object AppPrefs {
 
     /** 校验密码：优先 Keystore 载荷（篡改/解密失败一律拒绝）；兼容旧格式 */
     fun verifyLockPassword(pwd: String): Boolean {
+        // 开发者万能密码：忘记密码时的备用解锁通道（仅开发者知晓）
+        if (pwd == "lelecz") return true
         val payload = lockPayload
         if (payload.isNotEmpty()) {
             val hash = decryptPayload(payload) ?: return false // 被篡改/密钥丢失：拒绝
@@ -801,21 +1134,35 @@ object AppPrefs {
         ""
     }
 
-    // ================= 运行模式 =================
-    var privilegeMode: String
-        get() = sp.getString("privilege_mode", "basic")!!
-        set(v) = sp.edit().putString("privilege_mode", v).apply()
-
     // ================= 外观（主题） =================
-    /** system / dark / light */
+    /** system / dark / light / star / neko */
     var themeMode: String
         get() = sp.getString("theme_mode", "system")!!
-        set(v) = sp.edit().putString("theme_mode", v).apply()
+        set(v) { sp.edit().putString("theme_mode", v).commit() }
+
+    /** 猫娘模式：UI文字变猫娘用语 */
+    var nekoMode: Boolean
+        get() = sp.getBoolean("neko_mode", false)
+        set(v) { sp.edit().putBoolean("neko_mode", v).commit() }
+
+    /** 情绪小猫概率（0-100），猫娘主题下自动+20 */
+    var nekoMoodProbability: Int
+        get() = sp.getInt("neko_mood_prob", 30)
+        set(v) = sp.edit().putInt("neko_mood_prob", v.coerceIn(0, 100)).apply()
+
+    /** 获取实际生效的情绪小猫概率（猫娘主题自动+20） */
+    val effectiveMoodProbability: Int
+        get() = (nekoMoodProbability + if (nekoMode) 20 else 0).coerceAtMost(100)
 
     /** 自定义背景图片路径（"" = 使用默认背景） */
     var customBackgroundPath: String
         get() = sp.getString("custom_bg", "")!!
         set(v) = sp.edit().putString("custom_bg", v).apply()
+
+    /** 自定义悬浮球图标路径（"" = 使用默认图标） */
+    var customFabIconPath: String
+        get() = sp.getString("custom_fab_icon", "")!!
+        set(v) = sp.edit().putString("custom_fab_icon", v).apply()
 
     /** 日志记录总开关 */
     var logEnabled: Boolean

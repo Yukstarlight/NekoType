@@ -24,6 +24,13 @@ object BgUtils {
     private var lastPath: String? = null
     private var lastBitmap: Bitmap? = null
 
+    /** 背景变化时调用：清除缓存，下次 apply 会重新加载（用于清除壁纸后立刻生效） */
+    fun notifyChanged() {
+        lastPath = null
+        lastBitmap?.let { if (!it.isRecycled) it.recycle() }
+        lastBitmap = null
+    }
+
     fun apply(view: View) {
         val path = AppPrefs.customBackgroundPath
         if (path != lastPath) {
@@ -37,6 +44,9 @@ object BgUtils {
         } else if (AppPrefs.themeMode == "star") {
             // 无自定义背景且星空主题：显示星空极光背景
             ContextCompat.getDrawable(view.context, R.drawable.bg_starfield)
+        } else if (AppPrefs.themeMode == "neko") {
+            // 无自定义背景且猫娘主题：显示猫爪水印背景
+            ContextCompat.getDrawable(view.context, R.drawable.bg_neko)
         } else {
             ContextCompat.getDrawable(view.context, R.drawable.bg_gradient_app)
         }

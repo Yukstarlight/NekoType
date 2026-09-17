@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <!-- 启动页背景：深紫蓝渐变，和星空主题呼应 -->
+    <gradient
+        android:startColor="#1A1030"
+        android:centerColor="#2D1B4E"
+        android:endColor="#1A1030"
+        android:angle="135"/>
+</shape>

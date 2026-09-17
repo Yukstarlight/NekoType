@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">NekoType</string>
+    <string name="splash_subtitle">Welcome to Mist Unveils Infinite Tomorrows</string>
+    <string name="splash_version">v2.7.5</string>
     <string name="accessibility_label">NekoType 消息变换</string>
     <string name="accessibility_description">NekoType 需要无障碍权限来检测输入法弹出、读取正在输入的消息、自动添加前缀/后缀/文本替换，并通过悬浮按钮触发改写后发送。所有文本处理均在本地完成。</string>
     <string name="admin_label">NekoType 设备管理员</string>
@@ -46,6 +48,7 @@
     <string name="t36">管理员</string>
     <string name="t37">系统能力</string>
     <string name="t38">一键免电（Shizuku 直写）</string>
+    <string name="t1000">一键授权所有权限（Shizuku 直写）</string>
     <string name="t39">规则预设</string>
     <string name="t40">当前：默认规则</string>
     <string name="t41">选择</string>
@@ -68,6 +71,10 @@
     <string name="t58">强制篡改时：输入以标点（。！？,）结尾才篡改，打完一句才改（手动点发送不受限）</string>
     <string name="t59">随机颜文字</string>
     <string name="t60">每条消息自动追加随机颜文字（含 NekoType 原创猫系颜文字；也可用「随机颜文字」规则自定义池）</string>
+    <string name="t1001">删除优化</string>
+    <string name="t1002">删除文字时暂不改写，停手约 0.5 秒后恢复（避免"后缀删不掉／越删越多"）</string>
+    <string name="t1003">语音输入优化</string>
+    <string name="t1004">语音输入时用更长的停顿判定（默认 1 秒）再改写，避免说到一半被打断</string>
     <string name="t61">密码锁定</string>
     <string name="t62">开启后停止服务需输入密码；配合设备管理员可防杀后台（从最近任务划掉后自动复活）。首次开启直接设置密码</string>
     <string name="t63">心跳保活</string>
@@ -135,10 +142,10 @@
     <string name="t125">全选</string>
     <string name="rule_prefix">前缀</string>
     <string name="rule_suffix">后缀</string>
-    <string name="rule_rand_prefix">随机前缀</string>
-    <string name="rule_rand_suffix">随机后缀</string>
-    <string name="rule_suffix_each">每句后缀</string>
-    <string name="rule_emoticon">随机颜文字</string>
+    <string name="rule_rand_prefix">随机前缀（固定）</string>
+    <string name="rule_rand_suffix">随机后缀（固定）</string>
+    <string name="rule_rand_prefix_once">随机前缀（不固定）</string>
+    <string name="rule_rand_suffix_once">随机后缀（不固定）</string>
     <string name="rule_replace">替换文本</string>
     <string name="notif_title">NekoType 运行中</string>
     <string name="notif_text">悬浮按钮常驻屏幕边缘，点击自动改写并发送</string>
@@ -159,7 +166,7 @@
     <string name="u13">服务已启动，悬浮按钮常驻屏幕边缘</string>
     <string name="u14">语言切换失败</string>
     <string name="u15">已复制：%1$s</string>
-    <string name="u16">已全选：%1$s 个应用加入黑名单</string>
+    <string name="u16">已全选：%1$d 个应用加入黑名单</string>
     <string name="u17">服务已停止</string>
     <string name="u18">设置密码</string>
     <string name="u19">随机池不能为空</string>
@@ -244,7 +251,7 @@
     <string name="u98">○ 已停止</string>
     <string name="u99">停止服务</string>
     <string name="u100">启动服务</string>
-    <string name="u101">累计 %1$s 次</string>
+    <string name="u101">累计 %1$d 次</string>
     <string name="u102">未开启</string>
     <string name="u103">已开启</string>
     <string name="u104">未激活</string>
@@ -270,8 +277,8 @@
     <string name="u124">分享 NekoType 配置</string>
     <string name="u125">语言</string>
     <string name="u126">日志</string>
-    <string name="u127">今日变换：%1$s 次（累计 %2$s 次）\n\n最近 7 天：\n</string>
-    <string name="u128">  %1$s：%2$s 次\n</string>
+    <string name="u127">今日变换：%1$d 次（累计 %2$d 次）\n\n最近 7 天：\n</string>
+    <string name="u128">  %1$s：%2$d 次\n</string>
     <string name="u129">粘贴 NekoType 配置文本</string>
     <string name="u130">导入</string>
     <string name="u131">深色</string>
@@ -297,7 +304,7 @@
     <string name="u151">✓ 已激活</string>
     <string name="u152">✗ 未激活</string>
     <string name="u153">服务状态：</string>
-    <string name="u154">累计变换：%1$s 次</string>
+    <string name="u154">累计变换：%1$d 次</string>
     <string name="u155">版本名：%1$s\n版本号：%2$s\n最低系统：Android 8.0（API 26）\n目标系统：Android 14（API 34）\n包名：%3$s</string>
     <string name="u156">关闭</string>
     <string name="u157">NekoType 建议反馈</string>
@@ -314,18 +321,31 @@
     <string name="u171">✓ 已变换并发送</string>
     <string name="u172">NekoType 运行中</string>
     <string name="u173">Shizuku 通道不可用（未运行或未授权）</string>
+    <string name="u180">无障碍服务</string>
+    <string name="u181">设备管理员</string>
+    <string name="u182">电池优化白名单</string>
+    <string name="u183">悬浮窗权限</string>
+    <string name="u184">错误：未检测到 Shizuku 服务\n请先安装 Shizuku 并用「无线调试」或「ADB」启动，再完成第 5 步授权</string>
+    <string name="u185">错误：Shizuku 未授权\n请先点击第 5 步「请求」按钮完成 Shizuku 授权</string>
+    <string name="u186">正在执行…</string>
+    <string name="u187">正在通过 Shizuku 一键写入所有权限，请稍候…</string>
+    <string name="u188">合计：成功 %1$d 项，失败 %2$d 项</string>
+    <string name="u189">⚠ 部分权限写入失败，请查看上方 ✗ 标记的步骤</string>
+    <string name="u190">失败的权限可点击上方对应步骤按钮手动跳转授权</string>
+    <string name="u191">一键授权成功：%1$d 项权限已全部写入 ✅</string>
+    <string name="u192">一键授权完成：成功 %1$d 项，失败 %2$d 项</string>
     <string name="u174">不是有效的 NekoType 配置文件</string>
     <string name="u175">导入失败：%1$s</string>
     <string name="u176">无法识别配置内容</string>
-    <string name="u160">已启用：黑名单内 %1$s 个应用不自动篡改（悬浮球手动不受限）</string>
+    <string name="u160">已启用：黑名单内 %1$d 个应用不自动篡改（悬浮球手动不受限）</string>
     <string name="u161">未启用：所有应用都自动篡改（可先开启开关）</string>
     <string name="u162">NekoType 需要设备管理员权限以获得更强的系统级能力（可选）。</string>
     <string name="paste_text">粘贴</string>
     <string name="copy_text">复制</string>
     <string name="text_selection_more">更多…</string>
-    <string name="t_terminal_title">Mist Unveils Infinite Tomorrows 集成终端</string>
+    <string name="t_terminal_title">Welcome to Mist Unveils Infinite Tomorrows 集成终端</string>
     <string name="t_terminal_open">打开终端</string>
-    <string name="t_terminal_launch">启动 Mist Unveils Infinite Tomorrows 集成终端（Beta）</string>
+    <string name="t_terminal_launch">启动 Welcome to Mist Unveils Infinite Tomorrows 集成终端（Beta）</string>
 
     <!-- ===== 底部导航 ===== -->
     <string name="nav_home">首页</string>
@@ -370,4 +390,56 @@
 
     <!-- ===== 语言 ===== -->
     <string name="home_language">语言</string>
+    <string name="i1">搜索应用名 / 包名</string>
+    <string name="i2">输入一段测试消息</string>
+    <string name="i3">▲ 快捷命令</string>
+    <string name="i4">字体大小</string>
+    <string name="i5">范围：10 - 24 sp</string>
+    <string name="i6">面板透明度</string>
+    <string name="i7">标题栏和快捷命令面板的背景透明度</string>
+    <string name="i8">字体颜色</string>
+    <string name="i9">当前：#FFFFFF</string>
+    <string name="i10">🛑 停止猫轰炸</string>
+    <string name="i11">自定义悬浮球图标</string>
+    <string name="i12">选择一张图片作为悬浮球头像，圆形裁剪</string>
+    <string name="i13">选择图片</string>
+    <string name="i14">恢复默认</string>
+    <string name="i15">安全与保活</string>
+    <string name="i16">🐱 猫娘主题</string>
+    <string name="i17">人设语气包</string>
+    <string name="i18">一键套用风格预设，聊天秒换人设</string>
+    <string name="i19">萝莉语</string>
+    <string name="i20">古风文言</string>
+    <string name="i21">译制片腔</string>
+    <string name="i22">阴阳怪气</string>
+    <string name="i23">火星文</string>
+    <string name="i24">病娇</string>
+    <string name="i31">雌小鬼</string>
+    <string name="i32">猫娘</string>
+    <string name="i25">点击后自动创建对应规则预设并激活，可在规则页查看/修改</string>
+    <string name="i26">🐱 情绪小猫</string>
+    <string name="i27">终端 nekomood 命令随机情绪概率</string>
+    <string name="i28">猫娘主题下自动 +20%</string>
+    <string name="i29">当前：#%1$s</string>
+    <string name="i30">猫娘主题已激活，实际 %1$d%%（基础 %2$d%% +20%）</string>
+    <string name="i41">优先级</string>
+    <string name="i42">1-100，数字越大越先执行（同级按列表顺序；默认 50）</string>
+    <string name="i43">按等级全局执行</string>
+    <string name="i44">开启后所有规则打散，严格按等级从大到小逐条执行（例：让"替换"在后缀之后生效）</string>
+    <string name="i45">等级</string>
+    <string name="i46">免责声明</string>
+    <string name="i47">本软件通过安卓无障碍服务在打字时改写文本，仅供个人学习、娱乐与输入辅助使用。\n\n1. 请勿用于诈骗、骚扰、造谣、辱骂、冒充他人或任何违法违规活动；由此产生的一切后果由使用者本人承担。\n2. 改写可能因系统限制、应用版本或输入法差异而失败或不生效，请勿用于重要、敏感或不可撤回的沟通场景。\n3. 本软件仅在本机处理文本、不联网、不上传、不存储聊天内容（本应用未申请联网权限，系统层面无法联网）。\n4. 本软件与微信、QQ、腾讯及其他第三方应用无任何关联，非其官方产品，相关商标归各自权利人所有。\n5. 因使用本软件造成的任何直接或间接损失，开发者不承担赔偿责任。\n6. 未成年人请在监护人指导下使用。\n\n点击「同意」即表示你已阅读并接受以上条款，以及下方的《隐私政策》《第三方信息共享清单》与《开源许可》。</string>
+    <string name="i48">同意</string>
+    <string name="i49">不同意</string>
+    <string name="i50">同意（%1$d 秒）</string>
+    <string name="i51">6</string>
+    <string name="i52">自启动保活（vivo/iQOO 等）</string>
+    <string name="i53">国内系统需手动允许自启动，否则后台被冻结、改写会失效</string>
+    <string name="i54">去开启</string>
+    <string name="i55">隐私政策</string>
+    <string name="i56">第三方信息共享清单</string>
+    <string name="i57">开源许可</string>
+    <string name="i58">关闭</string>
+    <string name="i59">法律信息与开源许可</string>
+    <string name="i60">已重置：下次启动会重新显示免责声明弹窗</string>
 </resources>

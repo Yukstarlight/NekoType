@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 窗口动画：关闭退出动画，避免纯黑背景下退出时出现黑波纹 -->
+    <!-- 窗口动画：赛博朋克风格切换 -->
     <style name="NekoWindowAnim" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/cyber_activity_enter</item>
+        <item name="android:activityOpenExitAnimation">@anim/cyber_activity_exit</item>
+        <item name="android:activityCloseEnterAnimation">@anim/cyber_activity_enter</item>
         <item name="android:activityCloseExitAnimation">@null</item>
     </style>
 
@@ -15,7 +18,8 @@
         <item name="colorOnSecondary">@color/md_theme_onPrimary</item>
         <item name="colorSecondaryContainer">@color/glass_strong</item>
         <item name="colorOnSecondaryContainer">@color/fg_0</item>
-        <item name="colorSurface">#55FFFFFF</item>
+        <!-- 浅色主题 surface 保持近实心白，避免半透明叠浅灰底形成"灰色方框" -->
+        <item name="colorSurface">#F5FFFFFF</item>
         <item name="colorOnSurface">@color/fg_0</item>
         <item name="colorOnSurfaceVariant">@color/fg_1</item>
         <item name="colorOutlineVariant">@color/border_glass</item>
@@ -50,6 +54,34 @@
         <item name="android:windowBackground">@drawable/bg_starfield</item>
         <item name="android:statusBarColor">@color/star_bg0</item>
         <item name="android:navigationBarColor">@color/star_bg0</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <!-- 猫娘模式：粉紫可爱风 + 猫爪元素 -->
+    <style name="Theme.NekoType.Neko" parent="Theme.NekoType.Main">
+        <item name="colorPrimary">@color/neko_primary</item>
+        <item name="colorOnPrimary">@color/neko_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/neko_secondary</item>
+        <item name="colorOnPrimaryContainer">@color/neko_text_light</item>
+        <item name="colorSecondary">@color/neko_accent</item>
+        <item name="colorOnSecondary">@color/neko_onPrimary</item>
+        <item name="colorSecondaryContainer">@color/neko_secondary</item>
+        <item name="colorOnSecondaryContainer">@color/neko_text_light</item>
+        <item name="colorSurface">#66FFF0F8</item>
+        <item name="colorOnSurface">@color/neko_text_light</item>
+        <item name="colorOnSurfaceVariant">@color/neko_text_soft_light</item>
+        <item name="colorOutlineVariant">#22E0A0C0</item>
+        <item name="android:windowBackground">@drawable/bg_neko</item>
+        <item name="android:statusBarColor">@color/neko_primary_dark</item>
+        <item name="android:navigationBarColor">@color/neko_primary_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <!-- 启动页主题：全屏、无ActionBar、背景与启动页一致避免闪屏 -->
+    <style name="Theme.NekoType.Splash" parent="Theme.NekoType.Main">
+        <item name="android:windowBackground">@drawable/bg_splash</item>
+        <item name="android:statusBarColor">#1A1030</item>
+        <item name="android:navigationBarColor">#1A1030</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>

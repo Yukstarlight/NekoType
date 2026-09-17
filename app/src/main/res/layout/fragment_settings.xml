@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:background="@drawable/bg_gradient_app">
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -178,6 +177,16 @@
                         android:textSize="14sp"
                         android:text="@string/theme_star"/>
                 </GridLayout>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnThemeNeko"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:minHeight="44dp"
+                    android:checkable="true"
+                    android:textSize="14sp"
+                    android:text="@string/i16"/>
                 <TextView
                     android:id="@+id/tvThemeHint"
                     android:layout_width="match_parent"
@@ -227,6 +236,235 @@
                     android:textSize="11sp"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:paddingBottom="4dp"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 人设语气包 -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="1dp"
+            app:strokeColor="?attr/colorOutlineVariant"
+            app:strokeWidth="1dp"
+            app:cardBackgroundColor="?attr/colorSurface"
+            android:layout_marginTop="14dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/i17"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/i18"
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:layout_marginTop="2dp"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="12dp">
+                    <TextView
+                        android:id="@+id/btnPersonaLoli"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="@string/i19"
+                        android:textSize="13sp"
+                        android:textColor="?attr/colorOnSurface"
+                        android:background="@drawable/bg_quick_cmd"
+                        android:foreground="?attr/selectableItemBackground"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        android:layout_marginEnd="6dp"/>
+                    <TextView
+                        android:id="@+id/btnPersonaAncient"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="@string/i20"
+                        android:textSize="13sp"
+                        android:textColor="?attr/colorOnSurface"
+                        android:background="@drawable/bg_quick_cmd"
+                        android:foreground="?attr/selectableItemBackground"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        android:layout_marginEnd="6dp"/>
+                    <TextView
+                        android:id="@+id/btnPersonaDub"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="@string/i21"
+                        android:textSize="13sp"
+                        android:textColor="?attr/colorOnSurface"
+                        android:background="@drawable/bg_quick_cmd"
+                        android:foreground="?attr/selectableItemBackground"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp">
+                    <TextView
+                        android:id="@+id/btnPersonaSarcasm"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="@string/i22"
+                        android:textSize="13sp"
+                        android:textColor="?attr/colorOnSurface"
+                        android:background="@drawable/bg_quick_cmd"
+                        android:foreground="?attr/selectableItemBackground"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        android:layout_marginEnd="6dp"/>
+                    <TextView
+                        android:id="@+id/btnPersonaMars"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="@string/i23"
+                        android:textSize="13sp"
+                        android:textColor="?attr/colorOnSurface"
+                        android:background="@drawable/bg_quick_cmd"
+                        android:foreground="?attr/selectableItemBackground"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        android:layout_marginEnd="6dp"/>
+                    <TextView
+                        android:id="@+id/btnPersonaYandere"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="@string/i24"
+                        android:textSize="13sp"
+                        android:textColor="?attr/colorOnSurface"
+                        android:background="@drawable/bg_quick_cmd"
+                        android:foreground="?attr/selectableItemBackground"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp">
+                    <TextView
+                        android:id="@+id/btnPersonaFuta"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="@string/i31"
+                        android:textSize="13sp"
+                        android:textColor="?attr/colorOnSurface"
+                        android:background="@drawable/bg_quick_cmd"
+                        android:foreground="?attr/selectableItemBackground"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        android:layout_marginEnd="6dp"/>
+                    <TextView
+                        android:id="@+id/btnPersonaNeko"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="@string/i32"
+                        android:textSize="13sp"
+                        android:textColor="?attr/colorOnSurface"
+                        android:background="@drawable/bg_quick_cmd"
+                        android:foreground="?attr/selectableItemBackground"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"/>
+                </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/i25"
+                    android:textSize="11sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:layout_marginTop="8dp"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 情绪小猫概率 -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="?attr/colorOutlineVariant">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/i26"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/i27"
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:layout_marginTop="4dp"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="12dp">
+                    <SeekBar
+                        android:id="@+id/seekMoodProb"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:max="100"
+                        android:progress="30"/>
+                    <TextView
+                        android:id="@+id/tvMoodProbVal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:text="30%"
+                        android:textSize="14sp"
+                        android:textColor="?attr/colorOnSurface"
+                        android:minWidth="60dp"
+                        android:gravity="end"/>
+                </LinearLayout>
+                <TextView
+                    android:id="@+id/tvMoodProbHint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/i28"
+                    android:textSize="11sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:layout_marginTop="4dp"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -686,6 +924,7 @@
             android:layout_marginTop="14dp"
             android:layout_marginBottom="28dp">
             <LinearLayout
+                android:id="@+id/llLegal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"

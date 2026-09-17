@@ -17,13 +17,14 @@ import com.nekotype.app.overlay.FloatingButtonService
 import com.nekotype.app.prefs.AppPrefs
 import com.nekotype.app.sys.SysPower
 import com.nekotype.app.util.BgUtils
+import com.nekotype.app.util.NekoLang
 import com.nekotype.app.util.NekoLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * 模式页：三种运行模式互斥选择
+ * 模式页：三种工作模式互斥选择
  * - 悬浮球模式：forceKeyboard = false（默认）
  * - 篡改键盘模式：forceKeyboard = true, punctTrigger = false
  * - 断句追加模式：forceKeyboard = true, punctTrigger = true
@@ -44,12 +45,25 @@ class ModeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentModeBinding.inflate(inflater, container, false)
+        // inflate 兜底：布局加载失败返回空视图，绝不闪退
+        _binding = try {
+            FragmentModeBinding.inflate(inflater, container, false)
+        } catch (e: Throwable) {
+            NekoLog.error("模式页布局加载失败：${e.javaClass.simpleName}")
+            return android.widget.FrameLayout(inflater.context).apply {
+                addView(android.widget.TextView(context).apply {
+                    text = "模式页加载失败，请尝试切换主题"
+                    gravity = android.view.Gravity.CENTER
+                })
+            }
+        }
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        if (_binding == null) return
+        try {
         BgUtils.apply(binding.root)
 
         // 模式选择
@@ -104,12 +118,26 @@ class ModeFragment : Fragment() {
         }
 
         refreshModeUI()
+        } catch (e: Throwable) {
+            NekoLog.error("模式页初始化失败：${e.javaClass.simpleName}: ${e.message}")
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        BgUtils.apply(binding.root)
-        refreshModeUI()
+        if (_binding == null) return
+        try {
+            BgUtils.apply(binding.root)
+            NekoLang.apply(binding.root)
+            refreshModeUI()
+        } catch (_: Throwable) { }
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if (!hidden && view != null) {
+            refreshModeUI()
+        }
     }
 
     override fun onDestroyView() {
@@ -126,6 +154,7 @@ class ModeFragment : Fragment() {
     }
 
     private fun refreshModeUI() {
+        if (_binding == null) return
         binding.tvCurrentMode.text = currentModeName()
 
         val isFab = !AppPrefs.forceKeyboardEnabled
@@ -221,7 +250,7 @@ class ModeFragment : Fragment() {
 
     /** 强制篡改免责声明（punctMode=true 则断句追加模式） */
     private fun showForceDisclaimer(punctMode: Boolean) {
-        AlertDialog.Builder(requireContext())
+        NekoDialog.builder(requireContext())
             .setTitle(getString(R.string.mode_force_disclaimer_title))
             .setMessage(getString(R.string.mode_force_disclaimer))
             .setPositiveButton(getString(R.string.mode_agree)) { _, _ ->
@@ -264,7 +293,7 @@ class ModeFragment : Fragment() {
 
     private fun askHiddenMode() {
         if (AppPrefs.hiddenModeEnabled) return
-        AlertDialog.Builder(requireContext())
+        NekoDialog.builder(requireContext())
             .setTitle(getString(R.string.u10))
             .setMessage(getString(R.string.u114))
             .setPositiveButton(getString(R.string.u112)) { _, _ -> applyHiddenMode(true) }
@@ -293,20 +322,27 @@ class ModeFragment : Fragment() {
                 AppPrefs.heartbeatEnabled = true
                 FloatingButtonService.start(ctx)
             }
+            // 双保险：先禁用 LAUNCHER 组件（图标立即消失，无需 Shizuku），
+            // Shizuku 可用时再额外执行 pm hide（更深层隐藏，连应用信息里都看不到）
+            SysPower.setHiddenMode(true)
             if (SysPower.privilegedChannelReady()) {
                 lifecycleScope.launch {
-                    val r = withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(true) }
-                    if (!r.success) SysPower.setHiddenMode(true)
+                    withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(true) }
                 }
-            } else {
-                SysPower.setHiddenMode(true)
             }
+            // 把当前应用从最近任务列表移除（后台隐藏）
+            try {
+                val am = ctx.getSystemService(android.content.Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+                for (task in am.appTasks) {
+                    try { task.finishAndRemoveTask() } catch (_: Throwable) { }
+                }
+            } catch (_: Throwable) { }
             toast(getString(R.string.u50))
         } else {
+            // 恢复：先恢复组件，再 pm unhide
+            SysPower.setHiddenMode(false)
             if (SysPower.privilegedChannelReady()) {
                 lifecycleScope.launch { withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(false) } }
-            } else {
-                SysPower.setHiddenMode(false)
             }
             toast(getString(R.string.u51))
         }
@@ -340,7 +376,7 @@ class ModeFragment : Fragment() {
             addView(et)
             addView(et2)
         }
-        AlertDialog.Builder(requireContext())
+        NekoDialog.builder(requireContext())
             .setTitle(getString(R.string.u18))
             .setMessage(getString(R.string.u12))
             .setView(box)
@@ -372,7 +408,7 @@ class ModeFragment : Fragment() {
             addView(et)
         }
         val cancelAction = { (onCancel ?: { }).invoke() }
-        val dialog = AlertDialog.Builder(requireContext())
+        val dialog = NekoDialog.builder(requireContext())
             .setTitle(title)
             .setView(box)
             .setPositiveButton(getString(R.string.u71), null)

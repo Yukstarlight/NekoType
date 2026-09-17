@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fragment 进入：iOS 风格弹性缩放 + 淡入，280ms 减速曲线 -->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:anim/decelerate_interpolator"
+    android:shareInterpolator="true">
+    <alpha
+        android:fromAlpha="0.0"
+        android:toAlpha="1.0"
+        android:duration="280"/>
+    <scale
+        android:fromXScale="0.94"
+        android:toXScale="1.0"
+        android:fromYScale="0.94"
+        android:toYScale="1.0"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:duration="280"/>
+</set>

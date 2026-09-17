@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">NekoType</string>
+    <string name="splash_subtitle">Welcome to Mist Unveils Infinite Tomorrows</string>
+    <string name="splash_version">v2.7.5</string>
     <string name="accessibility_label">NekoType Message Transform</string>
     <string name="accessibility_description">NekoType needs accessibility permission to detect keyboard input, read the message being typed, automatically add prefix/suffix/text replacement, and send after rewriting via the floating button. All text processing is done locally.</string>
     <string name="admin_label">NekoType Device Admin</string>
@@ -47,6 +49,7 @@
     <string name="t36">Admin</string>
     <string name="t37">System Capabilities</string>
     <string name="t38">Battery Whitelist (Shizuku)</string>
+    <string name="t1000">Grant All Permissions (Shizuku)</string>
     <string name="t39">Rule Presets</string>
     <string name="t40">Current: Default Rules</string>
     <string name="t41">Select</string>
@@ -69,6 +72,10 @@
     <string name="t58">Only tampers when input ends with punctuation (。！？,); manual send is not limited</string>
     <string name="t59">Random Kaomoji</string>
     <string name="t60">Automatically append a random kaomoji to every message (includes NekoType original cat kaomoji)</string>
+    <string name="t1001">Delete Optimization</string>
+    <string name="t1002">Skip rewriting while you are deleting text; resume about 0.5s after you stop (avoids the suffix coming back)</string>
+    <string name="t1003">Voice Input Optimization</string>
+    <string name="t1004">Use a longer pause (1s by default) before rewriting during voice input, so it will not interrupt mid-sentence</string>
     <string name="t61">Password Lock</string>
     <string name="t62">Password required to stop service; works with Device Admin to keep running. Set password on first enable</string>
     <string name="t63">Heartbeat Keep-alive</string>
@@ -136,10 +143,10 @@
     <string name="t125">Select All</string>
     <string name="rule_prefix">Prefix</string>
     <string name="rule_suffix">Suffix</string>
-    <string name="rule_rand_prefix">Random Prefix</string>
-    <string name="rule_rand_suffix">Random Suffix</string>
-    <string name="rule_suffix_each">Per-Sentence Suffix</string>
-    <string name="rule_emoticon">Random Kaomoji</string>
+    <string name="rule_rand_prefix">Random Prefix (Fixed)</string>
+    <string name="rule_rand_suffix">Random Suffix (Fixed)</string>
+    <string name="rule_rand_prefix_once">Random Prefix (One)</string>
+    <string name="rule_rand_suffix_once">Random Suffix (One)</string>
     <string name="rule_replace">Replace Text</string>
     <string name="notif_title">NekoType Running</string>
     <string name="notif_text">Floating button stays on screen edge, tap to transform &amp; send</string>
@@ -160,7 +167,7 @@
     <string name="u13">Service started, floating button stays on screen edge</string>
     <string name="u14">Language switch failed</string>
     <string name="u15">Copied: %1$s</string>
-    <string name="u16">Added %1$s apps to blacklist</string>
+    <string name="u16">Added %1$d apps to blacklist</string>
     <string name="u17">Service stopped</string>
     <string name="u18">Set Password</string>
     <string name="u19">Random pool cannot be empty</string>
@@ -245,7 +252,7 @@
     <string name="u98">○ Stopped</string>
     <string name="u99">Stop Service</string>
     <string name="u100">Start Service</string>
-    <string name="u101">Total %1$s times</string>
+    <string name="u101">Total %1$d times</string>
     <string name="u102">Not enabled</string>
     <string name="u103">Enabled</string>
     <string name="u104">Not activated</string>
@@ -271,8 +278,8 @@
     <string name="u124">Share NekoType Config</string>
     <string name="u125">Language</string>
     <string name="u126">Log</string>
-    <string name="u127">Today: %1$s times (total %2$s)\n\nLast 7 days:\n</string>
-    <string name="u128">  %1$s: %2$s times\n</string>
+    <string name="u127">Today: %1$d times (total %2$d)\n\nLast 7 days:\n</string>
+    <string name="u128">  %1$s: %2$d times\n</string>
     <string name="u129">Paste NekoType config text</string>
     <string name="u130">Import</string>
     <string name="u131">Dark</string>
@@ -298,7 +305,7 @@
     <string name="u151">✓ Activated</string>
     <string name="u152">✗ Not activated</string>
     <string name="u153">Service status: </string>
-    <string name="u154">Total transformations: %1$s</string>
+    <string name="u154">Total transformations: %1$d</string>
     <string name="u155">Version name: %1$s\nVersion code: %2$s\nMin system: Android 8.0 (API 26)\nTarget system: Android 14 (API 34)\nPackage: %3$s</string>
     <string name="u156">Close</string>
     <string name="u157">NekoType Feedback</string>
@@ -315,18 +322,31 @@
     <string name="u171">✓ Transformed &amp; sent</string>
     <string name="u172">NekoType running</string>
     <string name="u173">Shizuku channel unavailable (not running or not granted)</string>
+    <string name="u180">Accessibility Service</string>
+    <string name="u181">Device Admin</string>
+    <string name="u182">Battery Optimization Whitelist</string>
+    <string name="u183">Overlay Permission</string>
+    <string name="u184">Error: Shizuku service not detected\nPlease install Shizuku and start it via Wireless Debugging or ADB, then complete step 5</string>
+    <string name="u185">Error: Shizuku not authorized\nPlease tap step 5 "Request" first to authorize Shizuku</string>
+    <string name="u186">Running…</string>
+    <string name="u187">Granting all permissions via Shizuku, please wait…</string>
+    <string name="u188">Total: %1$d success, %2$d failed</string>
+    <string name="u189">⚠ Some permissions failed, see ✗ marked steps above</string>
+    <string name="u190">Failed permissions can be granted manually by tapping the corresponding step button above</string>
+    <string name="u191">All permissions granted: %1$d items ✅</string>
+    <string name="u192">Grant complete: %1$d success, %2$d failed</string>
     <string name="u174">Not a valid NekoType config file</string>
     <string name="u175">Import failed: %1$s</string>
     <string name="u176">Cannot recognize config content</string>
-    <string name="u160">Enabled: %1$s apps in blacklist will not auto-tamper (floating button manual not limited)</string>
+    <string name="u160">Enabled: %1$d apps in blacklist will not auto-tamper (floating button manual not limited)</string>
     <string name="u161">Disabled: all apps auto-tamper (enable the switch first)</string>
     <string name="u162">NekoType needs Device Admin permission for stronger system-level capabilities (optional).</string>
     <string name="paste_text">Paste</string>
     <string name="copy_text">Copy</string>
     <string name="text_selection_more">More…</string>
-    <string name="t_terminal_title">Mist Unveils Infinite Tomorrows Terminal</string>
+    <string name="t_terminal_title">Welcome to Mist Unveils Infinite Tomorrows Terminal</string>
     <string name="t_terminal_open">Open Terminal</string>
-    <string name="t_terminal_launch">Launch Mist Unveils Infinite Tomorrows Terminal (Beta)</string>
+    <string name="t_terminal_launch">Launch Welcome to Mist Unveils Infinite Tomorrows Terminal (Beta)</string>
 
     <!-- ===== Bottom Navigation ===== -->
     <string name="nav_home">Home</string>
@@ -375,4 +395,56 @@
 
     <!-- ===== Language ===== -->
     <string name="home_language">Language</string>
+    <string name="i1">Search app name / package</string>
+    <string name="i2">Type a test message</string>
+    <string name="i3">▲ Quick Commands</string>
+    <string name="i4">Font Size</string>
+    <string name="i5">Range: 10 - 24 sp</string>
+    <string name="i6">Panel Opacity</string>
+    <string name="i7">Background opacity of the title bar and quick command panel</string>
+    <string name="i8">Font Color</string>
+    <string name="i9">Current: #FFFFFF</string>
+    <string name="i10">🛑 Stop Cat Bombing</string>
+    <string name="i11">Custom Floating Icon</string>
+    <string name="i12">Pick an image as the floating ball icon (circular crop)</string>
+    <string name="i13">Choose Image</string>
+    <string name="i14">Reset to Default</string>
+    <string name="i15">Security &amp; Keep-alive</string>
+    <string name="i16">🐱 Neko Theme</string>
+    <string name="i17">Persona Packs</string>
+    <string name="i18">Apply a style preset in one tap</string>
+    <string name="i19">Loli Speech</string>
+    <string name="i20">Classical Chinese</string>
+    <string name="i21">Dubbed Movie Tone</string>
+    <string name="i22">Passive-aggressive</string>
+    <string name="i23">Mars Text</string>
+    <string name="i24">Yandere</string>
+    <string name="i25">Creates and activates the matching rule preset; view or edit it on the Rules page</string>
+    <string name="i26">🐱 Mood Cat</string>
+    <string name="i27">Random mood probability for the terminal nekomood command</string>
+    <string name="i28">Auto +20% under Neko theme</string>
+    <string name="i29">Current: #%1$s</string>
+    <string name="i30">Neko theme active: effective %1$d%% (base %2$d%% +20%%)</string>
+    <string name="i41">Priority</string>
+    <string name="i42">1-100, higher runs first (same priority keeps list order; default 50)</string>
+    <string name="i43">Run All by Priority</string>
+    <string name="i44">All rule categories are merged and executed strictly by priority (e.g. let Replace run after Suffix)</string>
+    <string name="i45">Level</string>
+    <string name="i46">Disclaimer</string>
+    <string name="i47">This app rewrites text as you type through the Android accessibility service, for personal study, entertainment and input assistance only.\n\n1. Do not use it for fraud, harassment, rumor-mongering, abuse, impersonation or any illegal activity; all consequences rest solely with the user.\n2. Rewriting may fail or not take effect due to system limits, app versions or keyboard differences — do not rely on it for important, sensitive or irreversible communication.\n3. Text is processed locally only: no network access, nothing uploaded, no chat content stored (the app does not request the INTERNET permission, so it cannot access the network at system level).\n4. This app is not affiliated with WeChat, QQ, Tencent or any third-party app and is not an official product of theirs; trademarks belong to their respective owners.\n5. The developer is not liable for any direct or indirect loss caused by using this app.\n6. Minors should use it under guardian supervision.\n\nTapping "Agree" means you have read and accepted the terms above as well as the Privacy Policy, Third-Party Data Sharing List and Open Source Licenses below.</string>
+    <string name="i48">Agree</string>
+    <string name="i49">Disagree</string>
+    <string name="i50">Agree (%1$ds)</string>
+    <string name="i51">6</string>
+    <string name="i52">Auto-start keep-alive (vivo/iQOO etc.)</string>
+    <string name="i53">Chinese ROMs require allowing auto-start manually, otherwise the app is frozen in the background and rewriting stops working</string>
+    <string name="i54">Enable</string>
+    <string name="i55">Privacy Policy</string>
+    <string name="i56">Third-Party Data Sharing List</string>
+    <string name="i57">Open Source Licenses</string>
+    <string name="i58">Close</string>
+    <string name="i59">Legal &amp; Open Source Licenses</string>
+    <string name="i60">Reset: the disclaimer dialog will show again on next launch</string>
+    <string name="i31">Mesugaki</string>
+    <string name="i32">Neko Girl</string>
 </resources>

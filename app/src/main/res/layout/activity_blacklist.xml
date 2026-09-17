@@ -57,7 +57,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="搜索应用名 / 包名"
+                android:hint="@string/i1"
                 android:background="@drawable/bg_bubble_in"
                 android:padding="10dp"
                 android:textSize="13sp"

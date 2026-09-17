@@ -25,6 +25,8 @@ class NekoTypeApp : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        // 初始化 Shizuku 长连接通道（注册 Binder 监听 + 预绑定 UserService）
+        com.nekotype.app.sys.SysPower.initShizukuChannel()
         // 防篡改检测：签名不匹配（重打包）或检测到 Hook 框架 → 标记，各入口拒绝运行
         val tampered = !TamperGuard.isSignatureValid(this) || TamperGuard.hasHookFramework()
         if (tampered != AppPrefs.tampered) {
@@ -61,9 +63,12 @@ class NekoTypeApp : Application() {
         // 星空主题需要在每个 Activity 创建前 setTheme
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-                if (AppPrefs.themeMode == "star") {
-                    activity.setTheme(R.style.Theme_NekoType_Star)
-                }
+                try {
+                    when (AppPrefs.themeMode) {
+                        "star" -> activity.setTheme(R.style.Theme_NekoType_Star)
+                        "neko" -> activity.setTheme(R.style.Theme_NekoType_Neko)
+                    }
+                } catch (_: Throwable) { /* 主题应用失败不阻断页面 */ }
             }
             override fun onActivityStarted(activity: Activity) {}
             override fun onActivityResumed(activity: Activity) {}
@@ -74,12 +79,13 @@ class NekoTypeApp : Application() {
         })
     }
 
-    /** 根据 themeMode 设置夜间模式（星空主题走深色） */
+    /** 根据 themeMode 设置夜间模式（星空/猫娘主题走深色） */
     fun applyAppTheme() {
         val mode = when (AppPrefs.themeMode) {
             "dark" -> AppCompatDelegate.MODE_NIGHT_YES
             "light" -> AppCompatDelegate.MODE_NIGHT_NO
             "star" -> AppCompatDelegate.MODE_NIGHT_YES
+            "neko" -> AppCompatDelegate.MODE_NIGHT_NO
             else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         }
         AppCompatDelegate.setDefaultNightMode(mode)

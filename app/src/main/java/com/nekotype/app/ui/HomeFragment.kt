@@ -10,6 +10,7 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,11 +25,13 @@ import com.nekotype.app.overlay.FloatingButtonService
 import com.nekotype.app.prefs.AppPrefs
 import com.nekotype.app.sys.SysPower
 import com.nekotype.app.util.BgUtils
+import com.nekotype.app.util.NekoLang
 import com.nekotype.app.util.NekoLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rikka.shizuku.Shizuku
+import java.io.File
 
 /**
  * 首页（启动页）：服务状态总览 + 权限引导五步 + 系统能力。
@@ -43,10 +46,14 @@ class HomeFragment : Fragment() {
 
     private val shizukuListener = Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
         if (requestCode == shizukuRequestCode) {
-            toast(
-                if (grantResult == PackageManager.PERMISSION_GRANTED) getString(R.string.u60)
-                else getString(R.string.u61)
-            )
+            if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                toast(getString(R.string.u60))
+                // 权限授权成功后，自动触发 UserService 绑定探测
+                probeShizukuChannel()
+            } else {
+                toast(getString(R.string.u61))
+                binding.tvPrivLog.text = "Shizuku API 权限被拒绝，UserService 绑定可能失败。\n请在 Shizuku 应用 → 应用管理 → 开启 NekoType 后重试。"
+            }
             refreshStatus()
         }
     }
@@ -57,12 +64,41 @@ class HomeFragment : Fragment() {
         refreshStatus()
     }
 
+    /** 自定义悬浮球图标选择器 */
+    private val fabIconPicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            try {
+                val out = File(requireContext().filesDir, "custom_fab_icon.png")
+                requireContext().contentResolver.openInputStream(uri)?.use { input ->
+                    out.outputStream().use { input.copyTo(it) }
+                }
+                AppPrefs.customFabIconPath = out.absolutePath
+                updateFabIconPreview()
+                restartFabIfRunning()
+                toast("悬浮球图标已更新")
+            } catch (_: Throwable) {
+                toast("图片保存失败")
+            }
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        // inflate 兜底：布局加载失败返回空视图，绝不闪退
+        _binding = try {
+            FragmentHomeBinding.inflate(inflater, container, false)
+        } catch (e: Throwable) {
+            NekoLog.error("首页布局加载失败：${e.javaClass.simpleName}")
+            return android.widget.FrameLayout(inflater.context).apply {
+                addView(android.widget.TextView(context).apply {
+                    text = "首页加载失败，请尝试切换主题"
+                    gravity = android.view.Gravity.CENTER
+                })
+            }
+        }
         return binding.root
     }
 
@@ -95,9 +131,27 @@ class HomeFragment : Fragment() {
             openOverlaySettings()
         }
         binding.btnStep5Shizuku.setOnClickListener { handleShizuku() }
+        // 自启动保活：vivo/iQOO(OriginOS)、小米、OPPO、华为等国内 ROM 必开，否则后台被冻结
+        binding.btnStep6.setOnClickListener {
+            NekoLog.adjust("前往开启自启动权限")
+            SysPower.openAutoStartSettings(requireContext())
+        }
 
         // 系统能力
         binding.btnBatteryPriv.setOnClickListener { grantBatteryPrivileged() }
+        binding.btnGrantAll.setOnClickListener { grantAllPermissions() }
+
+        // 自定义悬浮球图标
+        binding.btnPickFabIcon.setOnClickListener {
+            try { fabIconPicker.launch("image/*") } catch (_: Throwable) { toast("无法打开图片选择器") }
+        }
+        binding.btnResetFabIcon.setOnClickListener {
+            AppPrefs.customFabIconPath = ""
+            updateFabIconPreview()
+            restartFabIfRunning()
+            toast("已恢复默认图标")
+        }
+        updateFabIconPreview()
 
         requestNotificationPermission()
         refreshStatus()
@@ -106,6 +160,7 @@ class HomeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         BgUtils.apply(binding.root)
+        NekoLang.apply(binding.root)
         refreshStatus()
         // 悬浮窗授权返回后自动启动服务
         if (AppPrefs.serviceEnabled && context?.let { Settings.canDrawOverlays(it) } == true) {
@@ -125,26 +180,31 @@ class HomeFragment : Fragment() {
 
     // ---------- 语言切换 ----------
 
-    /** 全局 UI 语言切换：简体中文 / 繁體中文 / English */
+    /** 全局 UI 语言切换：跟随系统（默认）/ 简体中文 / 繁體中文 / English */
     private fun showLanguageDialog() {
-        val tags = arrayOf("zh", "zh-TW", "en")
-        val langs = arrayOf("简体中文", "繁體中文", "English")
+        val tags = arrayOf("", "zh", "zh-TW", "en")
+        val langs = arrayOf("跟随系统", "简体中文", "繁體中文", "English")
         val checked = when (androidx.appcompat.app.AppCompatDelegate.getApplicationLocales().toLanguageTags()) {
-            "zh-TW" -> 1
-            "en" -> 2
-            else -> 0
+            "zh" -> 1
+            "zh-TW" -> 2
+            "en" -> 3
+            else -> 0 // 空 = 跟随系统（默认）
         }
         var chosen = checked
-        AlertDialog.Builder(requireContext())
+        NekoDialog.builder(requireContext())
             .setTitle(getString(R.string.u52))
             .setSingleChoiceItems(langs, checked) { _, which ->
                 chosen = which
             }
             .setPositiveButton(getString(R.string.u71)) { _, _ ->
                 try {
-                    androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(
+                    // 跟随系统 = 清空应用级语言覆盖（getEmptyLocaleList）
+                    val list = if (chosen == 0) {
+                        androidx.core.os.LocaleListCompat.getEmptyLocaleList()
+                    } else {
                         androidx.core.os.LocaleListCompat.forLanguageTags(tags[chosen])
-                    )
+                    }
+                    androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(list)
                     NekoLog.adjust("语言切换为：${langs[chosen]}")
                 } catch (_: Throwable) {
                     toast(getString(R.string.u14))
@@ -197,7 +257,7 @@ class HomeFragment : Fragment() {
             setPadding(48, 16, 48, 8)
             addView(et)
         }
-        val dialog = AlertDialog.Builder(requireContext())
+        val dialog = NekoDialog.builder(requireContext())
             .setTitle(title)
             .setView(box)
             .setPositiveButton(getString(R.string.u71), null)
@@ -242,17 +302,39 @@ class HomeFragment : Fragment() {
                 NekoLog.warn("Shizuku：未检测到服务")
                 toast(getString(R.string.u26))
             }
-            SysPower.isShizukuPermissionGranted() -> {
-                lifecycleScope.launch {
-                    val r = withContext(Dispatchers.IO) { SysPower.execIdForStatus() }
-                    binding.tvPrivLog.text = getString(R.string.u76, r.channel, r.output)
-                    NekoLog.ok("Shizuku 已授权，通道 ${r.channel}")
-                    toast(getString(R.string.u3))
+            !SysPower.isShizukuPermissionGranted() -> {
+                // Shizuku 13.x：UserService 绑定前需先获取 API 权限，否则静默拒绝
+                binding.tvPrivLog.text = "正在请求 Shizuku API 权限（请在弹窗点允许）..."
+                try {
+                    SysPower.requestShizukuPermission(shizukuRequestCode)
+                } catch (t: Throwable) {
+                    binding.tvPrivLog.text = "请求 Shizuku 权限失败：${t.javaClass.simpleName}: ${t.message}"
                 }
             }
-            else -> SysPower.requestShizukuPermission(shizukuRequestCode)
+            else -> {
+                probeShizukuChannel()
+            }
         }
         refreshStatus()
+    }
+
+    /** 绑定 UserService 探测通道（API 权限已获取后调用） */
+    private fun probeShizukuChannel() {
+        binding.tvPrivLog.text = "正在绑定 Shizuku UserService..."
+        lifecycleScope.launch {
+            val r = withContext(Dispatchers.IO) { SysPower.execIdForStatus() }
+            if (r.success) {
+                binding.tvPrivLog.text = getString(R.string.u76, r.channel, r.output)
+                NekoLog.ok("Shizuku 已授权，通道 ${r.channel}")
+                toast(getString(R.string.u3))
+            } else {
+                val diag = withContext(Dispatchers.IO) { SysPower.diagnoseShizuku() }
+                binding.tvPrivLog.text = "Shizuku 通道探测失败：\n$diag"
+                NekoLog.warn("Shizuku 通道探测失败：\n$diag")
+                toast("Shizuku 绑定失败，见日志区详情")
+            }
+            refreshStatus()
+        }
     }
 
     // ---------- 免电 ----------
@@ -268,6 +350,67 @@ class HomeFragment : Fragment() {
                 NekoLog.error("免电写入失败：${r.output}")
                 toast(getString(R.string.u56, r.output))
             }
+            refreshStatus()
+        }
+    }
+
+    // ---------- 一键授权所有权限 ----------
+
+    /**
+     * 通过 Shizuku 一键写入所有权限：无障碍 → 设备管理员 → 电池优化 → 悬浮窗。
+     * 执行前检查 Shizuku 状态；每步独立记录成功/失败，失败时在日志区显示具体原因。
+     */
+    private fun grantAllPermissions() {
+        val ctx = context ?: return
+        // 前置检查：Shizuku 必须可用（UserService 绑定无需 API 权限，绑定时自动弹确认框）
+        if (!SysPower.isShizukuAvailable()) {
+            NekoLog.warn("一键授权失败：未检测到 Shizuku 服务")
+            binding.tvPrivLog.text = getString(R.string.u184)
+            toast(getString(R.string.u26))
+            return
+        }
+
+        binding.btnGrantAll.isEnabled = false
+        binding.btnGrantAll.text = getString(R.string.u186)
+        binding.tvPrivLog.text = getString(R.string.u187)
+
+        lifecycleScope.launch {
+            val steps = withContext(Dispatchers.IO) { SysPower.grantAllPermissions() }
+            // 构建详细日志：每步显示 ✓/✗ + 名称 + 输出
+            val sb = StringBuilder()
+            var successCount = 0
+            var failCount = 0
+            steps.forEachIndexed { i, step ->
+                val mark = if (step.success) "✓" else "✗"
+                if (step.success) successCount++ else failCount++
+                sb.appendLine("${i + 1}. $mark ${step.name}  [${step.channel}]")
+                if (step.output.isNotEmpty()) {
+                    step.output.lineSequence().forEach { line ->
+                        if (line.isNotBlank()) sb.appendLine("   $line")
+                    }
+                }
+                sb.appendLine()
+            }
+            sb.appendLine(getString(R.string.u188, successCount, failCount))
+            // 失败时额外提示
+            if (failCount > 0) {
+                sb.appendLine()
+                sb.appendLine(getString(R.string.u189))
+                sb.appendLine(getString(R.string.u190))
+            }
+            binding.tvPrivLog.text = sb.toString()
+
+            // 记录日志
+            if (failCount == 0) {
+                NekoLog.ok("一键授权全部成功（$successCount 项）")
+                toast(getString(R.string.u191, successCount))
+            } else {
+                NekoLog.error("一键授权完成：成功 $successCount 项，失败 $failCount 项")
+                toast(getString(R.string.u192, successCount, failCount))
+            }
+
+            binding.btnGrantAll.isEnabled = true
+            binding.btnGrantAll.text = getString(R.string.t1000)
             refreshStatus()
         }
     }
@@ -298,7 +441,9 @@ class HomeFragment : Fragment() {
         setStep(binding.tvStep2Status, SysPower.isDeviceAdminActive(), getString(R.string.u104), getString(R.string.u105))
         setStep(binding.tvStep3Status, SysPower.isIgnoringBatteryOptimizations(), getString(R.string.u106), getString(R.string.u107))
         setStep(binding.tvStep4Status, Settings.canDrawOverlays(ctx), getString(R.string.u108), getString(R.string.u109))
-        setStep(binding.tvStep5Status, SysPower.isShizukuPermissionGranted(), getString(R.string.u110), getString(R.string.u109))
+        setStep(binding.tvStep5Status, SysPower.isShizukuAvailable(), getString(R.string.u110), getString(R.string.u109))
+        // 自启动状态系统无法查询 → 固定提示（vivo/iQOO 等不手动开会被冻结）
+        binding.tvStep6Status.text = getString(R.string.i53)
 
         val done = isAccessibilityEnabled() && Settings.canDrawOverlays(ctx)
         binding.tvWizardDone.text = if (done) getString(R.string.u111) else ""
@@ -326,6 +471,30 @@ class HomeFragment : Fragment() {
         ) {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 200)
         }
+    }
+
+    /** 更新悬浮球图标预览 */
+    private fun updateFabIconPreview() {
+        val path = AppPrefs.customFabIconPath
+        if (path.isNotEmpty() && File(path).exists()) {
+            try {
+                val bmp = android.graphics.BitmapFactory.decodeFile(path)
+                binding.ivFabIconPreview.setImageBitmap(bmp)
+            } catch (_: Throwable) {
+                binding.ivFabIconPreview.setImageResource(R.drawable.ctw_icon)
+            }
+        } else {
+            binding.ivFabIconPreview.setImageResource(R.drawable.ctw_icon)
+        }
+    }
+
+    /** 悬浮球正在运行时重建按钮，让新图标立刻生效 */
+    private fun restartFabIfRunning() {
+        try {
+            if (FloatingButtonService.isRunning()) {
+                FloatingButtonService.reload()
+            }
+        } catch (_: Throwable) { }
     }
 
     private fun toast(msg: String) {

@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * 设置页：更换运行模式（基础/Shizuku/Root）、详细信息、版本信息、关于、支持与反馈。
+ * 设置页：外观/行为设置、详细信息、版本信息、关于、支持与反馈。
  */
 class SettingsActivity : AppCompatActivity() {
 
@@ -231,26 +231,31 @@ class SettingsActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    /** 语言切换对话框：简体中文 / 繁體中文 / English（确定后应用） */
+    /** 语言切换对话框：跟随系统（默认）/ 简体中文 / 繁體中文 / English（确定后应用） */
     private fun showLanguageDialog() {
-        val tags = arrayOf("zh", "zh-TW", "en")
-        val langs = arrayOf("简体中文", "繁體中文", "English")
+        val tags = arrayOf("", "zh", "zh-TW", "en")
+        val langs = arrayOf("跟随系统", "简体中文", "繁體中文", "English")
         val checked = when (AppCompatDelegate.getApplicationLocales().toLanguageTags()) {
-            "zh-TW" -> 1
-            "en" -> 2
-            else -> 0
+            "zh" -> 1
+            "zh-TW" -> 2
+            "en" -> 3
+            else -> 0 // 空 = 跟随系统（默认）
         }
         var chosen = checked
-        AlertDialog.Builder(this)
+        NekoDialog.builder(this)
             .setTitle(getString(R.string.u52))
             .setSingleChoiceItems(langs, checked) { _, which ->
                 chosen = which
             }
             .setPositiveButton(getString(R.string.u71)) { _, _ ->
                 try {
-                    AppCompatDelegate.setApplicationLocales(
+                    // 跟随系统 = 清空应用级语言覆盖（getEmptyLocaleList）
+                    val list = if (chosen == 0) {
+                        androidx.core.os.LocaleListCompat.getEmptyLocaleList()
+                    } else {
                         androidx.core.os.LocaleListCompat.forLanguageTags(tags[chosen])
-                    )
+                    }
+                    AppCompatDelegate.setApplicationLocales(list)
                     NekoLog.adjust("语言切换为：${langs[chosen]}")
                 } catch (_: Throwable) {
                     toast(getString(R.string.u14))
@@ -352,7 +357,7 @@ class SettingsActivity : AppCompatActivity() {
             addView(btnRow)
         }
 
-        val dialog = AlertDialog.Builder(this)
+        val dialog = NekoDialog.builder(this)
             .setTitle(getString(R.string.u39))
             .setMessage(getString(R.string.u42))
             .setView(content)
@@ -449,7 +454,7 @@ class SettingsActivity : AppCompatActivity() {
             scaleType = ImageView.ScaleType.FIT_CENTER
             adjustViewBounds = true
         }
-        AlertDialog.Builder(this)
+        NekoDialog.builder(this)
             .setTitle(getString(R.string.u44))
             .setMessage(getString(R.string.u31))
             .setView(img)

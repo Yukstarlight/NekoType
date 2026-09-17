@@ -405,30 +405,28 @@ class MainActivity : AppCompatActivity() {
                 NekoLog.ok("隐藏模式：心跳保活已自动开启")
                 FloatingButtonService.start(this)
             }
-            // 隐藏方式：Shizuku pm hide（Hail 同款，图标即时消失）优先；无 Shizuku 回退 alias
+            // 双保险：先禁用 LAUNCHER 组件（图标立即消失，无需 Shizuku），
+            // Shizuku 可用时再额外执行 pm hide（更深层隐藏）
+            SysPower.setHiddenMode(true)
             if (SysPower.privilegedChannelReady()) {
                 lifecycleScope.launch {
-                    val r = withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(true) }
-                    if (!r.success) {
-                        NekoLog.warn("Shizuku 隐藏失败（${r.output.take(60)}），回退 alias 方式")
-                        SysPower.setHiddenMode(true)
-                    } else {
-                        NekoLog.ok("Shizuku 隐藏成功（pm hide）")
-                    }
+                    withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(true) }
                 }
-            } else {
-                SysPower.setHiddenMode(true)
             }
+            // 移出最近任务（后台隐藏）
+            try {
+                val am = getSystemService(android.content.Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+                for (task in am.appTasks) {
+                    try { task.finishAndRemoveTask() } catch (_: Throwable) { }
+                }
+            } catch (_: Throwable) { }
             NekoLog.adjust("开启隐藏模式：桌面图标已隐藏")
             toast(getString(R.string.u50))
         } else {
-            // 恢复：Shizuku unhide 优先，回退 alias 启用
+            // 恢复：先恢复组件，再 pm unhide
+            SysPower.setHiddenMode(false)
             if (SysPower.privilegedChannelReady()) {
-                lifecycleScope.launch {
-                    withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(false) }
-                }
-            } else {
-                SysPower.setHiddenMode(false)
+                lifecycleScope.launch { withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(false) } }
             }
             NekoLog.adjust("关闭隐藏模式：桌面图标已恢复")
             toast(getString(R.string.u51))
@@ -575,15 +573,21 @@ class MainActivity : AppCompatActivity() {
                 NekoLog.warn("Shizuku：未检测到服务")
                 toast(getString(R.string.u26))
             }
-            SysPower.isShizukuPermissionGranted() -> {
+            else -> {
+                // UserService 绑定无需 API 权限；直接探测通道，首次绑定会弹系统确认框
+                binding.tvPrivLog.text = getString(R.string.u187)
                 lifecycleScope.launch {
                     val r = withContext(Dispatchers.IO) { SysPower.execIdForStatus() }
                     binding.tvPrivLog.text = getString(R.string.u76, r.channel, r.output)
-                    NekoLog.ok("Shizuku 已授权，通道 ${r.channel}")
-                    toast(getString(R.string.u3))
+                    if (r.success) {
+                        NekoLog.ok("Shizuku 已授权，通道 ${r.channel}")
+                        toast(getString(R.string.u3))
+                    } else {
+                        NekoLog.warn("Shizuku 通道探测失败（首次使用请在系统弹窗中确认授权）")
+                        toast(getString(R.string.u173))
+                    }
                 }
             }
-            else -> SysPower.requestShizukuPermission(shizukuRequestCode)
         }
         refreshStatus()
     }
@@ -768,10 +772,9 @@ class MainActivity : AppCompatActivity() {
         // 值（点击 = 编辑）
         val valueText = when (rule.type) {
             RuleType.REPLACE -> "${rule.value} → ${rule.replaceTo}"
-            RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX ->
+            RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX,
+            RuleType.RANDOM_PREFIX_ONCE, RuleType.RANDOM_SUFFIX_ONCE ->
                 "${rule.value.ifEmpty { getString(R.string.u94) }} · ${rule.chance}%"
-            RuleType.RANDOM_EMOTICON ->
-                "${rule.value.ifEmpty { getString(R.string.u95) }} · ${rule.chance}%"
             else -> rule.value
         }
         val tvValue = TextView(this).apply {
@@ -906,8 +909,9 @@ class MainActivity : AppCompatActivity() {
         fun refreshFields(type: RuleType) {
             fields.removeAllViews()
             when (type) {
-                RuleType.PREFIX, RuleType.SUFFIX, RuleType.SUFFIX_EACH -> fields.addView(etValue)
-                RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX, RuleType.RANDOM_EMOTICON -> {
+                RuleType.PREFIX, RuleType.SUFFIX -> fields.addView(etValue)
+                RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX,
+                RuleType.RANDOM_PREFIX_ONCE, RuleType.RANDOM_SUFFIX_ONCE -> {
                     fields.addView(etValue)
                     fields.addView(etChance)
                 }
@@ -921,8 +925,9 @@ class MainActivity : AppCompatActivity() {
         // 编辑模式：预填当前规则内容
         if (editRule != null) {
             when (editRule.type) {
-                RuleType.PREFIX, RuleType.SUFFIX, RuleType.SUFFIX_EACH -> etValue.setText(editRule.value)
-                RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX, RuleType.RANDOM_EMOTICON -> {
+                RuleType.PREFIX, RuleType.SUFFIX -> etValue.setText(editRule.value)
+                RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX,
+                RuleType.RANDOM_PREFIX_ONCE, RuleType.RANDOM_SUFFIX_ONCE -> {
                     etValue.setText(editRule.value)
                     etChance.setText(editRule.chance.toString())
                 }
@@ -951,22 +956,16 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton(if (isEdit) getString(R.string.u89) else getString(R.string.u90)) { _, _ ->
                 val type = RuleType.entries[typeGroup.checkedRadioButtonId - 1000]
                 val base = when (type) {
-                    RuleType.PREFIX, RuleType.SUFFIX, RuleType.SUFFIX_EACH -> {
+                    RuleType.PREFIX, RuleType.SUFFIX -> {
                         val v = etValue.text.toString().trim()
                         if (v.isEmpty()) { toast(getString(R.string.u43)); return@setPositiveButton }
                         NekoRule(editRule?.id ?: "r_${System.currentTimeMillis()}", type, v,
                             enabled = editRule?.enabled ?: true)
                     }
-                    RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX -> {
+                    RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX,
+                    RuleType.RANDOM_PREFIX_ONCE, RuleType.RANDOM_SUFFIX_ONCE -> {
                         val v = etValue.text.toString().trim()
                         if (v.isEmpty()) { toast(getString(R.string.u19)); return@setPositiveButton }
-                        val chance = etChance.text.toString().toIntOrNull()?.coerceIn(1, 100) ?: 50
-                        NekoRule(editRule?.id ?: "r_${System.currentTimeMillis()}", type, v,
-                            chance = chance, enabled = editRule?.enabled ?: true)
-                    }
-                    RuleType.RANDOM_EMOTICON -> {
-                        // 颜文字池可留空 = 使用内置颜文字库
-                        val v = etValue.text.toString().trim()
                         val chance = etChance.text.toString().toIntOrNull()?.coerceIn(1, 100) ?: 50
                         NekoRule(editRule?.id ?: "r_${System.currentTimeMillis()}", type, v,
                             chance = chance, enabled = editRule?.enabled ?: true)
@@ -1026,7 +1025,7 @@ class MainActivity : AppCompatActivity() {
         setStep(binding.tvStep2Status, SysPower.isDeviceAdminActive(), getString(R.string.u104), getString(R.string.u105))
         setStep(binding.tvStep3Status, SysPower.isIgnoringBatteryOptimizations(), getString(R.string.u106), getString(R.string.u107))
         setStep(binding.tvStep4Status, Settings.canDrawOverlays(this), getString(R.string.u108), getString(R.string.u109))
-        setStep(binding.tvStep5Status, SysPower.isShizukuPermissionGranted(), getString(R.string.u110), getString(R.string.u109))
+        setStep(binding.tvStep5Status, SysPower.isShizukuAvailable(), getString(R.string.u110), getString(R.string.u109))
 
         val done = isAccessibilityEnabled() && Settings.canDrawOverlays(this)
         binding.tvWizardDone.text = if (done) getString(R.string.u111) else ""

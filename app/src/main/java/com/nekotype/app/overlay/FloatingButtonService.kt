@@ -65,6 +65,9 @@ class FloatingButtonService : Service() {
             context.stopService(Intent(context, FloatingButtonService::class.java))
         }
 
+        /** 服务是否正在运行 */
+        fun isRunning(): Boolean = instance != null
+
         /** 设置页调整大小/透明度后调用：立即重建悬浮按钮 */
         fun reload() {
             instance?.let {
@@ -415,7 +418,14 @@ class FloatingButtonService : Service() {
         }
 
         val btn = ImageView(this).apply {
-            setImageResource(R.drawable.ctw_icon)
+            // 自定义图标优先，否则用默认
+            val customIcon = AppPrefs.customFabIconPath
+            if (customIcon.isNotEmpty() && java.io.File(customIcon).exists()) {
+                try { setImageBitmap(android.graphics.BitmapFactory.decodeFile(customIcon)) }
+                catch (_: Throwable) { setImageResource(R.drawable.ctw_icon) }
+            } else {
+                setImageResource(R.drawable.ctw_icon)
+            }
             scaleType = ImageView.ScaleType.CENTER_CROP
             // 按键反馈：柔光玻璃（可选）或渐变底 + 点击水波纹；图片按圆形裁剪
             background = getDrawable(

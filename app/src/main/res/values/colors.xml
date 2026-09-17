@@ -4,6 +4,7 @@
     <color name="bg_0">#F5F5F7</color>
     <color name="bg_1">#FFFFFF</color>
     <color name="bg_2">#F0F0F4</color>
+    <color name="hero_card_bg">#66FFFFFF</color>
 
     <color name="fg_0">#1A1A1A</color>
     <color name="fg_1">#5C5C66</color>
@@ -16,7 +17,8 @@
 
     <color name="glass">#FFFFFF</color>
     <color name="glass_strong">#F7F7FA</color>
-    <color name="border_glass">#E5E5EA</color>
+    <!-- 浅色主题描边：近白，消除卡片上的"灰色方框"观感 -->
+    <color name="border_glass">#F2F2F5</color>
 
     <color name="brand">@color/accent_blue</color>
     <color name="brand_dark">#FFFFFF</color>
@@ -77,4 +79,30 @@
     <color name="star_hero_text_soft">#A8B2D1</color>
     <color name="star_glass">#11162D</color>
     <color name="star_glass_strong">#1E2440</color>
+
+    <!-- 赛博朋克霓虹色 -->
+    <color name="cyber_cyan">#00FFFF</color>
+    <color name="cyber_magenta">#FF00FF</color>
+    <color name="cyber_yellow">#FFFF00</color>
+    <color name="cyber_blue">#0088FF</color>
+    <color name="cyber_purple">#8800FF</color>
+    <color name="cyber_dark">#0A0A12</color>
+    <color name="cyber_dark_glass">#1A1A2E</color>
+
+    <!-- ===== 猫娘主题配色 ===== -->
+    <color name="neko_primary">#E888C0</color>
+    <color name="neko_primary_dark">#D060A0</color>
+    <color name="neko_primary_light">#FFB0D8</color>
+    <color name="neko_secondary">#FFC8E0</color>
+    <color name="neko_accent">#FF80B0</color>
+    <color name="neko_bg_light">#FFF5FA</color>
+    <color name="neko_bg_dark">#2A1525</color>
+    <color name="neko_surface_light">#FFF0F8</color>
+    <color name="neko_surface_dark">#352035</color>
+    <color name="neko_text_light">#6A3050</color>
+    <color name="neko_text_dark">#F0D0E8</color>
+    <color name="neko_text_soft_light">#9A6080</color>
+    <color name="neko_text_soft_dark">#C090B0</color>
+    <color name="neko_border">#F0C0E0</color>
+    <color name="neko_onPrimary">#FFFFFF</color>
 </resources>

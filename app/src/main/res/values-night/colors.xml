@@ -4,6 +4,7 @@
     <color name="bg_0">#000000</color>
     <color name="bg_1">#0D0D0D</color>
     <color name="bg_2">#141414</color>
+    <color name="hero_card_bg">#550D0D0D</color>
 
     <color name="fg_0">#F2F2F2</color>
     <color name="fg_1">#A6A6A6</color>

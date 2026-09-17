@@ -261,7 +261,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="安全与保活"
+            android:text="@string/i15"
             android:textSize="15sp"
             android:textStyle="bold"
             android:textColor="?attr/colorOnSurface"

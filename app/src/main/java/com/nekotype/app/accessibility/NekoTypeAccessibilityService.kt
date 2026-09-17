@@ -40,12 +40,43 @@ class NekoTypeAccessibilityService : AccessibilityService() {
 
         // API 34 起 ACTION_IME_ACTION_SEND 不再暴露为公开常量，固定值为 4（EditorInfo.IME_ACTION_SEND）
         private const val ACTION_IME_ACTION_SEND = 4
+
+        // ===== 微信深度适配（照抄开源实现的多级兜底策略）=====
+        /** 微信包名 */
+        const val WECHAT_PKG = "com.tencent.mm"
+
+        /** 微信输入框控件 ID：微信资源名随版本变化，历史 ID 全部保留逐个尝试 */
+        private val WECHAT_EDIT_IDS = listOf(
+            "com.tencent.mm:id/chatting_content_et",
+            "com.tencent.mm:id/alk",
+            "com.tencent.mm:id/alj",
+            "com.tencent.mm:id/y5"
+        )
+
+        /** 微信发送键控件 ID（同样多版本兜底） */
+        private val WECHAT_SEND_IDS = listOf(
+            "com.tencent.mm:id/chatting_send_btn",
+            "com.tencent.mm:id/anv",
+            "com.tencent.mm:id/emoji_send_btn"
+        )
+
+        /** 微信发送键文本（部分版本发送键是带文字的 TextView） */
+        private val WECHAT_SEND_TEXTS = listOf("发送", "Send")
+
+        /** 粘贴菜单文字（长按粘贴兜底用） */
+        private val PASTE_TEXTS = listOf("粘贴", "粘貼", "Paste")
     }
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     /** 强制篡改键盘：防抖自动变换任务（原生键盘输入停顿后自动篡改） */
     private var autoTransformJob: Job? = null
+
+    /** 删除优化的恢复任务：用户停手 500ms 后解除"删除模式"并重新改写 */
+    private var deleteRecoveryJob: Job? = null
+
+    /** 防重入处理锁（照抄开源实现 processing 标志：并发事件不重复处理） */
+    @Volatile private var autoProcessing = false
 
     /**
      * 强制篡改键盘：每个输入框的增量状态。
@@ -57,13 +88,18 @@ class NekoTypeAccessibilityService : AccessibilityService() {
         var lastSet: String,
         var lastWriteTime: Long,
         var addedPrefix: String = "",
-        var addedSuffix: String = ""
+        var addedSuffix: String = "",
+        /** 删除优化用：上一次看到的输入框文本（用于判断"是不是在删字"） */
+        var lastSeenText: String = ""
     )
 
     private val autoStates = HashMap<String, AutoState>()
 
-    /** 强制篡改键盘：防抖毫秒数 */
-    private val AUTO_TRANSFORM_DEBOUNCE_MS = 300L
+    /** 最近一次窗口切换的包名（仅记录，不用于取消任务 —— 照抄喵喵助手） */
+    private var lastWindowPkg = ""
+
+    /** 强制篡改键盘：内容变化事件（微信刷屏式触发）的短防抖毫秒数 */
+    private val AUTO_TRANSFORM_DEBOUNCE_MS = 150L
 
     /** 回显跳过窗口：写回后 600ms 内文本与 lastSet 一致 → 视为自己的回显，忽略（防死循环） */
     private val ECHO_WINDOW_MS = 600L
@@ -73,13 +109,18 @@ class NekoTypeAccessibilityService : AccessibilityService() {
         instance = this
         serviceInfo = (serviceInfo ?: AccessibilityServiceInfo()).apply {
             eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
+                    AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED or
                     AccessibilityEvent.TYPE_VIEW_FOCUSED or
                     AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED or
                     AccessibilityEvent.TYPE_VIEW_CLICKED
             feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
+            // 关键：flagReportViewIds 才能对微信等其他应用用 findAccessibilityNodeInfosByViewId；
+            // flagIncludeNotImportantViews 否则微信输入框（标记 not important）根本不进节点树
             flags = AccessibilityServiceInfo.DEFAULT or
-                    AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
-            notificationTimeout = 100
+                    AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS or
+                    AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS or
+                    AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS
+            notificationTimeout = 50
         }
         NekoTypeAccessibilityBridge.attach(this)
         // 无障碍一连接就确保悬浮服务常驻（用户开过"启动服务"即可，之后一直显示）
@@ -90,24 +131,68 @@ class NekoTypeAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null) return
+        // 诊断：微信事件全记录（Log.e 级别，EMUI 不会过滤；定位问题用）
+        if (event.packageName?.toString() == WECHAT_PKG) {
+            android.util.Log.e(
+                "NekoA11y",
+                "微信事件 type=${event.eventType} text=${event.text?.joinToString("")?.take(20)} cls=${event.className}"
+            )
+        }
         when (event.eventType) {
             AccessibilityEvent.TYPE_VIEW_FOCUSED -> {
                 val src = event.source ?: return
                 if (src.isEditable) {
                     NekoTypeAccessibilityBridge.setActiveNode(src)
+                } else if (pkgOf(src) == WECHAT_PKG) {
+                    // 照抄开源实现：微信 FOCUSED 事件同样触发处理（微信靠 FOCUS + CONTENT_CHANGED 驱动）
+                    getBestRoot()?.let { r ->
+                        val edit = findWeChatEditById(r) ?: findEditableNode()
+                        if (edit != null) {
+                            NekoTypeAccessibilityBridge.setActiveNode(edit)
+                            if (AppPrefs.forceKeyboardEnabled && AppPrefs.serviceEnabled && !isBlacklistedApp(edit)) {
+                                scheduleAutoTransform(edit, immediate = true)
+                            }
+                        }
+                    }
                 }
             }
 
             AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED -> {
                 val src = event.source ?: return
-                if (src.isEditable) {
-                    NekoTypeAccessibilityBridge.setActiveNode(src)
-                    // 强制篡改键盘：原生键盘输入时自动篡改（防抖，写回触发的事件会自动跳过）。
-                    // 生效条件：开关开启 且 服务已启动（点击「启动服务」后才生效）且 不在应用黑名单
-                    if (AppPrefs.forceKeyboardEnabled && AppPrefs.serviceEnabled && !isBlacklistedApp(src)) {
-                        scheduleAutoTransform(src)
+                val editNode = when {
+                    src.isEditable -> src
+                    pkgOf(src) == WECHAT_PKG -> getBestRoot()?.let { r -> findWeChatEditById(r) ?: findEditableNode() }
+                    else -> null
+                }
+                if (editNode != null) {
+                    NekoTypeAccessibilityBridge.setActiveNode(editNode)
+                    if (AppPrefs.forceKeyboardEnabled && AppPrefs.serviceEnabled && !isBlacklistedApp(editNode)) {
+                        scheduleAutoTransform(editNode, immediate = true)
                     }
                 }
+            }
+
+            AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED -> {
+                // 微信等自研输入框不触发常规焦点/文本事件，靠内容变化事件驱动
+                // 注意：这里必须走 findEditableNode() 通用兜底 —— 微信输入框资源名每个版本都不同，
+                // 只认写死的 ID 列表会导致"别人微信版本对不上 → 微信里完全没反应"（外部反馈的"不支持微信"）。
+                if (event.packageName?.toString() != WECHAT_PKG) return
+                getBestRoot()?.let { r ->
+                    val edit = findWeChatEditById(r) ?: findEditableNode()
+                    if (edit != null) {
+                        NekoTypeAccessibilityBridge.setActiveNode(edit)
+                        if (AppPrefs.forceKeyboardEnabled && AppPrefs.serviceEnabled && !isBlacklistedApp(edit)) {
+                            scheduleAutoTransform(edit)
+                        }
+                    }
+                }
+            }
+
+            AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
+                // 照抄喵喵助手：窗口切换只记录包名，**不取消防抖、不清空状态**。
+                // 旧实现在这里取消 pending 任务 + 清空 autoStates，微信里切键盘/面板时会打断 1000ms 防抖，
+                // 导致"强制篡改键盘"永远排不上队（篡改模式在微信失效的元凶之一）。
+                lastWindowPkg = event.packageName?.toString().orEmpty()
             }
 
             AccessibilityEvent.TYPE_VIEW_CLICKED -> {
@@ -138,34 +223,79 @@ class NekoTypeAccessibilityService : AccessibilityService() {
     /** 读取当前输入框 → 文本变换 → 写回（带验证重试）→ 自动发送 */
     fun transformActiveTextAndSend() {
         scope.launch {
-            val node = NekoTypeAccessibilityBridge.activeNode
+            // 优先用事件缓存的 activeNode；失效或为空时主动遍历窗口查找（兼容微信等自定义输入框）
+            var node = NekoTypeAccessibilityBridge.activeNode
+            if (node == null || !node.refresh()) {
+                node = findEditableNode()
+                if (node != null) {
+                    NekoTypeAccessibilityBridge.setActiveNode(node)
+                    NekoLog.info("主动查找输入框成功（兼容自定义输入框）")
+                }
+            }
             if (node == null) {
-                NekoLog.warn("变换失败：未找到输入框节点")
+                NekoLog.warn("变换失败：未找到输入框节点（请确认光标在输入框内）")
                 return@launch
             }
             if (!node.refresh()) {
                 NekoLog.warn("变换失败：输入框节点已失效")
                 return@launch
             }
-            val current = node.text?.toString().orEmpty()
+
+            // 读取文本：只读 node.text（照抄喵喵助手，不碰剪贴板——反复复制会打扰用户剪贴板）；
+            // 读不到（自定义输入框不暴露文本）则跳过本轮
+            var current = node.text?.toString().orEmpty()
+            android.util.Log.e("NekoA11y", "读取 node.text 长度=${current.length} pkg=${pkgOf(node)}")
             if (current.isEmpty()) {
-                NekoLog.warn("变换跳过：输入框内容为空")
+                NekoLog.warn("变换跳过：输入框内容为空（无法读取文本）")
                 return@launch
             }
 
             val result = TextTransformEngine.transform(current)
             val transformed = result.text
-            setTextAndCursor(node, transformed)
 
-            // 验证替换是否成功，失败则重试一次（部分输入法/应用对 SET_TEXT 偶发吞事件）
+            // 写回文本：五级兜底（微信等自研输入框会拒绝大部分无障碍写文本动作）
+            // ① ACTION_SET_TEXT + 光标置尾
+            // ② 剪贴板粘贴（聚焦 + 全选 + ACTION_PASTE）——微信首选
+            // ③ Shizuku 静默注入
+            // ④ 再试一次剪贴板粘贴
+            // ⑤ 长按输入框 → 点击弹菜单里的「粘贴」
+            var writeOk = setTextAndCursor(node, transformed)
+            android.util.Log.e("NekoA11y", "写①SET_TEXT ok=$writeOk")
             delay(150)
-            if (node.refresh() && node.text?.toString() != transformed) {
-                // 静默修改：优先用 Shizuku 直接注入（无弹窗、绕过应用限制）；注入失败再退回无障碍重试
-                if (!silentInject(node, transformed)) {
-                    setTextAndCursor(node, transformed)
-                    delay(150)
+            if (!writeOk || !verifyWritten(node, transformed)) {
+                // 第 2 级：剪贴板粘贴
+                val p2 = pasteViaClipboard(node, transformed)
+                android.util.Log.e("NekoA11y", "写②剪贴板粘贴 pasted=$p2 verify=${verifyWritten(node, transformed)}")
+                if (p2) {
+                    delay(200)
+                    writeOk = verifyWritten(node, transformed)
+                }
+                // 第 3 级：Shizuku 静默注入
+                if (!writeOk) {
+                    val s3 = silentInject(node, transformed)
+                    android.util.Log.e("NekoA11y", "写③Shizuku ok=$s3")
+                    if (s3) {
+                        delay(200)
+                        writeOk = verifyWritten(node, transformed)
+                    }
+                }
+                // 第 4 级：剪贴板粘贴重试
+                if (!writeOk) {
+                    val p4 = pasteViaClipboard(node, transformed)
+                    android.util.Log.e("NekoA11y", "写④剪贴板重试 pasted=$p4 verify=${verifyWritten(node, transformed)}")
+                    delay(250)
+                    writeOk = verifyWritten(node, transformed)
+                }
+                // 第 5 级：长按粘贴菜单兜底
+                if (!writeOk) {
+                    android.util.Log.e("NekoA11y", "写⑤长按粘贴兜底")
+                    longPressPaste(node, transformed)
+                    delay(400)
+                    writeOk = true
                 }
             }
+            android.util.Log.e("NekoA11y", "写回结束 writeOk=$writeOk text=${transformed.take(20)}")
+
             // 同步强制篡改键盘的增量状态，避免手动变换后自动模式重复叠加
             syncAutoState(node, result, transformed)
 
@@ -181,10 +311,122 @@ class NekoTypeAccessibilityService : AccessibilityService() {
             } catch (_: Throwable) { pkg ?: getString(R.string.u163) }
             NekoLog.ok("在「$appLabel」中已变换发送（${ruleCount} 条规则生效，累计 ${AppPrefs.transformCount} 次）")
 
-            if (AppPrefs.autoSend) {
-                delay(120) // 等输入框提交文本
+            // 微信下不自动发送（照抄喵喵助手：用户自己点发送），其他应用保持自动发送
+            if (AppPrefs.autoSend && pkg != WECHAT_PKG) {
+                // 语音输入优化开启时：延迟 3 秒发送，避免语音补标点后没说完就发出
+                delay(if (AppPrefs.voiceInputOptimizeEnabled) 3000L else 120L)
                 performSend(node)
             }
+        }
+    }
+
+    /**
+     * 主动遍历当前窗口查找输入框节点（兼容微信等自定义输入框：isEditable 可能为 false 或不触发焦点事件）。
+     * 查找优先级：① isEditable=true  ② className 含 EditText  ③ className 含 Input
+     *           ④ 有文本的可聚焦节点  ⑤ 页面底部的可聚焦节点（输入框通常在底部）
+     */
+    private fun findEditableNode(): AccessibilityNodeInfo? {
+        val root = getBestRoot() ?: return null
+        // 第 1 级：微信输入框按已知控件 ID 精确定位（微信不暴露 isEditable，ID 随版本变化，逐个尝试）
+        if (root.packageName?.toString() == WECHAT_PKG) {
+            findWeChatEditById(root)?.let {
+                NekoLog.info("微信输入框命中（控件 ID 精确定位）")
+                return it
+            }
+        }
+        val candidates = mutableListOf<AccessibilityNodeInfo>()
+        try {
+            collectEditableNodes(root, candidates, depth = 0)
+        } catch (_: Throwable) { }
+        if (candidates.isEmpty()) return null
+        // 第 2 级：isEditable
+        // 第 3 级：className 含 EditText / ChatEditText / MMEditText
+        // 第 4 级：className 含 Input / Compose / Composer / RichText / Chat
+        // 第 5 级：焦点节点 → 有文本的节点 → 页面底部最后一个候选
+        return candidates.firstOrNull { it.isEditable }
+            ?: candidates.firstOrNull { c ->
+                c.className?.let { n -> listOf("EditText", "ChatEditText", "MMEditText").any { n.contains(it, true) } } == true
+            }
+            ?: candidates.firstOrNull { c ->
+                c.className?.let { n -> listOf("Input", "Compose", "Composer", "RichText", "Chat").any { n.contains(it, true) } } == true
+            }
+            ?: candidates.firstOrNull { it.isFocused }
+            ?: candidates.firstOrNull { !it.text.isNullOrEmpty() }
+            ?: candidates.lastOrNull()
+    }
+
+    /**
+     * 取当前根节点：优先 rootInActiveWindow；为空时遍历所有窗口兜底
+     * （照抄开源实现：部分 ROM/应用在特定场景取不到"活动窗口"，直接 return null 会导致整体失效）。
+     */
+    private fun getBestRoot(): AccessibilityNodeInfo? {
+        try {
+            rootInActiveWindow?.let { return it }
+        } catch (_: Throwable) { }
+        try {
+            for (w in windows) {
+                val r = w.root ?: continue
+                if (r.packageName != null) return r
+            }
+        } catch (_: Throwable) { }
+        return null
+    }
+
+    /** 取节点所属包名 */
+    private fun pkgOf(node: AccessibilityNodeInfo): String =
+        try { node.packageName?.toString().orEmpty() } catch (_: Throwable) { "" }
+
+    /**
+     * 微信输入框：按已知控件 ID 查找（多版本 ID 逐个尝试）。
+     * 前提：无障碍服务需开启 flagReportViewIds，否则拿不到 viewIdResourceName。
+     */
+    private fun findWeChatEditById(root: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+        for (id in WECHAT_EDIT_IDS) {
+            try {
+                val list = root.findAccessibilityNodeInfosByViewId(id)
+                if (list.isNullOrEmpty()) continue
+                list.firstOrNull {
+                    it.isEditable ||
+                            it.className?.let { c -> c.contains("EditText", true) || c.contains("Chat", true) } == true
+                }?.let { return AccessibilityNodeInfo.obtain(it) }
+                // ID 命中但属性不符，也取第一个兜底（微信版本差异）
+                list.firstOrNull()?.let { return AccessibilityNodeInfo.obtain(it) }
+            } catch (_: Throwable) { }
+        }
+        return null
+    }
+
+    /** 微信发送键：按已知控件 ID 查找（多版本兜底） */
+    private fun findWeChatSendById(root: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+        for (id in WECHAT_SEND_IDS) {
+            try {
+                val list = root.findAccessibilityNodeInfosByViewId(id)
+                if (list.isNullOrEmpty()) continue
+                val n = list.firstOrNull { it.isVisibleToUser } ?: list.firstOrNull() ?: continue
+                return AccessibilityNodeInfo.obtain(n)
+            } catch (_: Throwable) { }
+        }
+        return null
+    }
+
+    /** 递归收集可能的输入框节点，限制深度防止性能问题 */
+    private fun collectEditableNodes(node: AccessibilityNodeInfo, out: MutableList<AccessibilityNodeInfo>, depth: Int) {
+        if (depth > 30 || out.size > 80) return
+        val cls = node.className?.toString() ?: ""
+        // 扩大查找范围：微信等自研输入框 isEditable 可能为 false、className 也不含 EditText
+        // 只要可聚焦就纳入候选，后续按优先级筛选
+        val isEdit = node.isEditable ||
+                cls.contains("EditText", true) ||
+                cls.contains("Input", true) ||
+                cls.contains("Text", true) ||
+                node.isFocusable
+        if (isEdit) {
+            out.add(AccessibilityNodeInfo.obtain(node))
+        }
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i) ?: continue
+            collectEditableNodes(child, out, depth + 1)
+            child.recycle()
         }
     }
 
@@ -208,6 +450,109 @@ class NekoTypeAccessibilityService : AccessibilityService() {
         }
     }
 
+    /**
+     * 剪贴板粘贴兜底：复制文本到剪贴板 → 全选输入框 → 执行粘贴。
+     * 用于微信等不支持 ACTION_SET_TEXT 的自定义输入框，兼容性最强。
+     * 仅在 SET_TEXT 失败时走这里（正常路径不碰剪贴板）。
+     */
+    private fun pasteViaClipboard(node: AccessibilityNodeInfo, text: String): Boolean {
+        return try {
+            val clipboard = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
+            val oldClip = clipboard.primaryClip
+            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("nekotype", text))
+            // 先聚焦输入框
+            node.performAction(AccessibilityNodeInfo.ACTION_FOCUS)
+            // 全选：关键！微信读不到 node.text（长度 0），必须用 10000 兜底，
+            // 否则 SET_SELECTION(0,0) 等于没选中 → 粘贴变成"插入"而不是"替换"
+            val len = node.text?.length?.takeIf { it > 0 } ?: 10000
+            val sel = Bundle().apply {
+                putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT, 0)
+                putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_END_INT, len)
+            }
+            node.performAction(AccessibilityNodeInfo.ACTION_SET_SELECTION, sel)
+            // 执行粘贴
+            val pasted = node.performAction(AccessibilityNodeInfo.ACTION_PASTE)
+            // 还原剪贴板
+            try {
+                if (oldClip != null) clipboard.setPrimaryClip(oldClip) else clipboard.clearPrimaryClip()
+            } catch (_: Throwable) { }
+            pasted
+        } catch (_: Throwable) {
+            false
+        }
+    }
+
+    /** 写回校验：读得到文本就比对；读不到（微信）视为成功，交由后续发送验证 */
+    private fun verifyWritten(node: AccessibilityNodeInfo, expected: String): Boolean {
+        return try {
+            if (!node.refresh()) return false
+            val cur = node.text?.toString().orEmpty()
+            cur.isEmpty() || cur == expected
+        } catch (_: Throwable) {
+            false
+        }
+    }
+
+    /**
+     * 第五级兜底：手势长按输入框 → 在所有窗口（含系统弹窗）里找「粘贴」并点击。
+     * 用于微信等既拒绝 SET_TEXT 又拒绝 ACTION_PASTE 的版本。
+     */
+    private suspend fun longPressPaste(node: AccessibilityNodeInfo, text: String) {
+        try {
+            val clipboard = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
+            val oldClip = clipboard.primaryClip
+            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("nekotype", text))
+            val bounds = Rect().also { node.getBoundsInScreen(it) }
+            if (bounds.isEmpty) return
+            val path = Path().apply { moveTo(bounds.centerX().toFloat(), bounds.centerY().toFloat()) }
+            val stroke = GestureDescription.StrokeDescription(path, 0, 700)
+            dispatchGesture(GestureDescription.Builder().addStroke(stroke).build(), null, null)
+            delay(480)
+            val target = findNodeByTextInAllWindows(PASTE_TEXTS)
+            if (target != null) {
+                if (!target.performAction(AccessibilityNodeInfo.ACTION_CLICK)) tapNode(target)
+                NekoLog.info("长按粘贴菜单兜底已执行")
+            } else {
+                NekoLog.warn("长按粘贴兜底：所有窗口中均未找到「粘贴」菜单项")
+            }
+            try {
+                if (oldClip != null) clipboard.setPrimaryClip(oldClip) else clipboard.clearPrimaryClip()
+            } catch (_: Throwable) { }
+        } catch (_: Throwable) { }
+    }
+
+    /** 在所有窗口（含系统弹窗/浮层）里按文本查找节点 */
+    private fun findNodeByTextInAllWindows(texts: List<String>): AccessibilityNodeInfo? {
+        try {
+            getBestRoot()?.let { r -> findNodeByText(r, texts)?.let { return it } }
+        } catch (_: Throwable) { }
+        try {
+            for (w in windows) {
+                val r = w.root ?: continue
+                findNodeByText(r, texts)?.let { return it }
+            }
+        } catch (_: Throwable) { }
+        return null
+    }
+
+    /** 在节点树里按文本/描述精确匹配查找（用于粘贴菜单等系统弹窗） */
+    private fun findNodeByText(root: AccessibilityNodeInfo, texts: List<String>, depth: Int = 0): AccessibilityNodeInfo? {
+        if (depth > 25) return null
+        try {
+            val t = root.text?.toString()?.trim().orEmpty()
+            val d = root.contentDescription?.toString()?.trim().orEmpty()
+            if (texts.any { t.equals(it, ignoreCase = true) || d.equals(it, ignoreCase = true) }) {
+                return AccessibilityNodeInfo.obtain(root)
+            }
+            for (i in 0 until root.childCount) {
+                val child = root.getChild(i) ?: continue
+                val hit = findNodeByText(child, texts, depth + 1)
+                if (hit != null) return hit
+            }
+        } catch (_: Throwable) { }
+        return null
+    }
+
     /** 手动变换后同步增量状态，防止自动模式把手动结果当作"原文"再叠加 */
     private fun syncAutoState(node: AccessibilityNodeInfo, result: TextTransformEngine.TransformResult, written: String) {
         try {
@@ -225,46 +570,126 @@ class NekoTypeAccessibilityService : AccessibilityService() {
 
     // ---------- 强制篡改键盘（自动实时篡改） ----------
 
-    /** 原生键盘输入触发：防抖后自动篡改（连续输入会重置计时器，停顿后执行） */
-    private fun scheduleAutoTransform(src: AccessibilityNodeInfo) {
+    /**
+     * 原生键盘输入触发自动篡改。
+     * immediate=true（文本变化事件，照抄喵喵助手 realtime）：立即处理不防抖——之前"半秒延迟"就来自防抖等待；
+     * immediate=false（微信内容变化事件）：短防抖合并高频事件（微信会刷屏式触发）。
+     * 语音输入优化开启时统一用长停顿判定（语音出字断续，立即改写会打断）。
+     */
+    private fun scheduleAutoTransform(src: AccessibilityNodeInfo, immediate: Boolean = false) {
         try {
             if (src.isPassword) return
             autoTransformJob?.cancel()
+            val debounce = when {
+                AppPrefs.voiceInputOptimizeEnabled -> AppPrefs.voiceDebounceMs.toLong()
+                immediate -> 0L
+                else -> AUTO_TRANSFORM_DEBOUNCE_MS
+            }
             autoTransformJob = scope.launch {
-                delay(AUTO_TRANSFORM_DEBOUNCE_MS)
+                if (debounce > 0) delay(debounce)
                 autoTransform(src)
             }
         } catch (_: Throwable) { }
     }
 
     private suspend fun autoTransform(src: AccessibilityNodeInfo, fromSendFallback: Boolean = false) {
+        // 防重入（照抄开源实现 processing 标志）
+        if (autoProcessing) {
+            android.util.Log.e("NekoA11y", "自动篡改跳过：已有处理在进行")
+            return
+        }
+        autoProcessing = true
         try {
-            // 双保险：开关 + 服务都必须开启（点击「启动服务」后才生效）
+            autoTransformInner(src, fromSendFallback)
+        } finally {
+            autoProcessing = false
+        }
+    }
+
+    private suspend fun autoTransformInner(src: AccessibilityNodeInfo, fromSendFallback: Boolean = false) {
+        try {
+            // 篡改模式门槛：强制篡改键盘 + 首页「启动服务」都必须开（用户要求：
+            // 没开服务不许改字）。其余逻辑照抄喵喵助手（窗口切换不打断、处理时重找节点、微信不自动发送）
             if (!AppPrefs.forceKeyboardEnabled || !AppPrefs.serviceEnabled) return
             if (isBlacklistedApp(src)) return
-            if (!src.refresh()) return
-            if (!src.isEditable) return
+            val pkg = pkgOf(src)
+            val isWeChat = pkg == WECHAT_PKG
+            // 先用事件节点（立即处理时它刚被找到、是新鲜的，省去重找开销）；
+            // 失效时才重新查找兜底（微信视图可能已被回收，照抄喵喵助手）
+            val node: AccessibilityNodeInfo = if (src.refresh()) {
+                src
+            } else if (isWeChat) {
+                getBestRoot()?.let { r -> findWeChatEditById(r) ?: findEditableNode() } ?: return
+            } else {
+                return
+            }
+            // 微信输入框 isEditable=false 且常不报焦点（自研控件）→ 门槛只看"是不是微信"
+            if (!node.isEditable && !isWeChat) {
+                android.util.Log.e("NekoA11y", "自动篡改跳过: pkg=$pkg editable=${node.isEditable}")
+                return
+            }
             // 内存防护：autoStates 按输入框 viewId 累积，超过上限清掉最旧的一半（防长期运行泄漏）
             if (autoStates.size > 200) {
                 val stale = autoStates.keys.take(autoStates.size / 2)
                 stale.forEach { autoStates.remove(it) }
             }
-            val trim = src.text?.toString()?.trim().orEmpty()
+            var trim = node.text?.toString()?.trim().orEmpty()
+            // 不再用剪贴板回读（照抄喵喵助手）：反复「全选→复制」会不停写剪贴板、
+            // 在微信里弹"已复制"，就是"老是复制东西"的元凶。读不到文本就跳过本轮。
+            android.util.Log.e("NekoA11y", "自动篡改读取: pkg=$pkg len=${trim.length} text=${trim.take(20)}")
             if (trim.isEmpty()) return
             // 标点触发模式（喵喵同款）：文本以标点结尾才篡改（打完一句才改）；
             // 发送兜底不受此限制（用户点发送必然处理）
             if (AppPrefs.punctTriggerEnabled && !fromSendFallback) {
-                val puncts = listOf('。', '！', '？', '!', '?', '，', ',', '…', '～', '~')
+                val puncts = AppPrefs.punctTriggerChars.toSet()
                 if (trim.lastOrNull() !in puncts) return
             }
-            val key = src.viewIdResourceName ?: "node_${src.hashCode()}"
+            val key = node.viewIdResourceName ?: "node_${node.hashCode()}"
             val st = autoStates[key] ?: AutoState("", "", 0L)
             val now = System.currentTimeMillis()
+
+            // 0. 文本级自我写回去重（比时间窗更可靠，微信下尤其必要）：
+            //    当前文本就是我们上次写回的内容 → 自己触发的回显，直接忽略，避免"喵喵喵"式重复叠加
+            if (st.lastSet.isNotEmpty() && trim == st.lastSet) {
+                st.lastWriteTime = 0L
+                return
+            }
 
             // 1. 回显跳过：我们写回后 600ms 内且文本与 lastSet 一致 → 自己的回显，忽略（防死循环）
             if (st.lastWriteTime > 0 && now - st.lastWriteTime < ECHO_WINDOW_MS && trim == st.lastSet) {
                 st.lastWriteTime = 0L // 消费掉本次回显
                 return
+            }
+
+            // 1.5 删除优化（照抄开源实现 deleteOptimize）：用户正在删字 → 暂不改写，
+            //     否则会出现"后缀删不掉/越删越多"。停手 500ms 后自动恢复并重新改写。
+            //     微信例外：微信输入框回读的文本经常和我们写回的内容不一致（自定义控件 + 剪贴板回读），
+            //     会被"删除"启发式误判成用户正在删字，导致微信里规则整体不生效（外部反馈的"微信不支持"）。
+            //     因此微信下不启用删除优化，始终按正常流程改写。
+            val deleteOptOn = AppPrefs.deleteOptimizeEnabled && !isWeChat
+            if (deleteOptOn && !fromSendFallback) {
+                val prev = st.lastSeenText
+                val deleting = prev.isNotEmpty() &&
+                        (trim.length < prev.length || (trim.length == prev.length && trim != prev))
+                st.lastSeenText = trim
+                if (deleting) {
+                    android.util.Log.e("NekoA11y", "删除优化：检测到删除（$prev → $trim），暂不改写")
+                    deleteRecoveryJob?.cancel()
+                    deleteRecoveryJob = scope.launch {
+                        delay(500)
+                        android.util.Log.e("NekoA11y", "删除优化：停手 500ms，恢复改写")
+                        autoTransform(src)
+                    }
+                    return
+                }
+                if (deleteRecoveryJob?.isActive == true) {
+                    android.util.Log.e("NekoA11y", "删除优化：删除过程中，暂不改写")
+                    return
+                }
+            } else if (deleteOptOn && fromSendFallback) {
+                // 用户点发送时无视删除模式（必然要处理）
+                deleteRecoveryJob?.cancel()
+                st.lastSeenText = trim
             }
 
             // 2. 增量：文本以 lastSet 开头（用户在末尾继续输入）→ 只把新增部分并入原文
@@ -292,24 +717,36 @@ class NekoTypeAccessibilityService : AccessibilityService() {
             st.addedSuffix = r.addedSuffix
             st.lastSet = r.text
             st.lastWriteTime = now
+            st.lastSeenText = r.text
             autoStates[key] = st
-            setTextAndCursor(src, r.text)
-            delay(120)
-            if (src.refresh() && src.text?.toString() != r.text) {
-                silentInject(src, r.text)
+            if (isWeChat) {
+                // 微信：SET_TEXT 常"假成功"，失败立刻走剪贴板粘贴（照抄开源实现的 setText → setTextByPaste）
+                var w = setTextAndCursor(node, r.text)
+                delay(120)
+                if (!w || !verifyWritten(node, r.text)) {
+                    w = pasteViaClipboard(node, r.text)
+                    android.util.Log.e("NekoA11y", "自动篡改写回: SET_TEXT不行→剪贴板粘贴=$w")
+                }
+            } else {
+                setTextAndCursor(node, r.text)
+                delay(120)
+                if (node.refresh() && node.text?.toString() != r.text) {
+                    silentInject(node, r.text)
+                }
             }
             AppPrefs.transformCount = AppPrefs.transformCount + 1
             AppPrefs.incrementToday()
             val appLabel = try {
-                val pkg = src.packageName?.toString()
+                val pkg = node.packageName?.toString()
                 if (pkg != null) packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
                 else getString(R.string.u163)
             } catch (_: Throwable) { getString(R.string.u163) }
             NekoLog.ok("强制篡改键盘：在「$appLabel」自动变换为「${r.text}」")
 
-            if (AppPrefs.autoSend) {
-                delay(120)
-                performSend(src)
+            // 微信下不自动发送（照抄喵喵助手：改完由用户自己点发送，避免和手点发送叠加/抢发）
+            if (AppPrefs.autoSend && !isWeChat) {
+                delay(if (AppPrefs.voiceInputOptimizeEnabled) 3000L else 120L)
+                performSend(node)
             }
         } catch (_: Throwable) { }
     }
@@ -317,7 +754,10 @@ class NekoTypeAccessibilityService : AccessibilityService() {
     /** 事件源是否为发送按钮（点击发送兜底用） */
     private fun isSendButtonNode(n: AccessibilityNodeInfo): Boolean {
         return try {
-            val id = n.viewIdResourceName?.lowercase().orEmpty()
+            val rawId = n.viewIdResourceName.orEmpty()
+            // 微信发送键精确 ID（点击发送兜底用）
+            if (rawId.isNotEmpty() && WECHAT_SEND_IDS.any { it.equals(rawId, true) }) return true
+            val id = rawId.lowercase()
             val text = n.text?.toString().orEmpty()
             val desc = n.contentDescription?.toString().orEmpty()
             id.contains("send") || id.contains("发送") || id.contains("btn_send") ||
@@ -341,40 +781,76 @@ class NekoTypeAccessibilityService : AccessibilityService() {
     // ---------- 静默修改（Shizuku 注入） ----------
 
     /**
-     * 静默注入：当无障碍写回被目标应用拒绝时，通过 Shizuku/Root 执行 shell
-     * input text 直接注入（无弹窗、无剪贴板提示）。仅支持 ASCII 文本。
+     * 静默注入：当无障碍写回被目标应用拒绝时，通过 Shizuku 执行注入。
+     * - ASCII 文本：input text 直接注入（无弹窗、无剪贴板提示）
+     * - 中文/Unicode：Shizuku 写入系统剪贴板 + 无障碍 ACTION_PASTE 粘贴（支持中文）
      * @return 注入后验证通过返回 true
      */
     private suspend fun silentInject(node: AccessibilityNodeInfo, text: String): Boolean {
         return try {
             if (!AppPrefs.silentModifyEnabled) return false
-            if (!SysPower.isInjectionSafe(text)) return false
             if (!SysPower.privilegedChannelReady()) return false
-            val r = withContext(Dispatchers.IO) { SysPower.shizukuInjectText(text) }
-            if (!r.success) return false
-            delay(250)
-            node.refresh() && node.text?.toString() == text
+            if (SysPower.isInjectionSafe(text)) {
+                // ASCII：input text 直接注入
+                val r = withContext(Dispatchers.IO) { SysPower.shizukuInjectText(text) }
+                if (!r.success) return false
+                delay(250)
+                return node.refresh() && node.text?.toString() == text
+            } else {
+                // 中文/Unicode：Shizuku 写剪贴板 + 无障碍粘贴
+                val r = withContext(Dispatchers.IO) { SysPower.shizukuSetClipboard(text) }
+                if (!r.success) return false
+                delay(150)
+                // 聚焦输入框 → 全选 → 粘贴
+                node.performAction(AccessibilityNodeInfo.ACTION_FOCUS)
+                delay(80)
+                // 全选：ACTION_SET_SELECTION 设置选区 0..文本长度
+                try {
+                    val selArgs = Bundle().apply {
+                        putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT, 0)
+                        putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_END_INT, text.length)
+                    }
+                    node.performAction(AccessibilityNodeInfo.ACTION_SET_SELECTION, selArgs)
+                } catch (_: Throwable) { }
+                delay(80)
+                val pasted = node.performAction(AccessibilityNodeInfo.ACTION_PASTE)
+                if (!pasted) return false
+                delay(250)
+                return node.refresh() && node.text?.toString() == text
+            }
         } catch (_: Throwable) {
             false
         }
     }
 
-    /** 三级发送：点击发送键 → 手势点击 → IME 发送动作 */
+    /** 五级发送兜底：微信发送键 ID 点击 → 微信发送键手势 → 通用打分点击 → 通用手势 → IME 发送动作 */
     private fun performSend(editNode: AccessibilityNodeInfo) {
-        val root = rootInActiveWindow
+        val root = getBestRoot()
         val inputBounds = Rect().also { editNode.getBoundsInScreen(it) }
-        val sendNode = if (root != null) findSendNode(root, inputBounds) else null
+        val isWeChat = pkgOf(editNode) == WECHAT_PKG
 
-        // 1. 无障碍点击发送键
+        // 第 1 级：微信发送键按控件 ID 精确定位（最可靠）
+        val wxSend = if (root != null && isWeChat) findWeChatSendById(root) else null
+        android.util.Log.e("NekoA11y", "发送: isWeChat=$isWeChat wxSend=${wxSend?.viewIdResourceName}")
+        if (wxSend != null && wxSend.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
+            return
+        }
+        // 第 2 级：微信发送键手势点击（微信常忽略 ACTION_CLICK）
+        if (wxSend != null) {
+            tapNode(wxSend)
+            return
+        }
+        // 第 3 级：通用打分制发送键无障碍点击
+        val sendNode = if (root != null) findSendNode(root, inputBounds) else null
         if (sendNode != null && sendNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
             return
         }
-        // 2. 全局手势点击发送键坐标（部分应用如微信会忽略 ACTION_CLICK）
+        // 第 4 级：通用发送键手势点击
         if (sendNode != null) {
             tapNode(sendNode)
             return
         }
-        // 3. 兜底：IME 发送动作
+        // 第 5 级：兜底 IME 发送动作
         editNode.performAction(ACTION_IME_ACTION_SEND)
     }
 
@@ -418,6 +894,11 @@ class NekoTypeAccessibilityService : AccessibilityService() {
             val cls = n.className?.toString().orEmpty()
 
             var s = 0
+            // 微信发送键精确 ID：最高优先级（chatting_send_btn / anv / emoji_send_btn）
+            val rawId = try { n.viewIdResourceName.orEmpty() } catch (_: Throwable) { "" }
+            if (rawId.isNotEmpty() && WECHAT_SEND_IDS.any { it.equals(rawId, true) }) s += 120
+            // 微信发送键文本（发送 / Send）
+            if (WECHAT_SEND_TEXTS.any { text.equals(it, true) || desc.equals(it, true) }) s += 40
             // 文本/描述直接命中
             if (sendTexts.any {
                     text.equals(it, ignoreCase = true) || desc.equals(it, ignoreCase = true) ||

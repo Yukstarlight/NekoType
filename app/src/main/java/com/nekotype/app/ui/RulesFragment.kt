@@ -23,6 +23,7 @@ import com.nekotype.app.prefs.AppPrefs.NekoRule
 import com.nekotype.app.prefs.AppPrefs.RuleType
 import com.nekotype.app.transform.TextTransformEngine
 import com.nekotype.app.util.BgUtils
+import com.nekotype.app.util.NekoLang
 import com.nekotype.app.util.NekoLog
 
 /**
@@ -42,52 +43,102 @@ class RulesFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentRulesBinding.inflate(inflater, container, false)
+        // inflate 兜底：布局加载失败返回空视图，绝不闪退
+        _binding = try {
+            FragmentRulesBinding.inflate(inflater, container, false)
+        } catch (e: Throwable) {
+            NekoLog.error("规则页布局加载失败：${e.javaClass.simpleName}")
+            return android.widget.FrameLayout(inflater.context).apply {
+                addView(android.widget.TextView(context).apply {
+                    text = "规则页加载失败，请尝试切换主题"
+                    gravity = android.view.Gravity.CENTER
+                })
+            }
+        }
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        BgUtils.apply(binding.root)
+        // inflate 兜底失败时 _binding 为 null，直接返回避免 NPE
+        val b = _binding ?: return
+        try {
+        BgUtils.apply(b.root)
 
-        // 规则预设：加号按钮 = 选择规则（与选择按钮同功能）
-        binding.btnAddPreset.setOnClickListener { selectPresetDialog() }
-        binding.btnSelectRule.setOnClickListener { selectPresetDialog() }
-        binding.btnDeleteRule.setOnClickListener { deletePresetDialog() }
+        // 规则预设：加号 = 新建预设（把当前规则保存为新预设），选择 = 切换已有预设
+        b.btnAddPreset.setOnClickListener { showNewPresetDialog() }
+        b.btnSelectRule.setOnClickListener { selectPresetDialog() }
+        b.btnDeleteRule.setOnClickListener { deletePresetDialog() }
 
         // 添加规则
-        binding.btnAddRule.setOnClickListener { showAddRuleDialog() }
+        b.btnAddRule.setOnClickListener { showAddRuleDialog() }
 
         // 行为与样式
-        binding.swStyleSpaced.setOnCheckedChangeListener { _, v -> AppPrefs.styleSpaced = v }
-        binding.swStyleUpper.setOnCheckedChangeListener { _, v -> AppPrefs.styleUpper = v }
-        binding.swAutoSend.setOnCheckedChangeListener { _, v -> AppPrefs.autoSend = v }
-        binding.swHaptic.setOnCheckedChangeListener { _, v -> AppPrefs.hapticEnabled = v }
-        binding.swSnap.setOnCheckedChangeListener { _, v -> AppPrefs.snapEdges = v }
-        binding.swSilentModify.setOnCheckedChangeListener { _, v ->
+        b.swStyleSpaced.setOnCheckedChangeListener { _, v -> AppPrefs.styleSpaced = v }
+        b.swStyleUpper.setOnCheckedChangeListener { _, v -> AppPrefs.styleUpper = v }
+        b.swAutoSend.setOnCheckedChangeListener { _, v -> AppPrefs.autoSend = v }
+        b.swHaptic.setOnCheckedChangeListener { _, v -> AppPrefs.hapticEnabled = v }
+        b.swSnap.setOnCheckedChangeListener { _, v -> AppPrefs.snapEdges = v }
+        b.swSilentModify.setOnCheckedChangeListener { _, v ->
             AppPrefs.silentModifyEnabled = v
             NekoLog.adjust(if (v) "开启静默修改（Shizuku 直写）" else "关闭静默修改")
             if (v) toast(getString(R.string.u27))
         }
-        binding.swPunctTrigger.setOnCheckedChangeListener { _, v ->
+        b.swPunctTrigger.setOnCheckedChangeListener { _, v ->
             AppPrefs.punctTriggerEnabled = v
             NekoLog.adjust(if (v) "开启标点触发（打完一句才改）" else "关闭标点触发")
         }
-        binding.swEmoticon.setOnCheckedChangeListener { _, v ->
+        // 自定义触发标点：文本变化时保存
+        b.etPunctChars.setText(AppPrefs.punctTriggerChars)
+        b.etPunctChars.addTextChangedListener(object : android.text.TextWatcher {
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val v = s?.toString() ?: ""
+                if (v != AppPrefs.punctTriggerChars) AppPrefs.punctTriggerChars = v
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { }
+        })
+        b.swEmoticon.setOnCheckedChangeListener { _, v ->
             AppPrefs.emoticonEnabled = v
             NekoLog.adjust(if (v) "开启随机颜文字（每条自动追加）" else "关闭随机颜文字")
         }
+        b.swDeleteOptimize.setOnCheckedChangeListener { _, v ->
+            AppPrefs.deleteOptimizeEnabled = v
+            NekoLog.adjust(if (v) "开启删除优化（删字时不改写）" else "关闭删除优化")
+        }
+        b.swVoiceOptimize.setOnCheckedChangeListener { _, v ->
+            AppPrefs.voiceInputOptimizeEnabled = v
+            NekoLog.adjust(if (v) "开启语音输入优化（停顿 ${AppPrefs.voiceDebounceMs / 1000.0}s 再改写）" else "关闭语音输入优化")
+        }
+        b.swPriorityGlobal.setOnCheckedChangeListener { _, v ->
+            AppPrefs.priorityGlobalEnabled = v
+            NekoLog.adjust(if (v) "开启按等级全局执行规则" else "关闭按等级全局执行（改为类别内排序）")
+        }
 
         // 预览
-        binding.btnPreview.setOnClickListener { runPreview() }
+        b.btnPreview.setOnClickListener { runPreview() }
 
         renderRules()
+        } catch (e: Throwable) {
+            NekoLog.error("规则页初始化失败：${e.javaClass.simpleName}: ${e.message}")
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        BgUtils.apply(binding.root)
-        renderRules()
+        val b = _binding ?: return
+        try {
+            BgUtils.apply(b.root)
+            NekoLang.apply(b.root)
+            renderRules()
+        } catch (_: Throwable) { }
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if (!hidden && view != null) {
+            try { renderRules() } catch (_: Throwable) { }
+        }
     }
 
     override fun onDestroyView() {
@@ -99,13 +150,24 @@ class RulesFragment : Fragment() {
 
     private fun selectPresetDialog() {
         val presets = AppPrefs.presetList()
-        val names = presets.map { it.second }.toTypedArray()
-        AlertDialog.Builder(requireContext())
+        val currentId = AppPrefs.activePresetId()
+        // 列表项带"规则条数 + 当前标记"：预设重名时也能一眼看出到底切没切过去
+        val names = presets.map { (id, name) ->
+            val count = AppPrefs.ruleCountOf(id)
+            buildString {
+                append(name)
+                append("（")
+                append(count)
+                append(" 条规则）")
+                if (id == currentId) append("  ✓ 当前")
+            }
+        }.toTypedArray()
+        NekoDialog.builder(requireContext())
             .setTitle(getString(R.string.u30))
             .setItems(names) { _, which ->
                 AppPrefs.selectPreset(presets[which].first)
                 NekoLog.rule("切换规则预设：${presets[which].second}")
-                toast(getString(R.string.u6, presets[which].second))
+                toast(getString(R.string.u6, AppPrefs.activePresetName()))
                 renderRules()
             }
             .setNegativeButton(getString(R.string.u72), null)
@@ -119,7 +181,7 @@ class RulesFragment : Fragment() {
             return
         }
         val current = AppPrefs.activePresetName()
-        AlertDialog.Builder(requireContext())
+        NekoDialog.builder(requireContext())
             .setTitle(getString(R.string.u22))
             .setMessage(getString(R.string.u8, current))
             .setPositiveButton(getString(R.string.u77)) { _, _ ->
@@ -132,23 +194,54 @@ class RulesFragment : Fragment() {
             .show()
     }
 
+    /** 新建预设：把当前规则保存为新预设 */
+    private fun showNewPresetDialog() {
+        val inName = NekoDialog.input(requireContext(), "输入预设名称")
+        val box = NekoDialog.column(requireContext(), inName)
+        NekoDialog.builder(requireContext())
+            .setTitle("新建规则预设")
+            .setMessage("将当前规则另存为新预设")
+            .setView(box)
+            .setPositiveButton("保存") { _, _ ->
+                val name = NekoDialog.textOf(inName).trim()
+                if (name.isEmpty()) { toast("名称不能为空"); return@setPositiveButton }
+                if (AppPrefs.hasPresetName(name)) { toast("已存在同名预设"); return@setPositiveButton }
+                AppPrefs.createPreset(
+                    name = name,
+                    rules = AppPrefs.rules().toList(),
+                    switchTo = true,
+                    styleSpaced = AppPrefs.styleSpaced,
+                    styleUpper = AppPrefs.styleUpper
+                )
+                NekoLog.rule("新建规则预设：$name")
+                toast("已创建并切换到「$name」")
+                renderRules()
+            }
+            .setNegativeButton(getString(R.string.u72), null)
+            .show()
+    }
+
     // ---------- 规则列表 ----------
 
     private fun renderRules() {
-        binding.tvActiveRule.text = getString(R.string.u78, AppPrefs.activePresetName())
-        binding.swStyleSpaced.isChecked = AppPrefs.styleSpaced
-        binding.swStyleUpper.isChecked = AppPrefs.styleUpper
-        binding.swAutoSend.isChecked = AppPrefs.autoSend
-        binding.swHaptic.isChecked = AppPrefs.hapticEnabled
-        binding.swSnap.isChecked = AppPrefs.snapEdges
-        binding.swSilentModify.isChecked = AppPrefs.silentModifyEnabled
-        binding.swPunctTrigger.isChecked = AppPrefs.punctTriggerEnabled
-        binding.swEmoticon.isChecked = AppPrefs.emoticonEnabled
+        val b = _binding ?: return
+        b.tvActiveRule.text = getString(R.string.u78, AppPrefs.activePresetName())
+        b.swStyleSpaced.isChecked = AppPrefs.styleSpaced
+        b.swStyleUpper.isChecked = AppPrefs.styleUpper
+        b.swAutoSend.isChecked = AppPrefs.autoSend
+        b.swHaptic.isChecked = AppPrefs.hapticEnabled
+        b.swSnap.isChecked = AppPrefs.snapEdges
+        b.swSilentModify.isChecked = AppPrefs.silentModifyEnabled
+        b.swPunctTrigger.isChecked = AppPrefs.punctTriggerEnabled
+        b.swEmoticon.isChecked = AppPrefs.emoticonEnabled
+        b.swDeleteOptimize.isChecked = AppPrefs.deleteOptimizeEnabled
+        b.swVoiceOptimize.isChecked = AppPrefs.voiceInputOptimizeEnabled
+        b.swPriorityGlobal.isChecked = AppPrefs.priorityGlobalEnabled
 
-        val list = binding.llRuleList
+        val list = b.llRuleList
         list.removeAllViews()
         val rules = AppPrefs.rules()
-        binding.tvEmptyRules.visibility = if (rules.isEmpty()) View.VISIBLE else View.GONE
+        b.tvEmptyRules.visibility = if (rules.isEmpty()) View.VISIBLE else View.GONE
 
         rules.forEach { rule ->
             val row = buildRuleRow(rule)
@@ -183,13 +276,24 @@ class RulesFragment : Fragment() {
         }
         row.addView(badge)
 
+        // 等级徽标（数字越大越先执行；点击也进编辑）
+        val priBadge = TextView(requireContext()).apply {
+            text = "P${rule.priority}"
+            textSize = 10f
+            setTextColor(ContextCompat.getColor(requireContext(), R.color.md_theme_primary))
+            background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_circle)
+            setPadding(14, 5, 14, 5)
+            (layoutParams as? LinearLayout.LayoutParams)?.marginStart = 10
+            setOnClickListener { showAddRuleDialog(rule) }
+        }
+        row.addView(priBadge)
+
         // 值（点击 = 编辑）
         val valueText = when (rule.type) {
             RuleType.REPLACE -> "${rule.value} → ${rule.replaceTo}"
-            RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX ->
+            RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX,
+            RuleType.RANDOM_PREFIX_ONCE, RuleType.RANDOM_SUFFIX_ONCE ->
                 "${rule.value.ifEmpty { getString(R.string.u94) }} · ${rule.chance}%"
-            RuleType.RANDOM_EMOTICON ->
-                "${rule.value.ifEmpty { getString(R.string.u95) }} · ${rule.chance}%"
             else -> rule.value
         }
         val tvValue = TextView(requireContext()).apply {
@@ -298,89 +402,84 @@ class RulesFragment : Fragment() {
             setPadding(48, 0, 48, 8)
         }
 
-        val etValue = EditText(requireContext()).apply {
-            hint = getString(R.string.u83)
-            inputType = InputType.TYPE_CLASS_TEXT
-        }
-        val etFrom = EditText(requireContext()).apply { hint = getString(R.string.u84) }
-        val etTo = EditText(requireContext()).apply { hint = getString(R.string.u85) }
-        val etChance = EditText(requireContext()).apply {
-            hint = getString(R.string.u86)
-            inputType = InputType.TYPE_CLASS_NUMBER
-        }
+        // Material 输入框（替代裸 EditText：圆角填充背景 + 浮动标签）
+        val inValue = NekoDialog.input(requireContext(), getString(R.string.u83))
+        val inFrom = NekoDialog.input(requireContext(), getString(R.string.u84))
+        val inTo = NekoDialog.input(requireContext(), getString(R.string.u85))
+        val inChance = NekoDialog.input(requireContext(), getString(R.string.u86), numeric = true)
+        // 优先级（等级）：1-100，数字越大越先执行；所有规则类型都显示
+        val inPriority = NekoDialog.input(requireContext(), getString(R.string.i42), numeric = true)
 
         fun refreshFields(type: RuleType) {
             fields.removeAllViews()
             when (type) {
-                RuleType.PREFIX, RuleType.SUFFIX, RuleType.SUFFIX_EACH -> fields.addView(etValue)
-                RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX, RuleType.RANDOM_EMOTICON -> {
-                    fields.addView(etValue)
-                    fields.addView(etChance)
+                RuleType.PREFIX, RuleType.SUFFIX -> fields.addView(inValue)
+                RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX,
+                RuleType.RANDOM_PREFIX_ONCE, RuleType.RANDOM_SUFFIX_ONCE -> {
+                    fields.addView(inValue)
+                    fields.addView(inChance)
                 }
                 RuleType.REPLACE -> {
-                    fields.addView(etFrom)
-                    fields.addView(etTo)
+                    fields.addView(inFrom)
+                    fields.addView(inTo)
                 }
             }
+            fields.addView(inPriority)
         }
 
         if (editRule != null) {
             when (editRule.type) {
-                RuleType.PREFIX, RuleType.SUFFIX, RuleType.SUFFIX_EACH -> etValue.setText(editRule.value)
-                RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX, RuleType.RANDOM_EMOTICON -> {
-                    etValue.setText(editRule.value)
-                    etChance.setText(editRule.chance.toString())
+                RuleType.PREFIX, RuleType.SUFFIX -> inValue.editText?.setText(editRule.value)
+                RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX,
+                RuleType.RANDOM_PREFIX_ONCE, RuleType.RANDOM_SUFFIX_ONCE -> {
+                    inValue.editText?.setText(editRule.value)
+                    inChance.editText?.setText(editRule.chance.toString())
                 }
                 RuleType.REPLACE -> {
-                    etFrom.setText(editRule.value)
-                    etTo.setText(editRule.replaceTo)
+                    inFrom.editText?.setText(editRule.value)
+                    inTo.editText?.setText(editRule.replaceTo)
                 }
             }
         }
+        inPriority.editText?.setText((editRule?.priority ?: 50).toString())
 
         typeGroup.setOnCheckedChangeListener { _, checkedId ->
             refreshFields(RuleType.entries[checkedId - 1000])
         }
         refreshFields(initialType)
 
-        val content = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-            addView(typeGroup)
-            addView(fields)
-        }
+        // 内容较多（8 个规则类型 + 字段）→ 套滚动，等级输入框不会再被挤出屏幕
+        val content = NekoDialog.scroll(NekoDialog.column(requireContext(), typeGroup, fields))
 
         val isEdit = editRule != null
-        AlertDialog.Builder(requireContext())
+        NekoDialog.builder(requireContext())
             .setTitle(if (isEdit) getString(R.string.u87) else getString(R.string.u88))
             .setView(content)
             .setPositiveButton(if (isEdit) getString(R.string.u89) else getString(R.string.u90)) { _, _ ->
                 val type = RuleType.entries[typeGroup.checkedRadioButtonId - 1000]
+                // 优先级（等级）：1-100，数字越大越先执行；留空 = 50
+                val pri = NekoDialog.textOf(inPriority).toIntOrNull()?.coerceIn(1, 100) ?: 50
                 val base = when (type) {
-                    RuleType.PREFIX, RuleType.SUFFIX, RuleType.SUFFIX_EACH -> {
-                        val v = etValue.text.toString().trim()
+                    RuleType.PREFIX, RuleType.SUFFIX -> {
+                        val v = NekoDialog.textOf(inValue).trim()
                         if (v.isEmpty()) { toast(getString(R.string.u43)); return@setPositiveButton }
                         NekoRule(editRule?.id ?: "r_${System.currentTimeMillis()}", type, v,
-                            enabled = editRule?.enabled ?: true)
+                            priority = pri, enabled = editRule?.enabled ?: true)
                     }
-                    RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX -> {
-                        val v = etValue.text.toString().trim()
+                    RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX,
+                    RuleType.RANDOM_PREFIX_ONCE, RuleType.RANDOM_SUFFIX_ONCE -> {
+                        val v = NekoDialog.textOf(inValue).trim()
                         if (v.isEmpty()) { toast(getString(R.string.u19)); return@setPositiveButton }
-                        val chance = etChance.text.toString().toIntOrNull()?.coerceIn(1, 100) ?: 50
+                        val chance = NekoDialog.textOf(inChance).toIntOrNull()?.coerceIn(1, 100) ?: 50
                         NekoRule(editRule?.id ?: "r_${System.currentTimeMillis()}", type, v,
-                            chance = chance, enabled = editRule?.enabled ?: true)
-                    }
-                    RuleType.RANDOM_EMOTICON -> {
-                        val v = etValue.text.toString().trim()
-                        val chance = etChance.text.toString().toIntOrNull()?.coerceIn(1, 100) ?: 50
-                        NekoRule(editRule?.id ?: "r_${System.currentTimeMillis()}", type, v,
-                            chance = chance, enabled = editRule?.enabled ?: true)
+                            chance = chance, priority = pri, enabled = editRule?.enabled ?: true)
                     }
                     RuleType.REPLACE -> {
-                        val from = etFrom.text.toString().trim()
-                        val to = etTo.text.toString()
+                        val from = NekoDialog.textOf(inFrom).trim()
+                        val to = NekoDialog.textOf(inTo)
                         if (from.isEmpty()) { toast(getString(R.string.u35)); return@setPositiveButton }
                         NekoRule(editRule?.id ?: "r_${System.currentTimeMillis()}", RuleType.REPLACE, from,
-                            replaceTo = to, enabled = editRule?.enabled ?: true)
+                            replaceTo = to, priority = pri, enabled = editRule?.enabled ?: true)
                     }
                 }
                 if (isEdit) {
@@ -404,17 +503,11 @@ class RulesFragment : Fragment() {
         onCancel: (() -> Unit)? = null,
         onOk: () -> Unit
     ) {
-        val et = EditText(requireContext()).apply {
-            hint = getString(R.string.u75)
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-        }
-        val box = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(48, 16, 48, 8)
-            addView(et)
-        }
+        // Material 密码输入框（自带显示/隐藏小眼睛）
+        val inPwd = NekoDialog.input(requireContext(), getString(R.string.u75), password = true)
+        val box = NekoDialog.column(requireContext(), inPwd)
         val cancelAction = { (onCancel ?: { }).invoke() }
-        val dialog = AlertDialog.Builder(requireContext())
+        val dialog = NekoDialog.builder(requireContext())
             .setTitle(title)
             .setView(box)
             .setPositiveButton(getString(R.string.u71), null)
@@ -423,12 +516,12 @@ class RulesFragment : Fragment() {
             .create()
         dialog.setOnShowListener {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                if (AppPrefs.verifyLockPassword(et.text.toString())) {
+                if (AppPrefs.verifyLockPassword(NekoDialog.textOf(inPwd))) {
                     dialog.dismiss()
                     onOk()
                 } else {
                     toast(getString(R.string.u25))
-                    et.text.clear()
+                    inPwd.editText?.text?.clear()
                 }
             }
         }
@@ -438,8 +531,9 @@ class RulesFragment : Fragment() {
     // ---------- 预览 ----------
 
     private fun runPreview() {
-        val sample = binding.etPreviewInput.text.toString().ifEmpty { getString(R.string.u96) }
-        binding.tvPreviewOutput.text = TextTransformEngine.transform(sample).text
+        val b = _binding ?: return
+        val sample = b.etPreviewInput.text.toString().ifEmpty { getString(R.string.u96) }
+        b.tvPreviewOutput.text = TextTransformEngine.transform(sample).text
     }
 
     private fun toast(msg: String) {
