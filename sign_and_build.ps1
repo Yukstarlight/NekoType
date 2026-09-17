@@ -56,24 +56,53 @@ if (-not (Test-Path "$root\local.properties")) {
 # ---------- 2. 生成签名密钥库 ----------
 Write-Host "[2/5] 检查/生成签名密钥库..." -ForegroundColor Yellow
 $ks = "$root\nekotype-release.keystore"
+$props = "$root\keystore.properties"
 $keytool = Join-Path (Split-Path $javaBin) "keytool.exe"
+
+# 签名密码来源（按优先级）：keystore.properties → 环境变量 → 交互输入。
+# 注意：本仓库是公开的，切勿在脚本里硬编码密码。
+function Get-PropValue([string]$file, [string]$key) {
+    if (-not (Test-Path $file)) { return $null }
+    foreach ($line in Get-Content $file) {
+        if ($line -match "^\s*$key\s*=\s*(.+?)\s*$") { return $Matches[1] }
+    }
+    return $null
+}
+$storePass = Get-PropValue $props 'storePassword'
+$keyPass = Get-PropValue $props 'keyPassword'
+if (-not $storePass) { $storePass = $env:NEKOTYPE_STORE_PASSWORD }
+if (-not $keyPass) { $keyPass = $env:NEKOTYPE_KEY_PASSWORD }
+if (-not $keyPass) { $keyPass = $storePass }
+if (-not $storePass) {
+    Write-Host "  未找到签名密码，请输入（或先设置环境变量 NEKOTYPE_STORE_PASSWORD）" -ForegroundColor Yellow
+    $sec = Read-Host "  密钥库密码 (storePassword)" -AsSecureString
+    $bstr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($sec)
+    try { $storePass = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr) }
+    finally { [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
+    $keyPass = $storePass
+}
+if (-not $storePass) {
+    Write-Host "  [ERROR] 密码为空，无法继续" -ForegroundColor Red
+    exit 1
+}
+
 if (-not (Test-Path $ks)) {
     Write-Host "  生成 RSA-2048 密钥库 (有效期 10000 天)..."
     & $keytool -genkeypair -v -keystore $ks -alias nekotype -keyalg RSA -keysize 2048 `
-        -validity 10000 -storepass nekotype2026 -keypass nekotype2026 `
+        -validity 10000 -storepass $storePass -keypass $keyPass `
         -dname "CN=NekoType, OU=NekoType, O=NekoType, L=Beijing, ST=Beijing, C=CN" | Out-Null
     Write-Host "  [OK] 密钥库已生成: $ks"
 } else {
     Write-Host "  [OK] 密钥库已存在: $ks"
 }
-# keystore.properties（已被 .gitignore 忽略）
+# keystore.properties（已被 .gitignore 忽略，仅保存在本机）
 @"
 storeFile=nekotype-release.keystore
-storePassword=nekotype2026
+storePassword=$storePass
 keyAlias=nekotype
-keyPassword=nekotype2026
-"@ | Set-Content -Path "$root\keystore.properties" -Encoding UTF8
-Write-Host "  [OK] keystore.properties 已写入"
+keyPassword=$keyPass
+"@ | Set-Content -Path $props -Encoding UTF8
+Write-Host "  [OK] keystore.properties 已写入（本机，已被 git 忽略）"
 
 # ---------- 3. 确保 Gradle Wrapper 可用 ----------
 Write-Host "[3/5] 准备 Gradle Wrapper..." -ForegroundColor Yellow

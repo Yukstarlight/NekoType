@@ -36,20 +36,47 @@ echo "  [OK] ANDROID_HOME=$ANDROID_HOME"
 # 2. 生成签名密钥库 (若不存在)
 echo "[2/5] 检查/生成签名密钥库..."
 KS="nekotype-release.keystore"
+
+# 签名密码来源（按优先级）：keystore.properties → 环境变量 → 交互输入。
+# 注意：本仓库是公开的，切勿在脚本里硬编码密码。
+get_prop() {
+  [ -f keystore.properties ] || return 1
+  sed -n "s/^[[:space:]]*$1[[:space:]]*=[[:space:]]*\(.*[^[:space:]]\)[[:space:]]*$/\1/p" keystore.properties | head -n 1
+}
+STORE_PASS="$(get_prop storePassword || true)"
+KEY_PASS="$(get_prop keyPassword || true)"
+[ -z "$STORE_PASS" ] && STORE_PASS="${NEKOTYPE_STORE_PASSWORD:-}"
+[ -z "$KEY_PASS" ] && KEY_PASS="${NEKOTYPE_KEY_PASSWORD:-}"
+[ -z "$KEY_PASS" ] && KEY_PASS="$STORE_PASS"
+if [ -z "$STORE_PASS" ]; then
+  echo "  未找到签名密码，请输入（或先设置环境变量 NEKOTYPE_STORE_PASSWORD）"
+  printf "  密钥库密码 (storePassword): "
+  stty -echo 2>/dev/null || true
+  read -r STORE_PASS
+  stty echo 2>/dev/null || true
+  echo ""
+  KEY_PASS="$STORE_PASS"
+fi
+if [ -z "$STORE_PASS" ]; then
+  echo "  [ERROR] 密码为空，无法继续"
+  exit 1
+fi
+
 if [ ! -f "$KS" ]; then
   echo "  生成 RSA-2048 密钥库 (有效期 10000 天)..."
   keytool -genkeypair -v -keystore "$KS" -alias nekotype -keyalg RSA -keysize 2048 \
-    -validity 10000 -storepass nekotype2026 -keypass nekotype2026 \
+    -validity 10000 -storepass "$STORE_PASS" -keypass "$KEY_PASS" \
     -dname "CN=NekoType, OU=NekoType, O=NekoType, L=Beijing, S=Beijing, C=CN"
 fi
-# 写入 keystore.properties (Git 已忽略)
+# 写入 keystore.properties (Git 已忽略，仅保存在本机)
 cat > keystore.properties <<EOF
 storeFile=$KS
-storePassword=nekotype2026
+storePassword=$STORE_PASS
 keyAlias=nekotype
-keyPassword=nekotype2026
+keyPassword=$KEY_PASS
 EOF
-echo "  [OK] 密钥库就绪 ($KS)"
+chmod 600 keystore.properties 2>/dev/null || true
+echo "  [OK] 密钥库就绪 ($KS)，keystore.properties 已写入（本机，已被 git 忽略）"
 
 # 3. 确保 Gradle Wrapper 可用
 echo "[3/5] 准备 Gradle Wrapper..."
