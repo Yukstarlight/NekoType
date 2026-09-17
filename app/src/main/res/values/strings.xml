@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">NekoType</string>
     <string name="splash_subtitle">Welcome to Mist Unveils Infinite Tomorrows</string>
-    <string name="splash_version">v2.7.5</string>
+    <string name="splash_version">v2.7.6</string>
     <string name="accessibility_label">NekoType 消息变换</string>
     <string name="accessibility_description">NekoType 需要无障碍权限来检测输入法弹出、读取正在输入的消息、自动添加前缀/后缀/文本替换，并通过悬浮按钮触发改写后发送。所有文本处理均在本地完成。</string>
     <string name="admin_label">NekoType 设备管理员</string>
