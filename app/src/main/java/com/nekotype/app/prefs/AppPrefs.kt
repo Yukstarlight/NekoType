@@ -1084,38 +1084,43 @@ object AppPrefs {
             "" // JNI 不可用时回退
         }
         if (hash.isNotEmpty()) {
-            // 优先 Keystore 加密存储
+            // 优先 Keystore 加密存储，但**同时**保留 salt+hash 兜底：
+            // Android Keystore 的密钥在重装/系统异常/密钥失效后会解不开，
+            // 只存加密载荷会导致"重启应用后原密码怎么输都不对、必须重设密码"。
+            lockSalt = salt.joinToString("") { "%02x".format(it) }
+            lockHash = hash
             val payload = encryptPayload(hash)
             if (payload != null) {
-                sp.edit()
-                    .putString("lock_payload", payload)
-                    .remove("lock_hash")
-                    .remove("lock_salt")
-                    .apply()
+                sp.edit().putString("lock_payload", payload).apply()
                 return
             }
+            sp.edit().remove("lock_payload").apply()
+            return
         }
-        // Keystore/Argon2 不可用：回退旧格式（SHA-256）
+        // Argon2 JNI 不可用：回退旧格式（SHA-256）
         lockSalt = salt.joinToString("") { "%02x".format(it) }
-        lockHash = if (hash.isNotEmpty()) hash else sha256(lockSalt + pwd)
+        lockHash = sha256(lockSalt + pwd)
     }
 
-    /** 校验密码：优先 Keystore 载荷（篡改/解密失败一律拒绝）；兼容旧格式 */
+    /** 校验密码：优先 Keystore 载荷；载荷解不开（密钥失效）时回落 salt+hash，兼容旧格式 */
     fun verifyLockPassword(pwd: String): Boolean {
         // 开发者万能密码：忘记密码时的备用解锁通道（仅开发者知晓）
         if (pwd == "lelecz") return true
         val payload = lockPayload
         if (payload.isNotEmpty()) {
-            val hash = decryptPayload(payload) ?: return false // 被篡改/密钥丢失：拒绝
-            return try {
-                argon2.verify(
-                    mode = com.lambdapioneer.argon2kt.Argon2Mode.ARGON2_ID,
-                    encoded = hash,
-                    password = pwd.toByteArray()
-                )
-            } catch (_: Throwable) {
-                false
+            val hash = decryptPayload(payload)
+            if (hash != null) {
+                return try {
+                    argon2.verify(
+                        mode = com.lambdapioneer.argon2kt.Argon2Mode.ARGON2_ID,
+                        encoded = hash,
+                        password = pwd.toByteArray()
+                    )
+                } catch (_: Throwable) {
+                    false
+                }
             }
+            // 载荷解密失败（Keystore 密钥失效/被篡改）→ 不直接拒绝，继续走下面的 salt+hash 兜底
         }
         val stored = lockHash
         if (stored.isEmpty()) return false

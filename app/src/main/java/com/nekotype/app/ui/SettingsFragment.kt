@@ -440,6 +440,15 @@ class SettingsFragment : Fragment() {
     private fun showImportDialog() {
         // Material 多行输入框（替代裸 EditText + 自定义按钮行，统一成交互规范的对话框按钮）
         val inText = NekoDialog.input(requireContext(), getString(R.string.u129), multiline = true)
+        // 限制输入区高度：粘贴超长配置时不会把「取消 / 导入」按钮顶出屏幕。
+        // 注意：不能改 editText 的 layoutParams —— TextInputLayout 内部按 FrameLayout.LayoutParams
+        // 取子 View 参数，塞 LinearLayout 参数会在 onMeasure 里抛 ClassCastException（导入直接崩）。
+        // 用 minLines/maxLines + maxHeight 限制即可。
+        inText.editText?.apply {
+            minLines = 3
+            maxLines = 5
+            maxHeight = (resources.displayMetrics.density * 128).toInt()
+        }
         try {
             val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             cm.primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.text?.toString()?.let {
@@ -450,7 +459,7 @@ class SettingsFragment : Fragment() {
         val dialog = NekoDialog.builder(requireContext())
             .setTitle(getString(R.string.u39))
             .setMessage(getString(R.string.u42))
-            .setView(NekoDialog.column(requireContext(), inText))
+            .setView(NekoDialog.scroll(NekoDialog.column(requireContext(), inText)))
             .setPositiveButton(getString(R.string.u130)) { _, _ ->
                 val text = NekoDialog.textOf(inText).trim()
                 if (text.isEmpty()) { toast(getString(R.string.u9)); return@setPositiveButton }

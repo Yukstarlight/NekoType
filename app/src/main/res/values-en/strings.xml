@@ -447,4 +447,5 @@
     <string name="i60">Reset: the disclaimer dialog will show again on next launch</string>
     <string name="i31">Mesugaki</string>
     <string name="i32">Neko Girl</string>
+    <string name="bl_loading">Loading app list…</string>
 </resources>

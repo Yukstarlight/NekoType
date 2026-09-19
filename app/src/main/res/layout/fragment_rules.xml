@@ -39,17 +39,23 @@
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:textColor="?attr/colorOnSurface"/>
-                    <!-- 加号按钮：选择规则预设 -->
+                    <!-- 加号按钮：新建预设（用矢量图标，避免文字 "+" 渲染成空白） -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnAddPreset"
                         style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
                         android:minWidth="0dp"
                         android:minHeight="0dp"
-                        android:text="+"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:text=""
+                        app:icon="@drawable/ic_add"
+                        app:iconSize="22dp"
+                        app:iconPadding="0dp"
+                        app:iconGravity="textStart"
                         android:contentDescription="@string/t41"/>
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnSelectRule"

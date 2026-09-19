@@ -14,7 +14,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="开发者模式"
+            android:text="@string/dev_title"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="?attr/colorOnSurface"/>
@@ -49,21 +49,21 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="刷新信息"/>
+                    android:text="@string/dev_refresh_info"/>
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDevCopyDiag"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="复制诊断信息（信息 + 最近日志）"/>
+                    android:text="@string/dev_copy_diag"/>
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDevCopyConfig"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="复制当前配置（可发给别人导入）"/>
+                    android:text="@string/dev_copy_config"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -85,14 +85,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="日志"
+                    android:text="@string/log_label"
                     android:textSize="15sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="有 Shizuku 抓全系统日志，无 Shizuku 自动退回本应用进程日志。"
+                    android:text="@string/dev_log_hint"
                     android:textSize="11sp"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="2dp"/>
@@ -100,7 +100,7 @@
                     style="@style/Widget.Material3.TextInputLayout.FilledBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="过滤 tag（可空，如 NekoA11y）"
+                    android:hint="@string/dev_log_filter"
                     android:layout_marginTop="6dp">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etDevFilter"
@@ -120,7 +120,9 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="抓系统日志"/>
+                        android:maxLines="2"
+                        android:textSize="12sp"
+                        android:text="@string/dev_grab_sys"/>
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnDevCrash"
                         style="@style/Widget.Material3.Button.OutlinedButton"
@@ -128,7 +130,9 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="8dp"
-                        android:text="抓崩溃日志"/>
+                        android:maxLines="2"
+                        android:textSize="12sp"
+                        android:text="@string/dev_grab_crash"/>
                 </LinearLayout>
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDevAppLog"
@@ -136,13 +140,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="查看应用内日志"/>
+                    android:text="@string/dev_app_log"/>
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDevClearLog"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="清空应用内日志"/>
+                    android:text="@string/dev_clear_log"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -164,14 +168,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="应用黑名单 · 模糊搜索"
+                    android:text="@string/dev_bl_title"
                     android:textSize="15sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="支持多关键词（空格分隔）、名称/包名子串、子序列模糊匹配，并可按相关度排序；点击结果即可加入或移出黑名单。"
+                    android:text="@string/dev_bl_hint"
                     android:textSize="11sp"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="2dp"/>
@@ -179,7 +183,7 @@
                     style="@style/Widget.Material3.TextInputLayout.FilledBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="搜索应用（名称 / 包名 / 简写）"
+                    android:hint="@string/dev_bl_query"
                     android:layout_marginTop="6dp">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etDevAppQuery"
@@ -201,14 +205,14 @@
                     style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="搜索并管理黑名单"/>
+                    android:text="@string/dev_bl_search"/>
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDevAppBlacklisted"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="只看已加入黑名单"/>
+                    android:text="@string/dev_bl_only"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -231,7 +235,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="维护与重置"
+                    android:text="@string/dev_maint_title"
                     android:textSize="15sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
@@ -241,43 +245,43 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="重载悬浮球（立即重建按钮）"/>
+                    android:text="@string/dev_reload_fab"/>
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDevShizukuTrace"
                     style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="查看 Shizuku 通道追踪"
-                    android:textSize="13sp"/>
+                    android:layout_marginTop="6dp"
+                    android:textSize="13sp"
+                    android:text="@string/dev_trace"/>
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDevRebindShizuku"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="重置并重绑 Shizuku 通道"/>
+                    android:text="@string/dev_rebind"/>
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDevResetDisclaimer"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="重置免责声明（下次启动重新弹）"/>
+                    android:text="@string/dev_reset_disclaimer"/>
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDevClearRules"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="清空当前预设的所有规则"/>
+                    android:text="@string/dev_clear_rules"/>
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDevRestart"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="重启应用"/>
+                    android:text="@string/dev_restart"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

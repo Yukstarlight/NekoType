@@ -442,4 +442,5 @@
     <string name="i58">关闭</string>
     <string name="i59">法律信息与开源许可</string>
     <string name="i60">已重置：下次启动会重新显示免责声明弹窗</string>
+    <string name="bl_loading">正在加载应用列表…</string>
 </resources>

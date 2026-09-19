@@ -144,7 +144,6 @@ class HomeFragment : Fragment() {
         }
 
         // 系统能力
-        binding.btnBatteryPriv.setOnClickListener { grantBatteryPrivileged() }
         binding.btnGrantAll.setOnClickListener { grantAllPermissions() }
 
         // 自定义悬浮球图标
@@ -355,23 +354,6 @@ class HomeFragment : Fragment() {
         }
     }
 
-    // ---------- 免电 ----------
-
-    private fun grantBatteryPrivileged() {
-        lifecycleScope.launch {
-            val r = withContext(Dispatchers.IO) { SysPower.grantBatteryWhitelistPrivileged() }
-            binding.tvPrivLog.text = getString(R.string.u76, r.channel, r.output)
-            if (r.success) {
-                NekoLog.ok("电池优化白名单已写入（${r.channel}）")
-                toast(getString(R.string.u49, r.channel))
-            } else {
-                NekoLog.error("免电写入失败：${r.output}")
-                toast(getString(R.string.u56, r.output))
-            }
-            refreshStatus()
-        }
-    }
-
     // ---------- 一键授权所有权限 ----------
 
     /**
@@ -461,10 +443,6 @@ class HomeFragment : Fragment() {
         binding.chipBattery.isChecked = SysPower.isIgnoringBatteryOptimizations()
         binding.chipShizuku.isChecked = SysPower.isShizukuAvailable()
         binding.chipAdmin.isChecked = SysPower.isDeviceAdminActive()
-        lifecycleScope.launch {
-            val root = withContext(Dispatchers.IO) { SysPower.isRootAvailable() }
-            binding.chipRoot.isChecked = root
-        }
 
         setStep(binding.tvStep1Status, isAccessibilityEnabled(), getString(R.string.u102), getString(R.string.u103))
         setStep(binding.tvStep2Status, SysPower.isDeviceAdminActive(), getString(R.string.u104), getString(R.string.u105))

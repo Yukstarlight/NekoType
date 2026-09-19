@@ -67,7 +67,15 @@ class NekoTypeAccessibilityService : AccessibilityService() {
         private val PASTE_TEXTS = listOf("粘贴", "粘貼", "Paste")
     }
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+        /**
+     * 全局协程异常兜底：无障碍服务里任何未捕获异常都不允许杀掉进程——
+     * 进程被杀/崩溃会被系统记成"此服务出现故障"并停用（设置页那一行红字）。
+     */
+    private val crashGuard = kotlinx.coroutines.CoroutineExceptionHandler { _, t ->
+        android.util.Log.e("NekoA11y", "协程异常已吞: ${t.javaClass.simpleName}: ${t.message}")
+    }
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main + crashGuard)
 
     /** 强制篡改键盘：防抖自动变换任务（原生键盘输入停顿后自动篡改） */
     private var autoTransformJob: Job? = null
@@ -105,6 +113,15 @@ class NekoTypeAccessibilityService : AccessibilityService() {
     private val ECHO_WINDOW_MS = 600L
 
     override fun onServiceConnected() {
+        try {
+            onServiceConnectedSafe()
+        } catch (t: Throwable) {
+            // 无障碍回调里异常逃逸 → 系统会把服务标记为"此服务出现故障"并停用，必须全吞
+            android.util.Log.e("NekoA11y", "onServiceConnected 异常已吞: ${t.javaClass.simpleName}: ${t.message}")
+        }
+    }
+
+    private fun onServiceConnectedSafe() {
         super.onServiceConnected()
         instance = this
         serviceInfo = (serviceInfo ?: AccessibilityServiceInfo()).apply {
@@ -131,7 +148,19 @@ class NekoTypeAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null) return
-        // 开发者模式：无障碍事件环形记录（排错用；未开启开发者模式时零开销）
+        try {
+            handleAccessibilityEvent(event)
+        } catch (t: Throwable) {
+            // 【关键】无障碍回调里任何异常逃逸，系统都会把服务判定为故障并停用
+            // （设置里显示"此服务出现故障"）。这里一律吞掉，保证服务不死。
+            android.util.Log.e(
+                "NekoA11y",
+                "事件处理异常已吞(type=${event.eventType}): ${t.javaClass.simpleName}: ${t.message}"
+            )
+        }
+    }
+
+    private fun handleAccessibilityEvent(event: AccessibilityEvent) {
         // 诊断：微信事件全记录（Log.e 级别，EMUI 不会过滤；定位问题用）
         if (event.packageName?.toString() == WECHAT_PKG) {
             android.util.Log.e(

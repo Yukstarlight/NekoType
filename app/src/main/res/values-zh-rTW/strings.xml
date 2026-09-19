@@ -447,4 +447,5 @@
     <string name="i60">已重置：下次啟動會重新顯示免責聲明彈窗</string>
     <string name="i31">雌小鬼</string>
     <string name="i32">貓娘</string>
+    <string name="bl_loading">正在載入應用程式清單…</string>
 </resources>

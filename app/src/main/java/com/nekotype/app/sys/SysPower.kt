@@ -548,6 +548,37 @@ object SysPower {
         return steps
     }
 
+    /**
+     * 开机自启后的权限恢复：用 Shizuku 重新写入 无障碍 / 免电白名单 / 悬浮窗。
+     *
+     * 为什么要它：系统（尤其国产 ROM）重启后经常把无障碍服务清掉，以前必须连电脑用
+     * `adb shell settings put secure enabled_accessibility_services ...` 手动恢复；
+     * 现在开机时自动用 Shizuku 写回去，用户无感。
+     *
+     * 会等待 Shizuku 就绪（最多 30 秒），必须在后台线程调用。
+     */
+    fun restoreAllPrivilegesViaShizuku(): String {
+        val sb = StringBuilder()
+        var waited = 0
+        while (!isShizukuAvailable() && waited < 30_000) {
+            try { Thread.sleep(1000) } catch (_: InterruptedException) { break }
+            waited += 1000
+        }
+        if (!isShizukuAvailable()) return "Shizuku 未运行，跳过开机权限恢复"
+        val steps = listOf(
+            "无障碍" to { grantAccessibilityPrivileged() },
+            "免电白名单" to { grantBatteryWhitelistPrivileged() },
+            "悬浮窗" to { grantOverlayPrivileged() }
+        )
+        for ((name, action) in steps) {
+            val r = try { action() } catch (t: Throwable) { ExecResult(false, t.message ?: "error", "none") }
+            sb.append(name).append(if (r.success) " ✓" else " ✗").append("（").append(r.channel).append("）")
+            if (!r.success && r.output.isNotEmpty()) sb.append(" ").append(r.output.replace("\n", " ").take(80))
+            sb.append('\n')
+        }
+        return sb.toString().trim()
+    }
+
     /** 诊断：执行 id 确认特权通道（固定动作专用，仅供状态页显示通道信息） */
     fun execIdForStatus(): ExecResult {
         // 状态页仅需确认通道可达，用免电白名单动作探测即可（不做任意命令）
@@ -737,10 +768,15 @@ object SysPower {
             val pid = android.os.Process.myPid()
             val tag = filter?.trim().orEmpty()
             val tagPart = if (tag.matches(Regex("[A-Za-z0-9_.\\-]{1,32}"))) " $tag:V *:S" else ""
-            val cmd = if (crash) "logcat -b crash -d --pid=$pid -t 500"
-            else "logcat -d --pid=$pid -t 2000$tagPart"
+            // 不用 --pid：部分 ROM（EMUI）不接受该参数，会把整个缓冲（含别的进程）倒出来
+            val cmd = if (crash) "logcat -b crash -d -t 500"
+            else "logcat -d -t 2000$tagPart"
             val p = Runtime.getRuntime().exec(arrayOf("sh", "-c", cmd))
-            val out = p.inputStream.bufferedReader().readText().takeLast(200_000)
+            val raw = p.inputStream.bufferedReader().readText()
+            // 代码层过滤：只保留本进程日志（logcat 行首为时间 + PID + TID）
+            val out = raw.lineSequence().filter { line ->
+                line.contains(" $pid ") || line.contains(NekoTypeApp.instance.packageName) || line.startsWith("---")
+            }.joinToString("\n").takeLast(200_000)
             p.errorStream.bufferedReader().readText()
             p.waitFor()
             ExecResult(out.isNotEmpty(), out, "local")

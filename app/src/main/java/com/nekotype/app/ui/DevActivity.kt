@@ -12,6 +12,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.nekotype.app.accessibility.NekoTypeAccessibilityBridge
+import com.nekotype.app.R
 import com.nekotype.app.databinding.ActivityDevBinding
 import com.nekotype.app.overlay.FloatingButtonService
 import com.nekotype.app.prefs.AppPrefs
@@ -51,7 +52,7 @@ class DevActivity : AppCompatActivity() {
         binding.btnDevInfo.setOnClickListener { refreshInfo() }
         binding.btnDevCopyDiag.setOnClickListener { copyDiagnostics() }
         binding.btnDevCopyConfig.setOnClickListener {
-            copyText(AppPrefs.exportConfigText(), "当前配置")
+            copyText(AppPrefs.exportConfigText(), getString(R.string.dev_config_what))
         }
 
         // 日志
@@ -60,7 +61,7 @@ class DevActivity : AppCompatActivity() {
         binding.btnDevAppLog.setOnClickListener { showAppLog() }
         binding.btnDevClearLog.setOnClickListener {
             NekoLog.clear()
-            toast("应用内日志已清空")
+            toast(getString(R.string.dev_toast_log_cleared))
         }
 
         // 黑名单模糊搜索
@@ -75,20 +76,20 @@ class DevActivity : AppCompatActivity() {
         // 维护与重置
         binding.btnDevReloadFab.setOnClickListener {
             FloatingButtonService.reload()
-            toast("已请求重载悬浮球")
+            toast(getString(R.string.dev_toast_reloaded))
         }
         binding.btnDevRebindShizuku.setOnClickListener {
             lifecycleScope.launch {
                 val r = withContext(Dispatchers.IO) { SysPower.devResetShizuku() }
-                showLog("重绑 Shizuku", r + "\n\n" + SysPower.devChannelTrace())
+                showLog(getString(R.string.dev_rebind_title), r + "\n\n" + SysPower.devChannelTrace())
             }
         }
         binding.btnDevShizukuTrace.setOnClickListener {
-            showLog("Shizuku 通道追踪", SysPower.devChannelTrace())
+            showLog(getString(R.string.dev_trace_title), SysPower.devChannelTrace())
         }
         binding.btnDevResetDisclaimer.setOnClickListener {
             AppPrefs.disclaimerAccepted = false
-            toast("已重置：下次启动会重新显示免责声明弹窗")
+            toast(getString(R.string.dev_toast_disclaimer_reset))
         }
         binding.btnDevClearRules.setOnClickListener { confirmClearRules() }
         binding.btnDevRestart.setOnClickListener { restartApp() }
@@ -146,7 +147,7 @@ class DevActivity : AppCompatActivity() {
         val logs = NekoLog.entries().takeLast(30)
             .joinToString("\n") { "${it.timeText()}  [${levelName(it.level)}]  ${it.msg}" }
         val text = infoText() + "\n---------- 最近日志 ----------\n" + logs.ifEmpty { "（暂无）" }
-        copyText(text, "诊断信息")
+        copyText(text, getString(R.string.dev_diag_what))
     }
 
     // ---------- 日志 ----------
@@ -159,12 +160,12 @@ class DevActivity : AppCompatActivity() {
             val r = withContext(Dispatchers.IO) { SysPower.devLogcat(filter, crash) }
             binding.btnDevLogcat.isEnabled = true
             binding.btnDevCrash.isEnabled = true
-            val title = if (crash) "崩溃日志（crash buffer）" else "系统日志（logcat）"
+            val title = if (crash) getString(R.string.dev_crash_title) else getString(R.string.dev_logcat_title)
             val body = if (r.success) {
-                "来源: ${if (r.channel == "shizuku") "Shizuku（全系统）" else "本进程兜底（无 Shizuku）"}\n" +
-                        "过滤: ${filter.ifEmpty { "无" }}\n\n${r.output.ifEmpty { "（空）" }}"
+                getString(R.string.dev_source_label, if (r.channel == "shizuku") getString(R.string.dev_source_shizuku) else getString(R.string.dev_source_local)) + "\n" +
+                        getString(R.string.dev_filter_label, filter.ifEmpty { getString(R.string.dev_filter_none) }) + "\n\n" + r.output
             } else {
-                "抓取失败: ${r.output}"
+                getString(R.string.dev_grab_failed, r.output)
             }
             showLog(title, body)
         }
@@ -172,9 +173,9 @@ class DevActivity : AppCompatActivity() {
 
     private fun showAppLog() {
         val entries = NekoLog.entries()
-        val body = if (entries.isEmpty()) "（暂无应用内日志）"
+        val body = if (entries.isEmpty()) getString(R.string.dev_applog_empty)
         else entries.joinToString("\n") { "${it.timeText()}  [${levelName(it.level)}]  ${it.msg}" }
-        showLog("应用内日志（${entries.size} 条）", body)
+        showLog(getString(R.string.dev_applog_title, entries.size), body)
     }
 
     private fun levelName(level: Int): String = when (level) {
@@ -259,9 +260,9 @@ class DevActivity : AppCompatActivity() {
         try {
             val n = searchApps(query, onlyBlacklisted = false).size
             binding.tvDevAppHint.text = if (query.isBlank()) {
-                "共 ${loadApps().size} 个可见应用，已加入黑名单 ${AppPrefs.blacklist().size} 个"
+                getString(R.string.dev_bl_summary, loadApps().size, AppPrefs.blacklist().size)
             } else {
-                "匹配 $n 个应用（点击下方按钮打开列表管理）"
+                getString(R.string.dev_bl_matched, n)
             }
         } catch (_: Throwable) { }
     }
@@ -272,26 +273,26 @@ class DevActivity : AppCompatActivity() {
         val query = binding.etDevAppQuery.text?.toString()?.trim().orEmpty()
         val results = searchApps(query, onlyBlack)
         if (results.isEmpty()) {
-            toast(if (onlyBlack) "黑名单里还没有应用" else "没有匹配的应用")
+            toast(if (onlyBlack) getString(R.string.dev_bl_empty) else getString(R.string.dev_bl_nomatch))
             return
         }
         val black = AppPrefs.blacklist()
         val items = results.map { (pkg, label) ->
-            val mark = if (black.contains(pkg)) "✓ 已加入" else "○ 未加入"
-            "$label\n$pkg   [$mark]"
+            val mark = if (black.contains(pkg)) "✓" else "○"
+            "$label\n$pkg   $mark"
         }.toTypedArray()
 
         fun open() {
             NekoDialog.builder(this)
-                .setTitle(if (onlyBlack) "已加入黑名单（${results.size}）" else "搜索结果（${results.size}）")
+                .setTitle(if (onlyBlack) getString(R.string.dev_bl_only_title, results.size) else getString(R.string.dev_bl_result_title, results.size))
                 .setItems(items) { _, which ->
                     val pkg = results[which].first
                     if (AppPrefs.blacklist().contains(pkg)) {
                         AppPrefs.removeBlacklist(pkg)
-                        toast("已移出黑名单：${results[which].second}")
+                        toast(getString(R.string.dev_bl_removed, results[which].second))
                     } else {
                         AppPrefs.addBlacklist(pkg)
-                        toast("已加入黑名单：${results[which].second}")
+                        toast(getString(R.string.dev_bl_added, results[which].second))
                     }
                     // 切换后刷新列表（保持在同一批结果里继续操作）
                     showAppSearchResult(custom)
@@ -306,14 +307,14 @@ class DevActivity : AppCompatActivity() {
 
     private fun confirmClearRules() {
         val count = AppPrefs.rules().size
-        if (count == 0) { toast("当前预设没有规则"); return }
+        if (count == 0) { toast(getString(R.string.dev_no_rules)); return }
         NekoDialog.builder(this)
-            .setTitle("清空当前预设规则")
-            .setMessage("将删除「${AppPrefs.activePresetName()}」里的全部 $count 条规则，且不可撤销。\n\n确定继续？")
-            .setPositiveButton("清空") { _, _ ->
+            .setTitle(getString(R.string.dev_confirm_title))
+            .setMessage(getString(R.string.dev_confirm_msg, AppPrefs.activePresetName(), count))
+            .setPositiveButton(getString(R.string.dev_confirm_ok)) { _, _ ->
                 AppPrefs.rules().forEach { AppPrefs.removeRule(it.id) }
                 NekoLog.rule("开发者模式：清空当前预设全部规则（$count 条）")
-                toast("已清空 $count 条规则")
+                toast(getString(R.string.dev_cleared, count))
                 refreshInfo()
             }
             .setNegativeButton(com.nekotype.app.R.string.u72, null)
@@ -330,12 +331,12 @@ class DevActivity : AppCompatActivity() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
             am.set(AlarmManager.RTC, System.currentTimeMillis() + 500, pi)
-            toast("正在重启应用…")
+            toast(getString(R.string.dev_restarting))
             android.os.Handler(mainLooper).postDelayed({
                 android.os.Process.killProcess(android.os.Process.myPid())
             }, 250)
         } catch (t: Throwable) {
-            toast("重启失败: ${t.message}")
+            toast(getString(R.string.dev_restart_failed, t.message ?: ""))
         }
     }
 
@@ -353,9 +354,9 @@ class DevActivity : AppCompatActivity() {
         val dialog = NekoDialog.builder(this)
             .setTitle(title)
             .setView(NekoDialog.scroll(NekoDialog.column(this, tv)))
-            .setPositiveButton("复制") { _, _ -> copyText(body, title) }
-            .setNeutralButton("分享") { _, _ -> shareText(title, body) }
-            .setNegativeButton("关闭", null)
+            .setPositiveButton(getString(R.string.dev_copy)) { _, _ -> copyText(body, title) }
+            .setNeutralButton(getString(R.string.dev_share)) { _, _ -> shareText(title, body) }
+            .setNegativeButton(getString(R.string.i58), null)
             .create()
         dialog.show()
         try {
@@ -368,7 +369,7 @@ class DevActivity : AppCompatActivity() {
         try {
             val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             cm.setPrimaryClip(android.content.ClipData.newPlainText("dev", text))
-            toast("$what 已复制（${text.length} 字符）")
+            toast(getString(R.string.dev_copy_done, what, text.length))
         } catch (_: Throwable) { }
     }
 
@@ -379,7 +380,7 @@ class DevActivity : AppCompatActivity() {
                 putExtra(Intent.EXTRA_SUBJECT, title)
                 putExtra(Intent.EXTRA_TEXT, text.take(200_000))
             }
-            startActivity(Intent.createChooser(i, "分享 $title"))
+            startActivity(Intent.createChooser(i, getString(R.string.dev_share) + " " + title))
         } catch (_: Throwable) { }
     }
 
