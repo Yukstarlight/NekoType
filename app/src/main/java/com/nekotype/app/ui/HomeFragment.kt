@@ -110,6 +110,12 @@ class HomeFragment : Fragment() {
 
         binding.btnToggleService.setOnClickListener { toggleService() }
 
+        // 开发者模式入口（DEV 徽标，开发者模式开启后显示在 NekoType 标题旁）
+        binding.btnDev.setOnClickListener {
+            NekoLog.nav("首页 DEV 入口：进入开发者模式")
+            startActivity(Intent(requireContext(), DevActivity::class.java))
+        }
+
         // 语言切换（全局 UI 语言：简体中文 / 繁體中文 / English）
         binding.btnLanguage.setOnClickListener { showLanguageDialog() }
 
@@ -169,6 +175,18 @@ class HomeFragment : Fragment() {
                 overlayPending = false
                 NekoLog.ok("悬浮窗权限已授予，服务自动启动")
             }
+        }
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        // 底部导航用 hide/show 切换，onResume 不会触发；
+        // 这里刷新保证"从设置页开启开发者模式后切回首页，DEV 徽标立即出现"
+        if (!hidden && _binding != null) {
+            try {
+                BgUtils.apply(binding.root)
+                refreshStatus()
+            } catch (_: Throwable) { }
         }
     }
 
@@ -362,11 +380,20 @@ class HomeFragment : Fragment() {
      */
     private fun grantAllPermissions() {
         val ctx = context ?: return
-        // 前置检查：Shizuku 必须可用（UserService 绑定无需 API 权限，绑定时自动弹确认框）
         if (!SysPower.isShizukuAvailable()) {
             NekoLog.warn("一键授权失败：未检测到 Shizuku 服务")
             binding.tvPrivLog.text = getString(R.string.u184)
             toast(getString(R.string.u26))
+            return
+        }
+        // Shizuku 11+：UserService 绑定前必须先获得 API 权限，否则所有步骤必然失败
+        if (!SysPower.isShizukuPermissionGranted()) {
+            binding.tvPrivLog.text = "正在请求 Shizuku API 权限（请在弹窗点允许），授权后请再次点击一键授权..."
+            try {
+                SysPower.requestShizukuPermission(shizukuRequestCode)
+            } catch (t: Throwable) {
+                binding.tvPrivLog.text = "请求 Shizuku 权限失败：${t.javaClass.simpleName}: ${t.message}"
+            }
             return
         }
 
@@ -420,6 +447,8 @@ class HomeFragment : Fragment() {
     private fun refreshStatus() {
         val ctx = context ?: return
         val running = AppPrefs.serviceEnabled
+        // 开发者模式入口：仅开启时显示（NekoType 标题旁 DEV 徽标）
+        binding.btnDev.visibility = if (AppPrefs.devModeEnabled) View.VISIBLE else View.GONE
         binding.tvStatus.text = if (running) getString(R.string.u97) else getString(R.string.u98)
         binding.tvStatus.setTextColor(
             ContextCompat.getColor(ctx, if (running) R.color.md_theme_primary else R.color.md_theme_onSurfaceVariant)

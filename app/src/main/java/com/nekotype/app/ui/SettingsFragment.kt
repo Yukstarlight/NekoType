@@ -179,6 +179,11 @@ class SettingsFragment : Fragment() {
             }
         } catch (_: Throwable) { }
 
+        // 开发者模式：关于标题连点 7 次触发（带"下载额外组件"确认）
+        try {
+            wireDevModeTrigger()
+        } catch (_: Throwable) { }
+
         // 支持与反馈
         try {
             binding.ivSponsorQr.setOnClickListener { showSponsorDialog() }
@@ -238,6 +243,86 @@ class SettingsFragment : Fragment() {
         box.addView(NekoDialog.row(requireContext(), getString(R.string.i57)) {
             NekoDialog.showDoc(requireContext(), getString(R.string.i57), LegalDocs.licenses())
         })
+    }
+
+    // ---------- 开发者模式 ----------
+
+    /** 关于标题连点 7 次进入开发者模式；已开启则再点 7 次直接打开开发者页。
+     *  手感：2.5 秒内连点都计数，第 3 下开始有 toast 反馈，标题带水波纹按压效果。 */
+    private fun wireDevModeTrigger() {
+        var taps = 0
+        var lastAt = 0L
+        val onClick = {
+            val now = System.currentTimeMillis()
+            taps = if (now - lastAt < 2500) taps + 1 else 1
+            lastAt = now
+            when {
+                taps >= 7 -> {
+                    taps = 0
+                    if (AppPrefs.devModeEnabled) {
+                        startActivity(Intent(requireContext(), DevActivity::class.java))
+                        NekoLog.nav("开发者模式：进入开发者页")
+                    } else {
+                        showDevDownloadDialog()
+                    }
+                }
+                taps >= 3 -> toast("进入开发者模式还需连点 ${7 - taps} 次")
+            }
+        }
+        binding.tvAboutTitle.setOnClickListener { onClick() }
+        binding.cardAbout.setOnClickListener { onClick() }
+    }
+
+    /** 「下载额外组件」确认弹窗：确认后模拟下载进度，完成即开启开发者模式 */
+    private fun showDevDownloadDialog() {
+        val dialog = NekoDialog.builder(requireContext())
+            .setTitle("开发者模式")
+            .setMessage("检测到开发者操作。开发者模式组件未安装，需要下载额外组件（约 8.6 MB）才能启用。\n\n该过程仅在本机模拟进行，不会产生任何流量。")
+            .setPositiveButton("下载") { d, _ ->
+                d.dismiss()
+                showDevDownloadProgress()
+            }
+            .setNegativeButton(getString(R.string.u72), null)
+            .create()
+        dialog.show()
+    }
+
+    /** 模拟下载进度条（约 2.5 秒到 100%），完成后开启开发者模式 */
+    private fun showDevDownloadProgress() {
+        val progress = android.widget.ProgressBar(
+            requireContext(), null, android.R.attr.progressBarStyleHorizontal
+        ).apply {
+            max = 100
+            progress = 0
+        }
+        val tvState = android.widget.TextView(requireContext()).apply {
+            text = "正在下载开发者组件… 0%"
+            textSize = 13f
+        }
+        val dialog = NekoDialog.builder(requireContext())
+            .setTitle("下载额外组件")
+            .setView(NekoDialog.column(requireContext(), tvState, progress))
+            .setCancelable(false)
+            .create()
+        dialog.show()
+        val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        var step = 0
+        val runnable = object : Runnable {
+            override fun run() {
+                step++
+                progress.progress = step * 2
+                tvState.text = "正在下载开发者组件… ${step * 2}%"
+                if (step < 50) {
+                    handler.postDelayed(this, 50)
+                } else {
+                    AppPrefs.devModeEnabled = true
+                    dialog.dismiss()
+                    NekoLog.adjust("开发者模式已开启")
+                    toast("开发者模式已开启：首页顶部出现 DEV 入口")
+                }
+            }
+        }
+        handler.postDelayed(runnable, 50)
     }
 
     override fun onResume() {

@@ -573,8 +573,16 @@ class MainActivity : AppCompatActivity() {
                 NekoLog.warn("Shizuku：未检测到服务")
                 toast(getString(R.string.u26))
             }
+            !SysPower.isShizukuPermissionGranted() -> {
+                // Shizuku 11+：UserService 绑定前必须先获得 API 权限，否则服务端拒绝绑定（onServiceConnected 永不回调）
+                binding.tvPrivLog.text = "正在请求 Shizuku API 权限（请在弹窗点允许）..."
+                try {
+                    SysPower.requestShizukuPermission(1001)
+                } catch (t: Throwable) {
+                    binding.tvPrivLog.text = "请求 Shizuku 权限失败：${t.javaClass.simpleName}: ${t.message}"
+                }
+            }
             else -> {
-                // UserService 绑定无需 API 权限；直接探测通道，首次绑定会弹系统确认框
                 binding.tvPrivLog.text = getString(R.string.u187)
                 lifecycleScope.launch {
                     val r = withContext(Dispatchers.IO) { SysPower.execIdForStatus() }

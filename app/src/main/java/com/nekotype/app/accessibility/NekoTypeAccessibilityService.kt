@@ -131,6 +131,7 @@ class NekoTypeAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null) return
+        // 开发者模式：无障碍事件环形记录（排错用；未开启开发者模式时零开销）
         // 诊断：微信事件全记录（Log.e 级别，EMUI 不会过滤；定位问题用）
         if (event.packageName?.toString() == WECHAT_PKG) {
             android.util.Log.e(
@@ -219,6 +220,7 @@ class NekoTypeAccessibilityService : AccessibilityService() {
     }
 
     // ---------- 公共动作：变换 + 发送 ----------
+
 
     /** 读取当前输入框 → 文本变换 → 写回（带验证重试）→ 自动发送 */
     fun transformActiveTextAndSend() {

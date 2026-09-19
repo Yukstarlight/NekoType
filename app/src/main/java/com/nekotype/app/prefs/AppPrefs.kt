@@ -901,10 +901,17 @@ object AppPrefs {
         get() = sp.getBoolean("service_enabled", false)
         set(v) = sp.edit().putBoolean("service_enabled", v).apply()
 
-    /** 免责声明是否已同意（首次进入弹窗，同意后永久不再弹出） */
+    /** 免责声明是否已同意（首次进入弹窗，同意后永久不再弹出）
+     *  用 commit() 同步落盘：apply() 是异步写，进程被系统杀掉时可能丢失（EMUI 杀后台很凶）。 */
     var disclaimerAccepted: Boolean
         get() = sp.getBoolean("disclaimer_accepted", false)
-        set(v) = sp.edit().putBoolean("disclaimer_accepted", v).apply()
+        set(v) { sp.edit().putBoolean("disclaimer_accepted", v).commit() }
+
+    /** 开发者模式（设置页「关于」标题连点 7 次开启）：首页顶部显示 DEV 入口，提供日志/节点树等调试能力。
+     *  同样用 commit() 同步落盘 —— 否则"退出应用后开发者模式又没了、要重新下载组件"。 */
+    var devModeEnabled: Boolean
+        get() = sp.getBoolean("dev_mode", false)
+        set(v) { sp.edit().putBoolean("dev_mode", v).commit() }
 
     /** 篡改检测标志（签名不匹配 / Hook 框架）：为 true 时各入口拒绝运行 */
     var tampered: Boolean

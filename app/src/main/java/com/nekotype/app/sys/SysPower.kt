@@ -18,6 +18,7 @@ import com.nekotype.app.NekoTypeApp
 import com.nekotype.app.R
 import com.nekotype.app.admin.NekoTypeDeviceAdminReceiver
 import com.nekotype.app.prefs.AppPrefs
+import com.nekotype.app.shizuku.FixedCommands
 import com.nekotype.app.shizuku.NekoShellService
 import rikka.shizuku.Shizuku
 import java.util.concurrent.CountDownLatch
@@ -56,6 +57,12 @@ object SysPower {
 
     // ---------- Shizuku ----------
 
+    /** UserService 绑定超时：超过这个时间还没连上就解锁重试，避免一次失败永久卡死 */
+    private const val BIND_TIMEOUT_MS = 8000L
+
+    /** 单次动作回包超时 */
+    private const val ACTION_TIMEOUT_MS = 10000L
+
     /** 最后一次 Shizuku UserService 绑定的详细错误（供诊断显示） */
     @Volatile var lastShizukuError: String? = null
 
@@ -88,63 +95,146 @@ object SysPower {
     /** 正在绑定中（避免重复发起 bindUserService） */
     @Volatile private var shellBinding = false
 
-    /** 复用的 UserServiceArgs（进程名由 processNameSuffix 指定，manifest 不需声明 android:process） */
+    /** 本次绑定发起的时刻：超过 [BIND_TIMEOUT_MS] 仍未连上就自动解锁重试 */
+    @Volatile private var bindStartedAt = 0L
+
+    /** 通道追踪（内存环形缓冲）：EMUI 会过滤应用日志，排错只能靠它 */
+    private val traceLog = ArrayDeque<String>()
+    private val traceFmt = java.text.SimpleDateFormat("HH:mm:ss.SSS", java.util.Locale.getDefault())
+
+    private fun trace(msg: String) {
+        try {
+            traceLog.addLast("${traceFmt.format(java.util.Date())}  $msg")
+            while (traceLog.size > 200) traceLog.removeFirst()
+        } catch (_: Throwable) { }
+    }
+
+    /** 应用版本号：作为 UserService 的 version 传给 Shizuku（应用更新后自动重启 UserService，避免复用旧进程） */
+    private val shellVersion: Int by lazy {
+        try {
+            NekoTypeApp.instance.packageManager
+                .getPackageInfo(NekoTypeApp.instance.packageName, 0).versionCode
+        } catch (_: Throwable) { 1 }
+    }
+
+    /**
+     * 复用的 UserServiceArgs。
+     * 关键点：必须设置 version —— 否则应用每次更新后，Shizuku 会继续复用旧版本启动的
+     * UserService 进程（旧 dex/旧注册），表现为"通道一直连不上、怎么重试都没用"。
+     */
     private val shellArgs by lazy {
         Shizuku.UserServiceArgs(ComponentName(NekoTypeApp.instance, NekoShellService::class.java))
             .processNameSuffix(":shizuku")
+            .version(shellVersion)
     }
 
     /** 长连接的 ServiceConnection：onServiceDisconnected 自动重连 */
     private val shellConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
-            android.util.Log.e("SysPower", "UserService 长连接 onServiceConnected binder=${binder != null}")
             shellBinding = false
             if (binder != null) {
                 shellMessenger = Messenger(binder)
                 shellConnected = true
+                lastShizukuError = null
+                trace("onServiceConnected ✓ 连接成功（${System.currentTimeMillis() - bindStartedAt}ms）")
+            } else {
+                shellConnected = false
+                trace("onServiceConnected 但 binder 为 null")
             }
         }
+
         override fun onServiceDisconnected(name: ComponentName?) {
-            android.util.Log.e("SysPower", "UserService 长连接 onServiceDisconnected，触发自动重连")
             shellMessenger = null
             shellConnected = false
+            shellBinding = false
+            trace("onServiceDisconnected，立即重连")
             bindShellService()
+        }
+
+        override fun onBindingDied(name: ComponentName?) {
+            // 宿主（Shizuku 端 UserService）死亡：清状态重绑，避免通道假死
+            shellMessenger = null
+            shellConnected = false
+            shellBinding = false
+            trace("onBindingDied，清理并重绑")
+            bindShellService()
+        }
+
+        override fun onNullBinding(name: ComponentName?) {
+            // onBind 返回 null（服务端异常）：不清理 messenger 会永远卡在"绑定中"
+            shellMessenger = null
+            shellConnected = false
+            shellBinding = false
+            lastShizukuError = "onNullBinding：UserService 启动异常（onBind 返回 null），请重启 Shizuku 后重试"
+            trace("onNullBinding：UserService 启动异常")
         }
     }
 
-    /** Shizuku Binder 存活监听：Shizuku 重启后自动重连 UserService */
+    /** Shizuku Binder 上下线监听 */
     private val binderReceivedListener = Shizuku.OnBinderReceivedListener {
-        android.util.Log.e("SysPower", "Shizuku Binder received，尝试绑定 UserService")
+        trace("Shizuku binder 送达，尝试绑定 UserService")
         bindShellService()
     }
     private val binderDeadListener = Shizuku.OnBinderDeadListener {
-        android.util.Log.e("SysPower", "Shizuku Binder dead，清理 UserService 连接")
+        trace("Shizuku binder 断开，清理 UserService 连接")
         shellMessenger = null
         shellConnected = false
+        shellBinding = false
     }
 
-    /** 初始化 Shizuku 通道：注册 Binder 监听 + 预绑定（在 NekoTypeApp.onCreate 调用一次） */
+    /**
+     * 初始化 Shizuku 通道（NekoTypeApp.onCreate 调用）：
+     * 用 **sticky** 监听 —— ContentProvider 先于 Application 初始化，binder 很可能在我们注册监听前
+     * 就已送达；非 sticky 监听在这种情况下永远不会回调，通道就再也不绑定了（旧实现的坑）。
+     */
     fun initShizukuChannel() {
         try {
-            Shizuku.addBinderReceivedListener(binderReceivedListener)
+            Shizuku.addBinderReceivedListenerSticky(binderReceivedListener)
             Shizuku.addBinderDeadListener(binderDeadListener)
-        } catch (_: Throwable) { }
-        if (isShizukuAvailable()) {
-            bindShellService()
+            trace("已注册 Shizuku 上下线监听（sticky）")
+        } catch (t: Throwable) {
+            trace("注册监听失败: ${t.javaClass.simpleName}: ${t.message}")
         }
+        bindShellService()
     }
 
-    /** 绑定 UserService（幂等：已连接/绑定中则跳过；Shizuku 未运行则跳过） */
-    fun bindShellService() {
-        if (shellConnected || shellBinding) return
-        if (!isShizukuAvailable()) return
+    /**
+     * 绑定 UserService（幂等）。force=true 时先清状态强制重绑。
+     * 绑定失败会自动在 [BIND_TIMEOUT_MS] 后解锁，不会永久阻塞后续重试。
+     */
+    fun bindShellService(force: Boolean = false) {
+        if (force) {
+            shellMessenger = null
+            shellConnected = false
+            shellBinding = false
+        }
+        if (shellBinding && System.currentTimeMillis() - bindStartedAt > BIND_TIMEOUT_MS) {
+            trace("上次绑定超时（>${BIND_TIMEOUT_MS}ms 未连上）→ 解锁重试")
+            shellBinding = false
+        }
+        if (shellConnected) return
+        if (shellBinding) return
+        if (!isShizukuAvailable()) {
+            trace("跳过绑定：Shizuku 服务未运行（pingBinder=false）")
+            return
+        }
+        // Shizuku 11+：UserService 绑定需要 API 权限；未授权时服务端会直接拒绝，
+        // onServiceConnected 永不回调 → 表现为"通道一直不可用"。这里明确拦截并给出可读原因，
+        // 而不是让每次绑定都静默超时。（Sui/pre-v11 无需权限，跳过此检查）
+        if (shizukuServerVersion() >= 11 && !isShizukuPermissionGranted()) {
+            lastShizukuError = "Shizuku API 权限未授予：请点击 App 内「Shizuku 授权」或「一键授权」，在弹窗中允许；" +
+                    "或在 Shizuku 应用 → 应用管理 → 开启 NekoType"
+            trace("跳过绑定：API 权限未授予（Shizuku v${shizukuServerVersion()}）")
+            return
+        }
         try {
             shellBinding = true
-            android.util.Log.e("SysPower", "bindUserService（长连接）开始...")
+            bindStartedAt = System.currentTimeMillis()
+            trace("发起 bindUserService（version=$shellVersion，Shizuku=${shizukuVersionText()}）")
             Shizuku.bindUserService(shellArgs, shellConnection)
         } catch (t: Throwable) {
             shellBinding = false
-            android.util.Log.e("SysPower", "bindUserService 异常", t)
+            trace("bindUserService 抛异常: ${t.javaClass.simpleName}: ${t.message}")
         }
     }
 
@@ -156,6 +246,7 @@ object SysPower {
         shellMessenger = null
         shellConnected = false
         shellBinding = false
+        trace("已解绑长连接（unbindAll=false）")
     }
 
     /** 强制重置连接（unbindAll=true，杀掉整个 UserService 进程后重新绑定；仅在连接卡死/Shizuku 异常时用） */
@@ -166,7 +257,36 @@ object SysPower {
         shellMessenger = null
         shellConnected = false
         shellBinding = false
+        trace("已强制重置（unbindAll=true，杀掉 UserService 进程）")
         bindShellService()
+    }
+
+    /** Shizuku 本体版本描述（排错用） */
+    private fun shizukuVersionText(): String = try {
+        "v${Shizuku.getVersion()}" + if (isShizukuPermissionGranted()) " 权限已授予" else " 权限未授予"
+    } catch (_: Throwable) { "未知" }
+
+    /** Shizuku 服务端版本号（获取失败返回 -1，视为无需权限检查的老版本/Sui） */
+    private fun shizukuServerVersion(): Int = try {
+        Shizuku.getVersion()
+    } catch (_: Throwable) { -1 }
+
+    /** 开发者模式：通道追踪 + 当前状态摘要（不依赖 logcat，EMUI 过滤日志也能看） */
+    fun devChannelTrace(): String {
+        val sb = StringBuilder()
+        sb.appendLine("---- 当前状态 ----")
+        sb.appendLine("Shizuku 存活(pingBinder): ${isShizukuAvailable()}")
+        sb.appendLine("Shizuku 版本/权限: ${shizukuVersionText()}")
+        sb.appendLine("通道可用: ${privilegedChannelReady()}    最近使用的通道: $lastChannelUsed")
+        sb.appendLine("UserService 已连接: $shellConnected （false 不代表不可用，会自动降级 newProcess）")
+        sb.appendLine("Messenger 有效: ${shellMessenger != null}")
+        sb.appendLine("绑定中(未超时): ${shellBinding && System.currentTimeMillis() - bindStartedAt <= BIND_TIMEOUT_MS}")
+        sb.appendLine("本次 version 参数: $shellVersion")
+        sb.appendLine("最近错误: ${lastShizukuError ?: "无"}")
+        sb.appendLine()
+        sb.appendLine("---- 通道追踪（最近 ${traceLog.size} 条）----")
+        sb.appendLine(if (traceLog.isEmpty()) "（暂无记录）" else traceLog.joinToString("\n"))
+        return sb.toString()
     }
 
     /**
@@ -176,22 +296,27 @@ object SysPower {
      * 返回 null 表示绑定失败/超时/未授权。
      */
     private fun runShizukuAction(action: Int, data: Bundle? = null): String? {
-        // 确保长连接已建立（未连接则触发绑定并等待最多5秒）
+        // 确保长连接已建立（未连接则触发绑定并等待最多8秒：UserService 首次冷启动
+        // 需 fork app_process + 加载 APK（含 dexopt），慢设备上 5 秒不够，会被误判为通道不可用）
         if (!shellConnected) {
+            trace("动作 $action：未连接 → 触发绑定并等待")
             bindShellService()
             val waitStart = System.currentTimeMillis()
-            while (!shellConnected && System.currentTimeMillis() - waitStart < 5000) {
+            while (!shellConnected && System.currentTimeMillis() - waitStart < 8000) {
                 Thread.sleep(100)
             }
             if (!shellConnected) {
-                lastShizukuError = "UserService 连接失败：5秒内 onServiceConnected 未触发（Shizuku 拒绝绑定或 UserService 启动失败）"
-                android.util.Log.e("SysPower", "runShizukuAction 连接超时")
+                val reason = lastShizukuError
+                    ?: "UserService 连接失败：8秒内 onServiceConnected 未触发（Shizuku 拒绝绑定或 UserService 启动失败）"
+                lastShizukuError = reason
+                trace("动作 $action：等待 8s 仍未连接 → 失败（原因：$reason）")
                 // 【关键修复】绑定失败必须清掉 shellBinding：否则之后所有 bindShellService() 都会在第一行
                 // 直接 return，通道一直假死到 APP 重启（Shizuku 晚启动/拒绝绑定一次就永久失效）。
                 shellBinding = false
                 try { Shizuku.unbindUserService(shellArgs, shellConnection, false) } catch (_: Throwable) { }
                 return null
             }
+            trace("动作 $action：连接就绪，继续发送")
         }
 
         val messenger = shellMessenger ?: run {
@@ -225,23 +350,27 @@ object SysPower {
             // 10秒超时：长连接已建立，仅等服务端执行+回包
             if (!latch.await(10, TimeUnit.SECONDS)) {
                 lastShizukuError = "服务端10秒未回包（连接可能已死，触发重置）"
-                android.util.Log.e("SysPower", "runShizukuAction 回包超时，重置连接")
+                trace("动作 $action：回包超时 10s → 清理连接")
                 shellMessenger = null
                 shellConnected = false
+                shellBinding = false
                 return null
             }
 
             if (!ok) {
                 lastShizukuError = "服务端返回失败: ${result ?: ""}"
-                android.util.Log.e("SysPower", "runShizukuAction 服务端失败: $lastShizukuError")
+                trace("动作 $action：服务端返回失败（${result ?: ""}）")
+            } else {
+                trace("动作 $action：成功")
             }
             return if (ok) result ?: "" else null
         } catch (t: Throwable) {
             lastShizukuError = "发送消息异常: ${t.javaClass.simpleName}: ${t.message}"
-            android.util.Log.e("SysPower", "runShizukuAction 发送异常", t)
+            trace("动作 $action：发送异常 ${t.javaClass.simpleName}: ${t.message}")
             // 发送失败通常意味着连接已断，清理状态待下次自动重连
             shellMessenger = null
             shellConnected = false
+            shellBinding = false
             return null
         }
     }
@@ -269,7 +398,8 @@ object SysPower {
             if (err != null) {
                 sb.appendLine("   具体原因: $err")
             }
-            sb.appendLine("   建议：①重启Shizuku服务后重开APP ②确认Shizuku版本≥12 ③调用 resetShellService() 强制重连")
+            sb.appendLine("   建议：①确认已在 Shizuku 应用/弹窗中授予 NekoType 权限（UserService 绑定必需）")
+            sb.appendLine("         ②重启Shizuku服务后重开APP ③开发者模式调用「重绑 Shizuku」强制重连")
         }
         return sb.toString()
     }
@@ -320,7 +450,7 @@ object SysPower {
     /** 通过 Root/Shizuku 直接写入电池优化白名单，无需弹窗（固定动作，无任意命令通道） */
     fun grantBatteryWhitelistPrivileged(): ExecResult {
         val r = shizukuAction(NekoShellService.MSG_BATTERY_WHITELIST) ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
-        return ExecResult(true, r, "shizuku")
+        return ExecResult(true, r, lastChannelUsed)
     }
 
     /**
@@ -366,19 +496,19 @@ object SysPower {
     /** 通过 Shizuku 授予「显示在应用上层」权限（appops 直写，无需跳转设置页） */
     fun grantOverlayPrivileged(): ExecResult {
         val r = shizukuAction(NekoShellService.MSG_GRANT_OVERLAY) ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
-        return ExecResult(true, r, "shizuku")
+        return ExecResult(true, r, lastChannelUsed)
     }
 
     /** 通过 Shizuku 开启无障碍服务（settings put secure，保留已有无障碍服务） */
     fun grantAccessibilityPrivileged(): ExecResult {
         val r = shizukuAction(NekoShellService.MSG_GRANT_ACCESSIBILITY) ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
-        return ExecResult(true, r, "shizuku")
+        return ExecResult(true, r, lastChannelUsed)
     }
 
     /** 通过 Shizuku 激活设备管理员（dpm set-active-admin，shell 权限可直接执行） */
     fun grantDeviceAdminPrivileged(): ExecResult {
         val r = shizukuAction(NekoShellService.MSG_GRANT_DEVICE_ADMIN) ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
-        return ExecResult(true, r, "shizuku")
+        return ExecResult(true, r, lastChannelUsed)
     }
 
     /**
@@ -422,20 +552,115 @@ object SysPower {
     fun execIdForStatus(): ExecResult {
         // 状态页仅需确认通道可达，用免电白名单动作探测即可（不做任意命令）
         val ok = shizukuAction(NekoShellService.MSG_BATTERY_WHITELIST) != null
-        return ExecResult(ok, if (ok) "shell" else "", "shizuku")
+        return ExecResult(ok, if (ok) lastChannelUsed else "", if (ok) lastChannelUsed else "none")
     }
 
-    /** Shizuku 通道当前是否可用（静默修改的前提）
-     *  v2.6.5 起改为判断长连接状态：UserService 已绑定且 Messenger 有效。
-     *  仅 pingBinder 通不够——Shizuku 活着但 UserService 没绑上时，调用必然失败。 */
-    fun privilegedChannelReady(): Boolean = shellConnected && shellMessenger != null
+    /** 最近一次成功使用的通道名（UserService / newProcess），供状态页与诊断显示 */
+    @Volatile var lastChannelUsed: String = "none"
+        private set
+
+    /**
+     * Shizuku 通道是否可用（静默修改等特权能力的前提）。
+     *
+     * v2.6.6 起：不再只看 UserService 长连接。特权动作先走 UserService，失败会**自动降级**到
+     * AIDL 直连服务端的 newProcess 通道（见 [execRemote]），因此只要 Shizuku 存活且已授权，
+     * 通道就可用——原先"UserService 没绑上就整个通道不可用"正是长期"Shizuku 用不了"的根因。
+     */
+    fun privilegedChannelReady(): Boolean = isShizukuAvailable() && isShizukuPermissionGranted()
+
+    /** UserService 长连接是否已建立（诊断显示用；为 false 不代表通道不可用，会自动走 newProcess） */
+    fun isUserServiceConnected(): Boolean = shellConnected && shellMessenger != null
 
     private fun shizukuAction(action: Int, data: Bundle? = null): String? {
         return try {
-            // UserService 绑定无需 API 权限，仅需 Shizuku 服务存活
             if (!isShizukuAvailable()) return null
-            runShizukuAction(action, data)
-        } catch (_: Throwable) {
+            // ① 首选 UserService 长连接（一次绑定复用，最快）
+            val viaUser = runShizukuAction(action, data)
+            if (viaUser != null) {
+                lastChannelUsed = "UserService"
+                return viaUser
+            }
+            // ② 降级：AIDL 直连 Shizuku 服务端 newProcess（不依赖 UserService 拉我们自己的进程）
+            trace("动作 $action：UserService 未成功 → 降级 newProcess 直连通道")
+            val viaProc = execActionViaRemoteProcess(action, data)
+            if (viaProc != null) {
+                lastChannelUsed = "newProcess"
+                trace("动作 $action：newProcess 通道成功")
+                return viaProc
+            }
+            trace("动作 $action：两条通道都失败（${lastShizukuError ?: "未知"}）")
+            null
+        } catch (t: Throwable) {
+            trace("动作 $action：通道异常 ${t.javaClass.simpleName}: ${t.message}")
+            null
+        }
+    }
+
+    // ---------- 降级通道：AIDL 直连 Shizuku 服务端 newProcess ----------
+
+    /**
+     * 让 Shizuku 服务端起一个 shell 进程执行**固定命令**（与「雹」同款思路，不依赖 UserService）。
+     *
+     * 走的是公开 AIDL：`moe.shizuku.server.IShizukuService.newProcess()`。
+     * 客户端 API 里 `Shizuku.newProcess()` 被设为 private，但 AIDL 接口本身是公开的，
+     * 我们通过 `Shizuku.getBinder()` + `Stub.asInterface` 直接调用，不需要反射、不碰隐藏 API。
+     *
+     * 安全：命令只能来自 [FixedCommands]（固定模板 + 受限参数），客户端无法传任意命令。
+     */
+    private fun execActionViaRemoteProcess(action: Int, data: Bundle?): String? {
+        val pkg = NekoTypeApp.instance.packageName
+        val cmd = FixedCommands.build(action, data, pkg)
+        if (cmd != null) return execRemote(cmd)
+        // 悬浮窗授权：名称 op 不被识别时用数字 op（24）兜底
+        if (action == NekoShellService.MSG_GRANT_OVERLAY) {
+            FixedCommands.overlayFallback(pkg)?.let { return execRemote(it) }
+        }
+        lastShizukuError = "动作 $action 参数非法或不支持（newProcess 通道）"
+        return null
+    }
+
+    /** 执行一条固定命令并取回输出（newProcess 通道） */
+    private fun execRemote(cmd: String): String? {
+        return try {
+            if (!isShizukuAvailable()) {
+                lastShizukuError = "Shizuku 服务未运行"
+                return null
+            }
+            val binder = Shizuku.getBinder() ?: run {
+                lastShizukuError = "Shizuku.getBinder() 为 null"
+                return null
+            }
+            val svc = moe.shizuku.server.IShizukuService.Stub.asInterface(binder) ?: run {
+                lastShizukuError = "IShizukuService.asInterface 失败"
+                return null
+            }
+            val proc = svc.newProcess(arrayOf("sh", "-c", cmd), null, null) ?: run {
+                lastShizukuError = "服务端 newProcess 返回 null（可能未授权）"
+                return null
+            }
+            // 错误流单独线程读，避免输出/错误很多时互相阻塞
+            var errText = ""
+            val errThread = Thread {
+                try {
+                    errText = android.os.ParcelFileDescriptor.AutoCloseInputStream(proc.errorStream)
+                        .bufferedReader().readText()
+                } catch (_: Throwable) { }
+            }
+            errThread.start()
+            val out = android.os.ParcelFileDescriptor.AutoCloseInputStream(proc.inputStream)
+                .bufferedReader().readText()
+            val code = try { proc.waitFor() } catch (_: Throwable) { -1 }
+            try { errThread.join(1500) } catch (_: Throwable) { }
+            val combined = (out + errText).trim()
+            if (code == 0) {
+                lastShizukuError = null
+                return combined
+            }
+            lastShizukuError = "newProcess exit=$code: ${combined.take(160)}"
+            null
+        } catch (t: Throwable) {
+            lastShizukuError = "newProcess 通道异常: ${t.javaClass.simpleName}: ${t.message}"
+            trace(lastShizukuError ?: "newProcess 异常")
             null
         }
     }
@@ -460,7 +685,7 @@ object SysPower {
             shizukuAction(NekoShellService.MSG_INJECT_SELECT_ALL)
             val out = shizukuAction(NekoShellService.MSG_INJECT_TEXT, Bundle().apply { putString("text", text) })
                 ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
-            ExecResult(true, out, "shizuku")
+            ExecResult(true, out, lastChannelUsed)
         } else {
             // 非 ASCII（中文等）：走系统剪贴板写入，由调用方配合无障碍粘贴
             val out = shizukuAction(NekoShellService.MSG_CLIPBOARD_SET, Bundle().apply { putString("text", text) })
@@ -477,7 +702,51 @@ object SysPower {
         if (text.isEmpty()) return ExecResult(false, "empty", "none")
         val out = shizukuAction(NekoShellService.MSG_CLIPBOARD_SET, Bundle().apply { putString("text", text) })
             ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
-        return ExecResult(true, out, "shizuku")
+        return ExecResult(true, out, lastChannelUsed)
+    }
+
+    // ---------- 开发者模式 ----------
+
+    /** 开发者模式：重置并重新绑定 Shizuku 长连接（必须在后台线程调用） */
+    fun devResetShizuku(): String {
+        return try {
+            resetShellService()
+            Thread.sleep(400)
+            val ok = privilegedChannelReady()
+            "已重置并重新绑定：UserService=${if (ok) "已连接" else "未连接"}  ${lastShizukuError ?: ""}"
+        } catch (t: Throwable) {
+            "重置失败: ${t.javaClass.simpleName}: ${t.message}"
+        }
+    }
+
+    /**
+     * 抓取系统日志（开发者模式）：
+     * 优先走 Shizuku 固定动作（logcat 全系统日志，命令模板写死、tag 受限过滤）；
+     * Shizuku 不可用时退回抓本进程日志（Android 允许应用读自己进程的 logcat，无需任何权限）。
+     * 必须在后台线程调用。
+     */
+    fun devLogcat(filter: String?, crash: Boolean): ExecResult {
+        val data = Bundle().apply {
+            if (!filter.isNullOrBlank()) putString("tag", filter.trim())
+        }
+        shizukuAction(if (crash) NekoShellService.MSG_LOGCAT_CRASH else NekoShellService.MSG_LOGCAT_DUMP, data)?.let {
+            return ExecResult(true, it, lastChannelUsed)
+        }
+        // 本地兜底：--pid 只读本进程日志
+        return try {
+            val pid = android.os.Process.myPid()
+            val tag = filter?.trim().orEmpty()
+            val tagPart = if (tag.matches(Regex("[A-Za-z0-9_.\\-]{1,32}"))) " $tag:V *:S" else ""
+            val cmd = if (crash) "logcat -b crash -d --pid=$pid -t 500"
+            else "logcat -d --pid=$pid -t 2000$tagPart"
+            val p = Runtime.getRuntime().exec(arrayOf("sh", "-c", cmd))
+            val out = p.inputStream.bufferedReader().readText().takeLast(200_000)
+            p.errorStream.bufferedReader().readText()
+            p.waitFor()
+            ExecResult(out.isNotEmpty(), out, "local")
+        } catch (t: Throwable) {
+            ExecResult(false, "本地 logcat 失败: ${t.message}", "local")
+        }
     }
 
     // ---------- 隐藏模式（隐藏桌面图标） ----------
@@ -491,7 +760,7 @@ object SysPower {
     fun shizukuHideSelf(hidden: Boolean): ExecResult {
         val out = shizukuAction(NekoShellService.MSG_HIDE_SELF, Bundle().apply { putBoolean("hidden", hidden) })
             ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
-        return ExecResult(true, out, "shizuku")
+        return ExecResult(true, out, lastChannelUsed)
     }
 
     /**

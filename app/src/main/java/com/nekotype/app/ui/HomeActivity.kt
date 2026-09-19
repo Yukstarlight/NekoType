@@ -188,6 +188,9 @@ class HomeActivity : AppCompatActivity() {
         BgUtils.apply(binding.root)
         NekoLang.apply(binding.root)
         applyNekoBottomNav()
+        // Shizuku 通道前台补绑：应用启动时 binder 可能还没送达（ContentProvider 先于 Application 初始化），
+        // 回到前台时再确保一次绑定；已连接/绑定中会直接返回，开销可忽略
+        try { com.nekotype.app.sys.SysPower.bindShellService() } catch (_: Throwable) { }
         // 外部停止请求（通知栏/磁贴）：密码锁定验证后才允许停止
         if (intent?.getBooleanExtra(EXTRA_STOP_REQUEST, false) == true) {
             intent?.removeExtra(EXTRA_STOP_REQUEST)

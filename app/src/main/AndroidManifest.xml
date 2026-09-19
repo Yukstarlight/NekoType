@@ -99,6 +99,13 @@
             android:label="应用黑名单"
             android:theme="@style/Theme.NekoType.Main" />
 
+        <!-- 开发者模式（隐藏入口：设置页「关于」连点 7 次开启） -->
+        <activity
+            android:name=".ui.DevActivity"
+            android:exported="false"
+            android:label="开发者模式"
+            android:theme="@style/Theme.NekoType.Main" />
+
         <!-- Accessibility Service -->
         <service
             android:name=".accessibility.NekoTypeAccessibilityService"

@@ -8,27 +8,22 @@ import android.os.IBinder
 import android.os.Looper
 import android.os.Message
 import android.os.Messenger
-import com.nekotype.app.NekoTypeApp
 import kotlin.concurrent.thread
 
 /**
- * Shizuku UserService：由 Shizuku 服务端以 shell 权限启动（manifest 中 process=":shizuku"）。
+ * Shizuku UserService：由 Shizuku 服务端以 shell 权限拉起并实例化（进程名由
+ * UserServiceArgs.processNameSuffix(":shizuku") 决定，manifest 不需要 android:process）。
  *
  * 安全设计（v2.6.4 重构，响应安全审计）：
  * 本服务【不接受任意 shell 命令】。对外只暴露一组【固定动作】消息类型，
- * 每个动作在服务端内部执行写死的系统命令；参数（文本/包名等）仅作为
- * 白名单命令模板的受限插值，绝不拼接到任意 shell 字符串上。
+ * 命令模板集中在 [FixedCommands]（两条特权通道共用同一份），参数（文本/包名/tag）
+ * 只作为受限插值，绝不拼接任意 shell 字符串。
  * → 不存在 "onBind 返回 Messenger + handleMessage sh -c 任意命令" 的通道。
  *
- * 动作清单：
- * - MSG_BATTERY_WHITELIST   免电白名单（写死 dumpsys deviceidle whitelist + 本包名）
- * - MSG_INJECT_SELECT_ALL   全选（写死 input keycombination 113 29）
- * - MSG_INJECT_TEXT         注入文本（text 参数经严格 ASCII+长度校验后插入固定模板）
- * - MSG_HIDE_SELF           隐藏/恢复自身（pm hide/unhide + 本包名，hidden 为布尔）
- * - MSG_GRANT_OVERLAY       授予悬浮窗权限（appops set android:system_alert_window allow）
- * - MSG_GRANT_ACCESSIBILITY 开启无障碍服务（settings put secure enabled_accessibility_services）
- * - MSG_GRANT_DEVICE_ADMIN  激活设备管理员（dpm set-active-admin）
- * - MSG_CLIPBOARD_SET       写入系统剪贴板（cmd clipboard set，支持中文/Unicode）
+ * 动作清单见 [FixedCommands.build]：
+ * - MSG_BATTERY_WHITELIST / MSG_INJECT_SELECT_ALL / MSG_INJECT_TEXT / MSG_HIDE_SELF
+ * - MSG_GRANT_OVERLAY / MSG_GRANT_ACCESSIBILITY / MSG_GRANT_DEVICE_ADMIN
+ * - MSG_CLIPBOARD_SET / MSG_LOGCAT_DUMP / MSG_LOGCAT_CRASH
  */
 class NekoShellService : Service() {
 
@@ -42,18 +37,17 @@ class NekoShellService : Service() {
         const val MSG_GRANT_ACCESSIBILITY = 6
         const val MSG_GRANT_DEVICE_ADMIN = 7
         const val MSG_CLIPBOARD_SET = 8
+        // 开发者模式：抓取系统日志（logcat 主缓冲 / 崩溃缓冲；tag 为受限参数）
+        const val MSG_LOGCAT_DUMP = 9
+        const val MSG_LOGCAT_CRASH = 10
 
         // 结果
         const val MSG_RESULT = 100
         const val KEY_OK = "ok"
         const val KEY_OUT = "out"
 
-        // 注入文本的硬限制：仅可打印 ASCII，长度上限防滥用
-        private const val MAX_INJECT_LEN = 2000
-
-        // 本应用无障碍服务 & 设备管理员的完整类名（写死，不接受外部传入）
-        private const val ACCESSIBILITY_SERVICE = "com.nekotype.app.accessibility.NekoTypeAccessibilityService"
-        private const val DEVICE_ADMIN_RECEIVER = "com.nekotype.app.admin.NekoTypeDeviceAdminReceiver"
+        /** logcat 输出上限（防止回包过大） */
+        private const val MAX_LOGCAT_CHARS = 300_000
 
         private const val TAG = "NekoShell"
     }
@@ -68,26 +62,27 @@ class NekoShellService : Service() {
                 var ok: Boolean
                 var out: String
                 try {
-                    val r = when (action) {
-                        MSG_BATTERY_WHITELIST -> runBatteryWhitelist()
-                        MSG_INJECT_SELECT_ALL -> runShell("input keycombination 113 29")
-                        MSG_INJECT_TEXT -> runInjectText(msg.data?.getString("text"))
-                        MSG_HIDE_SELF -> runHideSelf(msg.data?.getBoolean("hidden") ?: true)
-                        MSG_GRANT_OVERLAY -> runGrantOverlay()
-                        MSG_GRANT_ACCESSIBILITY -> runGrantAccessibility()
-                        MSG_GRANT_DEVICE_ADMIN -> runGrantDeviceAdmin()
-                        MSG_CLIPBOARD_SET -> runClipboardSet(msg.data?.getString("text"))
-                        else -> false to "unknown action"
+                    val cmd = FixedCommands.build(action, msg.data, packageName)
+                    val r: Pair<Boolean, String> = when {
+                        cmd != null -> runShell(cmd)
+                        // 悬浮窗授权：部分 ROM 只认数字 op（24），名称 op 失败时兜底一次
+                        action == MSG_GRANT_OVERLAY ->
+                            FixedCommands.overlayFallback(packageName)?.let { runShell(it) }
+                                ?: (false to "bad pkg")
+                        else -> false to "invalid action or params"
                     }
                     ok = r.first
-                    out = r.second
+                    out = if (action == MSG_LOGCAT_DUMP || action == MSG_LOGCAT_CRASH) {
+                        if (r.second.length > MAX_LOGCAT_CHARS) {
+                            r.second.takeLast(MAX_LOGCAT_CHARS) + "\n……(已截断，仅显示末尾 30 万字符)"
+                        } else r.second
+                    } else r.second
                 } catch (t: Throwable) {
                     // 【关键】任何异常都必须回给调用方，否则调用方只能干等超时（旧版就是这样静默失败的）
                     ok = false
                     out = t.javaClass.simpleName + ": " + (t.message ?: "")
                     android.util.Log.e(TAG, "action $action 执行异常", t)
                 }
-                android.util.Log.e(TAG, "action=$action ok=$ok out=${out.take(200)}")
                 try {
                     val reply = Message.obtain(null, MSG_RESULT)
                     reply.data = Bundle().apply {
@@ -114,91 +109,7 @@ class NekoShellService : Service() {
 
     override fun onBind(intent: Intent?): IBinder = Messenger(handler).binder
 
-    // ---------- 固定动作（命令全部写死，参数受限插值） ----------
-
-    private fun runBatteryWhitelist(): Pair<Boolean, String> {
-        val pkg = packageName
-        // 包名来自系统自身，安全；仍校验格式兜底
-        if (!pkg.matches(Regex("[a-zA-Z0-9._]+"))) return false to "bad pkg"
-        return runShell("dumpsys deviceidle whitelist +$pkg")
-    }
-
-    private fun runInjectText(text: String?): Pair<Boolean, String> {
-        // 严格校验：仅可打印 ASCII（0x20-0x7E），禁止单引号/控制字符，长度受限
-        if (text == null || text.isEmpty() || text.length > MAX_INJECT_LEN) return false to "bad text"
-        if (!text.all { it.code in 0x20..0x7E && it != '\'' }) return false to "bad text"
-        return runShell("input text '$text'")
-    }
-
-    private fun runHideSelf(hidden: Boolean): Pair<Boolean, String> {
-        val pkg = packageName
-        if (!pkg.matches(Regex("[a-zA-Z0-9._]+"))) return false to "bad pkg"
-        val verb = if (hidden) "hide" else "unhide"
-        return runShell("pm $verb $pkg")
-    }
-
-    /**
-     * 写入系统剪贴板（支持中文/Unicode）：通过 cmd clipboard set 命令。
-     * shell 安全：单引号包裹 + 内部单引号转义为 '\''，杜绝命令注入。
-     */
-    private fun runClipboardSet(text: String?): Pair<Boolean, String> {
-        if (text == null) return false to "null text"
-        if (text.length > 50000) return false to "text too long"
-        val escaped = text.replace("'", "'\\''")
-        return runShell("cmd clipboard set '$escaped'")
-    }
-
-    // ---------- 一键授权：悬浮窗 / 无障碍 / 设备管理员 ----------
-
-    /** 授予「显示在应用上层」权限：通过 appops 直接允许 SYSTEM_ALERT_WINDOW */
-    private fun runGrantOverlay(): Pair<Boolean, String> {
-        val pkg = packageName
-        if (!pkg.matches(Regex("[a-zA-Z0-9._]+"))) return false to "bad pkg"
-        // appops set <pkg> android:system_alert_window allow
-        // 部分 ROM 识别 op 名，部分只认数字 24；两种都试，取成功结果
-        val r1 = runShell("appops set $pkg android:system_alert_window allow")
-        if (r1.first) return r1
-        val r2 = runShell("appops set $pkg 24 allow")
-        return if (r2.first) r2 else (false to (r1.second.ifEmpty { r2.second }))
-    }
-
-    /** 开启无障碍服务：写入 Settings.Secure，保留已有无障碍服务不覆盖 */
-    private fun runGrantAccessibility(): Pair<Boolean, String> {
-        val pkg = packageName
-        if (!pkg.matches(Regex("[a-zA-Z0-9._]+"))) return false to "bad pkg"
-        val target = "$pkg/$ACCESSIBILITY_SERVICE"
-        // shell 脚本：读取当前已启用列表，若已包含目标则跳过，否则追加；最后开启总开关
-        val script = """
-            current=`settings get secure enabled_accessibility_services`
-            target='$target'
-            case ":${'$'}current:" in
-              *":${'$'}target:"*) already=1 ;;
-              *) already=0 ;;
-            esac
-            if [ "${'$'}already" = "0" ]; then
-              if [ "${'$'}current" = "null" ] || [ -z "${'$'}current" ]; then
-                settings put secure enabled_accessibility_services "${'$'}target"
-              else
-                settings put secure enabled_accessibility_services "${'$'}current:${'$'}target"
-              fi
-            fi
-            settings put secure accessibility_enabled 1
-            echo "enabled_accessibility_services=`settings get secure enabled_accessibility_services`"
-            echo "accessibility_enabled=`settings get secure accessibility_enabled`"
-        """.trimIndent()
-        return runShell(script)
-    }
-
-    /** 激活设备管理员：dpm set-active-admin（shell 权限可直接执行） */
-    private fun runGrantDeviceAdmin(): Pair<Boolean, String> {
-        val pkg = packageName
-        if (!pkg.matches(Regex("[a-zA-Z0-9._]+"))) return false to "bad pkg"
-        val cmp = "$pkg/$DEVICE_ADMIN_RECEIVER"
-        return runShell("dpm set-active-admin $cmp")
-    }
-
-    // ---------- 执行 ----------
-
+    /** 执行固定命令（命令由 [FixedCommands] 生成，本方法只负责跑） */
     private fun runShell(cmd: String): Pair<Boolean, String> {
         return try {
             val p = Runtime.getRuntime().exec(arrayOf("sh", "-c", cmd))
