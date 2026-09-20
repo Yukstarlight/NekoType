@@ -44,6 +44,9 @@ object BgUtils {
         } else if (AppPrefs.themeMode == "star") {
             // 无自定义背景且星空主题：显示星空极光背景
             ContextCompat.getDrawable(view.context, R.drawable.bg_starfield)
+        } else if (AppPrefs.themeMode == "cccp") {
+            // 无自定义背景且前苏联主题：构造主义斜带背景
+            ContextCompat.getDrawable(view.context, R.drawable.bg_cccp)
         } else if (AppPrefs.themeMode == "neko") {
             // 无自定义背景且猫娘主题：显示猫爪水印背景
             ContextCompat.getDrawable(view.context, R.drawable.bg_neko)

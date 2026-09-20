@@ -187,6 +187,18 @@
                     android:checkable="true"
                     android:textSize="14sp"
                     android:text="@string/i16"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnThemeCccp"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:minHeight="44dp"
+                    android:checkable="true"
+                    android:textSize="14sp"
+                    app:icon="@drawable/ic_cccp_star"
+                    app:iconGravity="textStart"
+                    android:text="@string/theme_cccp"/>
                 <TextView
                     android:id="@+id/tvThemeHint"
                     android:layout_width="match_parent"

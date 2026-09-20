@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">NekoType</string>
     <string name="splash_subtitle">Welcome to Mist Unveils Infinite Tomorrows</string>
-    <string name="splash_version">v2.7.7</string>
+    <string name="splash_version">v2.7.8</string>
     <string name="accessibility_label">NekoType 消息变换</string>
     <string name="accessibility_description">NekoType 需要无障碍权限来检测输入法弹出、读取正在输入的消息、自动添加前缀/后缀/文本替换，并通过悬浮按钮触发改写后发送。所有文本处理均在本地完成。</string>
     <string name="admin_label">NekoType 设备管理员</string>
@@ -443,4 +443,5 @@
     <string name="i59">法律信息与开源许可</string>
     <string name="i60">已重置：下次启动会重新显示免责声明弹窗</string>
     <string name="bl_loading">正在加载应用列表…</string>
+    <string name="theme_cccp">前苏联（CCCP）</string>
 </resources>

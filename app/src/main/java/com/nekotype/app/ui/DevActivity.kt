@@ -17,6 +17,7 @@ import com.nekotype.app.databinding.ActivityDevBinding
 import com.nekotype.app.overlay.FloatingButtonService
 import com.nekotype.app.prefs.AppPrefs
 import com.nekotype.app.sys.SysPower
+import com.nekotype.app.transform.TextTransformEngine
 import com.nekotype.app.util.BgUtils
 import com.nekotype.app.util.NekoLog
 import com.nekotype.app.util.TamperGuard
@@ -93,6 +94,16 @@ class DevActivity : AppCompatActivity() {
         }
         binding.btnDevClearRules.setOnClickListener { confirmClearRules() }
         binding.btnDevRestart.setOnClickListener { restartApp() }
+        binding.btnDevFactoryReset.setOnClickListener { confirmFactoryReset() }
+
+        // 调试工具
+        binding.btnDevTree.setOnClickListener {
+            lifecycleScope.launch {
+                val tree = withContext(Dispatchers.IO) { NekoTypeAccessibilityBridge.dumpWindowTree() }
+                showLog(getString(R.string.dev_tree_title), tree ?: "（无障碍服务未连接）")
+            }
+        }
+        binding.btnDevPerf.setOnClickListener { runRuleBenchmark() }
 
         refreshInfo()
         updateAppQueryHint("")
@@ -305,6 +316,78 @@ class DevActivity : AppCompatActivity() {
 
     // ---------- 维护与重置 ----------
 
+    /** 规则引擎性能基准：预热 20 次 + 计时 200 次，给出最快/中位/平均/最慢与吞吐 */
+    private fun runRuleBenchmark() {
+        binding.btnDevPerf.isEnabled = false
+        lifecycleScope.launch {
+            val report = withContext(Dispatchers.IO) {
+                try {
+                    val rules = AppPrefs.rules()
+                    val enabled = rules.count { it.enabled }
+                    val sample = "这是一段用于性能测试的中文输入文本，hello world 12345，哈哈，晚安。"
+                    repeat(20) { TextTransformEngine.transform(sample) } // 预热 JIT
+                    val n = 200
+                    val times = LongArray(n)
+                    for (i in 0 until n) {
+                        val t0 = System.nanoTime()
+                        TextTransformEngine.transform(sample)
+                        times[i] = System.nanoTime() - t0
+                    }
+                    val total = times.sum()
+                    times.sort()
+                    buildString {
+                        appendLine("规则总数: ${rules.size}（启用 $enabled，停用 ${rules.size - enabled}）")
+                        appendLine("按等级全局执行: ${AppPrefs.priorityGlobalEnabled}")
+                        appendLine("字符间加空格: ${AppPrefs.styleSpaced}   转大写: ${AppPrefs.styleUpper}   随机颜文字: ${AppPrefs.emoticonEnabled}")
+                        appendLine("样本长度: ${sample.length} 字")
+                        appendLine("循环: $n 次（另 20 次预热不计）")
+                        appendLine()
+                        appendLine("最快: ${"%.1f".format(times.first() / 1000.0)} µs")
+                        appendLine("中位: ${"%.1f".format(times[n / 2] / 1000.0)} µs")
+                        appendLine("平均: ${"%.1f".format(total / n / 1000.0)} µs")
+                        appendLine("最慢: ${"%.1f".format(times.last() / 1000.0)} µs")
+                        appendLine("吞吐: ${if (total > 0) n * 1_000_000_000L / total else 0} 次/秒")
+                        appendLine()
+                        appendLine("参考：单次改写耗时远小于打字间隔（≥100ms）时手感无差别。")
+                    }
+                } catch (t: Throwable) {
+                    "基准测试失败: ${t.javaClass.simpleName}: ${t.message}"
+                }
+            }
+            binding.btnDevPerf.isEnabled = true
+            showLog(getString(R.string.dev_perf_title), report)
+        }
+    }
+
+    /** 恢复出厂：第一次确认（说明影响范围） */
+    private fun confirmFactoryReset() {
+        NekoDialog.builder(this)
+            .setTitle(getString(R.string.dev_factory_title))
+            .setMessage(getString(R.string.dev_factory_msg))
+            .setPositiveButton(getString(R.string.dev_confirm_ok)) { _, _ -> confirmFactoryResetFinal() }
+            .setNegativeButton(getString(R.string.i58), null)
+            .show()
+    }
+
+    /** 恢复出厂：第二次确认（不可撤销） */
+    private fun confirmFactoryResetFinal() {
+        NekoDialog.builder(this)
+            .setTitle(getString(R.string.dev_factory_confirm_title))
+            .setMessage(getString(R.string.dev_factory_confirm_msg))
+            .setPositiveButton(getString(R.string.dev_factory_ok)) { _, _ -> doFactoryReset() }
+            .setNegativeButton(getString(R.string.i58), null)
+            .show()
+    }
+
+    /** 真正清空：先把当前配置复制到剪贴板备份，再清数据 + 清日志 + 重启应用 */
+    private fun doFactoryReset() {
+        try { copyText(AppPrefs.exportConfigText(), getString(R.string.dev_config_what)) } catch (_: Throwable) { }
+        try { NekoLog.clear() } catch (_: Throwable) { }
+        AppPrefs.factoryReset(keepDevMode = true)
+        toast(getString(R.string.dev_factory_done))
+        android.os.Handler(mainLooper).postDelayed({ restartApp() }, 500)
+    }
+
     private fun confirmClearRules() {
         val count = AppPrefs.rules().size
         if (count == 0) { toast(getString(R.string.dev_no_rules)); return }
@@ -321,8 +404,7 @@ class DevActivity : AppCompatActivity() {
             .show()
     }
 
-    /** 重启应用：闹钟 0.5 秒后拉起启动页，再杀掉当前进程 */
-    private fun restartApp() {
+    /** 重启应用：闹钟 0.5 秒后拉起启动页，再杀掉当前进程 */    private fun restartApp() {
         try {
             val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val i = Intent(this, SplashActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

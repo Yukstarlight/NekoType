@@ -66,7 +66,8 @@ class NekoTypeApp : Application() {
                 try {
                     when (AppPrefs.themeMode) {
                         "star" -> activity.setTheme(R.style.Theme_NekoType_Star)
-                        "neko" -> activity.setTheme(R.style.Theme_NekoType_Neko)
+                        "cccp" -> activity.setTheme(R.style.Theme_NekoType_Cccp)
+            "neko" -> activity.setTheme(R.style.Theme_NekoType_Neko)
                     }
                 } catch (_: Throwable) { /* 主题应用失败不阻断页面 */ }
             }
@@ -85,6 +86,7 @@ class NekoTypeApp : Application() {
             "dark" -> AppCompatDelegate.MODE_NIGHT_YES
             "light" -> AppCompatDelegate.MODE_NIGHT_NO
             "star" -> AppCompatDelegate.MODE_NIGHT_YES
+            "cccp" -> AppCompatDelegate.MODE_NIGHT_YES
             "neko" -> AppCompatDelegate.MODE_NIGHT_NO
             else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         }

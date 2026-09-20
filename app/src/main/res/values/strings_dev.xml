@@ -64,4 +64,15 @@
     <string name="dev_config_what">当前配置</string>
     <string name="dev_recent_logs">---------- 最近日志 ----------</string>
     <string name="dev_clipboard_title">剪贴板</string>
-</resources>
+    <string name="dev_tools_title">调试工具</string>
+    <string name="dev_tree">无障碍节点树快照（当前窗口）</string>
+    <string name="dev_tree_title">节点树快照</string>
+    <string name="dev_perf">规则性能基准（200 次变换计时）</string>
+    <string name="dev_perf_title">规则性能基准</string>
+    <string name="dev_reset_factory">恢复出厂设置（清空全部数据）</string>
+    <string name="dev_factory_title">恢复出厂设置</string>
+    <string name="dev_factory_msg">将清空全部本地数据：规则与预设、行为与样式、密码锁定、应用黑名单、使用统计、应用内日志。\n\n当前配置会先复制到剪贴板作为备份。此操作不可撤销。\n\n确定继续？</string>
+    <string name="dev_factory_confirm_title">最后确认</string>
+    <string name="dev_factory_confirm_msg">真的要清空全部数据吗？\n\n清空后应用会立即重启，所有设置恢复默认。</string>
+    <string name="dev_factory_ok">清空全部数据</string>
+    <string name="dev_factory_done">已恢复出厂设置，正在重启…</string></resources>

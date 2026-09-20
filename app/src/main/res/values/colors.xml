@@ -105,4 +105,12 @@
     <color name="neko_text_soft_dark">#C090B0</color>
     <color name="neko_border">#F0C0E0</color>
     <color name="neko_onPrimary">#FFFFFF</color>
+    <!-- 前苏联主题（CCCP）：红旗红 + 鎏金 + 深褐底 -->
+    <color name="cccp_red">#C8102E</color>
+    <color name="cccp_red_dark">#8E0B20</color>
+    <color name="cccp_gold">#E8C36A</color>
+    <color name="cccp_bg">#1A1512</color>
+    <color name="cccp_surface">#241E19</color>
+    <color name="cccp_text">#F2E8D5</color>
+    <color name="cccp_text_soft">#C9B99A</color>
 </resources>

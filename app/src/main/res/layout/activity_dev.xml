@@ -216,6 +216,49 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- ============ 调试工具 ============ -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="?attr/colorOutlineVariant"
+            app:strokeWidth="1dp"
+            app:cardBackgroundColor="?attr/colorSurface"
+            android:layout_marginTop="12dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dev_tools_title"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDevTree"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:maxLines="2"
+                    android:textSize="13sp"
+                    android:text="@string/dev_tree"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDevPerf"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:maxLines="2"
+                    android:textSize="13sp"
+                    android:text="@string/dev_perf"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- ============ 维护与重置 ============ -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
@@ -282,6 +325,15 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:text="@string/dev_restart"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDevFactoryReset"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:maxLines="2"
+                    android:textSize="13sp"
+                    android:text="@string/dev_reset_factory"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

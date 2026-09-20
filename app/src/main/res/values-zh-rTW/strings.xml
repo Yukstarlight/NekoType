@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">NekoType</string>
     <string name="splash_subtitle">Welcome to Mist Unveils Infinite Tomorrows</string>
-    <string name="splash_version">v2.7.7</string>
+    <string name="splash_version">v2.7.8</string>
     <string name="accessibility_label">NekoType 訊息變換</string>
     <string name="accessibility_description">NekoType 需要無障礙權限來偵測輸入法彈出、讀取正在輸入的訊息、自動加入前綴/後綴/文字替換，並透過懸浮按鈕觸發改寫後送出。所有文字處理均在本地完成。</string>
     <string name="admin_label">NekoType 裝置管理員</string>
@@ -448,4 +448,5 @@
     <string name="i31">雌小鬼</string>
     <string name="i32">貓娘</string>
     <string name="bl_loading">正在載入應用程式清單…</string>
+    <string name="theme_cccp">前蘇聯（CCCP）</string>
 </resources>

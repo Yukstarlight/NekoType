@@ -556,6 +556,7 @@ object AppPrefs {
         "light" -> "浅色"
         "star" -> "星空"
         "neko" -> "猫娘"
+        "cccp" -> "前苏联"
         else -> "跟随系统"
     }
 
@@ -564,6 +565,7 @@ object AppPrefs {
         "浅色" -> "light"
         "星空" -> "star"
         "猫娘" -> "neko"
+        "前苏联" -> "cccp"
         else -> "system"
     }
 
@@ -912,6 +914,16 @@ object AppPrefs {
     var devModeEnabled: Boolean
         get() = sp.getBoolean("dev_mode", false)
         set(v) { sp.edit().putBoolean("dev_mode", v).commit() }
+
+    /** 开发者模式：恢复出厂设置（清空全部本地数据）。
+     *  keepDevMode=true 时保留开发者模式开关，避免清空后连开发者页都进不去。 */
+    fun factoryReset(keepDevMode: Boolean = true) {
+        try {
+            val e = sp.edit().clear()
+            if (keepDevMode) e.putBoolean("dev_mode", true)
+            e.commit()
+        } catch (_: Throwable) { }
+    }
 
     /** 篡改检测标志（签名不匹配 / Hook 框架）：为 true 时各入口拒绝运行 */
     var tampered: Boolean

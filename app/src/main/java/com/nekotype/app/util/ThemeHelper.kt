@@ -17,11 +17,13 @@ object ThemeHelper {
             "dark" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             "star" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            "cccp" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             "neko" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         }
         when (AppPrefs.themeMode) {
             "star" -> activity.setTheme(R.style.Theme_NekoType_Star)
+            "cccp" -> activity.setTheme(R.style.Theme_NekoType_Cccp)
             "neko" -> activity.setTheme(R.style.Theme_NekoType_Neko)
         }
     }

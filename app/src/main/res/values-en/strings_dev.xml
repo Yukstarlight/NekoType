@@ -64,4 +64,15 @@
     <string name="dev_config_what">Current config</string>
     <string name="dev_recent_logs">---------- Recent logs ----------</string>
     <string name="dev_clipboard_title">Clipboard</string>
-</resources>
+    <string name="dev_tools_title">Debug tools</string>
+    <string name="dev_tree">Accessibility node tree snapshot (current window)</string>
+    <string name="dev_tree_title">Node tree snapshot</string>
+    <string name="dev_perf">Rule engine benchmark (200 transforms)</string>
+    <string name="dev_perf_title">Rule engine benchmark</string>
+    <string name="dev_reset_factory">Factory reset (erase all data)</string>
+    <string name="dev_factory_title">Factory reset</string>
+    <string name="dev_factory_msg">All local data will be erased: rules and presets, behaviour and style, password lock, app blacklist, usage stats and in-app logs.\n\nYour current config is copied to the clipboard first as a backup. This cannot be undone.\n\nContinue?</string>
+    <string name="dev_factory_confirm_title">Final confirmation</string>
+    <string name="dev_factory_confirm_msg">Really erase all data?\n\nThe app restarts immediately and every setting returns to default.</string>
+    <string name="dev_factory_ok">Erase all data</string>
+    <string name="dev_factory_done">Factory reset done, restarting…</string></resources>

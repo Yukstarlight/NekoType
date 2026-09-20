@@ -248,6 +248,49 @@ class NekoTypeAccessibilityService : AccessibilityService() {
         super.onDestroy()
     }
 
+    /**
+     * 开发者模式：导出当前窗口的无障碍节点树（文本）。
+     * 每行一个节点：类名 / 资源 ID / 文本 / 描述 / 属性 / 屏幕坐标。
+     * 微信等应用用 uiautomator dump 拿不到节点树，只能靠无障碍读，是适配排错的关键手段。
+     */
+    fun dumpWindowTree(): String? {
+        return try {
+            val root = getBestRoot() ?: return "（取不到窗口根节点：无障碍可能未连接或无前台窗口）"
+            val sb = StringBuilder()
+            sb.append("package=").append(root.packageName).append("  window=").append(root.windowId).append("\n")
+            var count = 0
+            fun walk(n: AccessibilityNodeInfo, depth: Int) {
+                if (depth > 14 || count > 600) return
+                count++
+                val cls = n.className?.toString()?.substringAfterLast('.') ?: "?"
+                sb.append("  ".repeat(depth.coerceAtMost(14)))
+                sb.append(cls)
+                n.viewIdResourceName?.let { sb.append("  id=").append(it) }
+                val t = n.text?.toString()
+                if (!t.isNullOrEmpty()) sb.append("  text=\"").append(t.replace("\n", "\\n").take(50)).append("\"")
+                val d = n.contentDescription?.toString()
+                if (!d.isNullOrEmpty()) sb.append("  desc=\"").append(d.replace("\n", "\\n").take(50)).append("\"")
+                sb.append("  editable=").append(n.isEditable)
+                sb.append("  clickable=").append(n.isClickable)
+                sb.append("  focused=").append(n.isFocused)
+                val b = android.graphics.Rect().also { n.getBoundsInScreen(it) }
+                sb.append("  [").append(b.left).append(",").append(b.top).append(",")
+                    .append(b.right).append(",").append(b.bottom).append("]")
+                sb.append("\n")
+                for (i in 0 until n.childCount) {
+                    val c = n.getChild(i) ?: continue
+                    walk(c, depth + 1)
+                    c.recycle()
+                }
+            }
+            walk(root, 0)
+            root.recycle()
+            sb.append("（共 $count 个节点）\n").toString()
+        } catch (t: Throwable) {
+            "节点树导出失败: ${t.javaClass.simpleName}: ${t.message}"
+        }
+    }
+
     // ---------- 公共动作：变换 + 发送 ----------
 
 

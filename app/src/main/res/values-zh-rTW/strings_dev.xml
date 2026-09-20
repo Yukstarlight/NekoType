@@ -64,4 +64,15 @@
     <string name="dev_config_what">目前設定</string>
     <string name="dev_recent_logs">---------- 最近日誌 ----------</string>
     <string name="dev_clipboard_title">剪貼簿</string>
-</resources>
+    <string name="dev_tools_title">偵錯工具</string>
+    <string name="dev_tree">無障礙節點樹快照（目前視窗）</string>
+    <string name="dev_tree_title">節點樹快照</string>
+    <string name="dev_perf">規則效能基準（200 次轉換計時）</string>
+    <string name="dev_perf_title">規則效能基準</string>
+    <string name="dev_reset_factory">恢復原廠設定（清空全部資料）</string>
+    <string name="dev_factory_title">恢復原廠設定</string>
+    <string name="dev_factory_msg">將清空全部本機資料：規則與預設、行為與樣式、密碼鎖定、應用程式黑名單、使用統計、應用內日誌。\n\n目前設定會先複製到剪貼簿作為備份。此操作無法復原。\n\n確定繼續？</string>
+    <string name="dev_factory_confirm_title">最後確認</string>
+    <string name="dev_factory_confirm_msg">真的要清空全部資料嗎？\n\n清空後應用程式會立即重新啟動，所有設定回復預設。</string>
+    <string name="dev_factory_ok">清空全部資料</string>
+    <string name="dev_factory_done">已恢復原廠設定，正在重新啟動…</string></resources>

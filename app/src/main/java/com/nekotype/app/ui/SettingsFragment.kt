@@ -107,7 +107,7 @@ class SettingsFragment : Fragment() {
                 R.id.btnThemeDark to "dark",
                 R.id.btnThemeLight to "light",
                 R.id.btnThemeStar to "star",
-                R.id.btnThemeNeko to "neko"
+                R.id.btnThemeNeko to "neko",
             )
             themeButtons.forEach { (id, mode) ->
                 view.findViewById<com.google.android.material.button.MaterialButton>(id)?.setOnClickListener {
@@ -372,6 +372,7 @@ class SettingsFragment : Fragment() {
             "dark" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             "star" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            "cccp" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             "neko" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         }
@@ -384,9 +385,10 @@ class SettingsFragment : Fragment() {
             "light" -> R.id.btnThemeLight
             "star" -> R.id.btnThemeStar
             "neko" -> R.id.btnThemeNeko
+            "cccp" -> R.id.btnThemeCccp
             else -> R.id.btnThemeSystem
         }
-        listOf(R.id.btnThemeSystem, R.id.btnThemeDark, R.id.btnThemeLight, R.id.btnThemeStar, R.id.btnThemeNeko).forEach { id ->
+        listOf(R.id.btnThemeSystem, R.id.btnThemeDark, R.id.btnThemeLight, R.id.btnThemeStar, R.id.btnThemeNeko, R.id.btnThemeCccp).forEach { id ->
             view?.findViewById<com.google.android.material.button.MaterialButton>(id)?.isChecked = (id == selectedId)
         }
         binding.tvThemeHint.text = when (AppPrefs.themeMode) {
