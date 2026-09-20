@@ -575,4 +575,7 @@
     <string name="hc_image_save_fail">Görsel kaydedilemedi</string>
     <string name="hc_dev_mode_title">Geliştirici modu</string>
     <string name="log_tag_crash">Çökme</string>
+
+    <!-- i18n: theme hints -->
+    <string name="theme_cccp_hint">Sovyet teması etkin: kızıl bayrak kırmızısı ve altın tonlar</string>
 </resources>

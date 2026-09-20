@@ -581,4 +581,7 @@
     <string name="hc_image_save_fail">이미지 저장 실패</string>
     <string name="hc_dev_mode_title">개발자 모드</string>
     <string name="log_tag_crash">크래시</string>
+
+    <!-- i18n: theme hints -->
+    <string name="theme_cccp_hint">소비에트 테마가 활성화되었습니다: 붉은 깃발색과 금색 배색</string>
 </resources>

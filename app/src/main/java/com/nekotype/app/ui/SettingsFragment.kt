@@ -108,6 +108,7 @@ class SettingsFragment : Fragment() {
                 R.id.btnThemeLight to "light",
                 R.id.btnThemeStar to "star",
                 R.id.btnThemeNeko to "neko",
+                R.id.btnThemeCccp to "cccp",
             )
             themeButtons.forEach { (id, mode) ->
                 view.findViewById<com.google.android.material.button.MaterialButton>(id)?.setOnClickListener {
@@ -396,6 +397,7 @@ class SettingsFragment : Fragment() {
             "light" -> getString(R.string.u135)
             "star" -> getString(R.string.theme_star_hint)
             "neko" -> getString(R.string.hc_theme_neko_toast)
+            "cccp" -> getString(R.string.theme_cccp_hint)
             else -> getString(R.string.u136)
         }
     }

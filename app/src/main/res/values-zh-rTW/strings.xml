@@ -512,4 +512,7 @@
     <string name="hc_download">下載</string>
     <string name="hc_preset_save_msg">將目前規則另存為新預設</string>
     <string name="hc_dev_need_components">偵測到開發者操作。開發者模式元件未安裝，需要下載額外元件（約 8.6 MB）才能啟用。\n\n該過程僅在本機模擬進行，不會產生任何流量。</string>
+
+    <!-- i18n: theme hints -->
+    <string name="theme_cccp_hint">已啟用前蘇聯主題：紅旗紅 + 鎏金配色</string>
 </resources>

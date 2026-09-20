@@ -594,4 +594,7 @@
     <string name="hc_image_save_fail">Не удалось сохранить изображение</string>
     <string name="hc_dev_mode_title">Режим разработчика</string>
     <string name="log_tag_crash">Сбой</string>
+
+    <!-- i18n: theme hints -->
+    <string name="theme_cccp_hint">Sovetskaya tema vklyuchena: krasnyy flag i zolotyye aktsenty</string>
 </resources>

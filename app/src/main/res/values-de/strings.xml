@@ -611,4 +611,7 @@
     <string name="hc_image_save_fail">Bild konnte nicht gespeichert werden</string>
     <string name="hc_dev_mode_title">Entwicklermodus</string>
     <string name="log_tag_crash">Absturz</string>
+
+    <!-- i18n: theme hints -->
+    <string name="theme_cccp_hint">Sowjet-Design aktiviert: Rot der Flagge mit Goldakzenten</string>
 </resources>

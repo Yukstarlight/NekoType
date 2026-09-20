@@ -512,4 +512,7 @@
     <string name="hc_download">Download</string>
     <string name="hc_preset_save_msg">Save current rules as a new preset</string>
     <string name="hc_dev_need_components">Developer action detected. The developer mode components are not installed; download the extra components (about 8.6 MB) to enable it.\n\nThis process is simulated on-device only and generates no network traffic.</string>
+
+    <!-- i18n: theme hints -->
+    <string name="theme_cccp_hint">Soviet theme enabled: flag red with gilded accents</string>
 </resources>

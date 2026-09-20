@@ -508,4 +508,7 @@
     <string name="hc_download">下载</string>
     <string name="hc_preset_save_msg">将当前规则另存为新预设</string>
     <string name="hc_dev_need_components">检测到开发者操作。开发者模式组件未安装，需要下载额外组件（约 8.6 MB）才能启用。\n\n该过程仅在本机模拟进行，不会产生任何流量。</string>
+
+    <!-- i18n: theme hints -->
+    <string name="theme_cccp_hint">已启用前苏联主题：红旗红 + 鎏金配色</string>
 </resources>

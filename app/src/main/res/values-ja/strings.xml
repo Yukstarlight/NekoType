@@ -582,4 +582,7 @@
     <string name="hc_image_save_fail">画像の保存に失敗しました</string>
     <string name="hc_dev_mode_title">開発者モード</string>
     <string name="log_tag_crash">クラッシュ</string>
+
+    <!-- i18n: theme hints -->
+    <string name="theme_cccp_hint">ソビエトテーマを有効にしました：赤旗の赤＋金色の配色</string>
 </resources>
