@@ -449,4 +449,67 @@
     <string name="i32">貓娘</string>
     <string name="bl_loading">正在載入應用程式清單…</string>
     <string name="theme_cccp">前蘇聯（CCCP）</string>
+
+    <!-- i18n: hardcoded Chinese extracted -->
+    <string name="hc_autostart_fail">無法開啟自啟動設定，請在系統設定中手動尋找</string>
+    <string name="hc_applist_fail">應用程式清單載入失敗：%1$s</string>
+    <string name="hc_shizuku_denied">Shizuku API 權限被拒絕，UserService 綁定可能失敗。\n請在 Shizuku 應用程式 → 應用程式管理 → 開啟 NekoType 後重試。</string>
+    <string name="hc_fab_icon_updated">懸浮球圖示已更新</string>
+    <string name="hc_image_save_fail">圖片儲存失敗</string>
+    <string name="hc_no_image_picker">無法開啟圖片選擇器</string>
+    <string name="hc_icon_restored">已還原預設圖示</string>
+    <string name="hc_shizuku_requesting">正在請求 Shizuku API 權限（請在彈窗點允許）...</string>
+    <string name="hc_shizuku_req_fail">請求 Shizuku 權限失敗：%1$s: %2$s</string>
+    <string name="hc_shizuku_binding">正在綁定 Shizuku UserService...</string>
+    <string name="hc_shizuku_probe_fail">Shizuku 通道探測失敗：\n%1$s</string>
+    <string name="hc_shizuku_bind_fail">Shizuku 綁定失敗，見日誌區詳情</string>
+    <string name="hc_shizuku_requesting2">正在請求 Shizuku API 權限（請在彈窗點允許），授權後請再次點擊一鍵授權...</string>
+    <string name="hc_preset_name_hint">輸入預設名稱</string>
+    <string name="hc_preset_new_title">新建規則預設</string>
+    <string name="hc_preset_name_empty">名稱不能為空</string>
+    <string name="hc_preset_name_dup">已存在同名預設</string>
+    <string name="hc_preset_created">已建立並切換到「%1$s」</string>
+    <string name="hc_dev_mode_taps">進入開發者模式還需連點 %1$d 次</string>
+    <string name="hc_dev_mode_title">開發者模式</string>
+    <string name="hc_download_extra_title">下載額外元件</string>
+    <string name="hc_downloading">正在下載開發者元件… %1$d%%</string>
+    <string name="hc_dev_mode_on">開發者模式已開啟：首頁頂部出現 DEV 入口</string>
+    <string name="hc_switched_to">已切換到「%1$s」</string>
+    <string name="hc_rule_gen_fail">生成規則失敗</string>
+    <string name="hc_custom_color">自訂顏色</string>
+    <string name="hc_color_format_err">顏色格式錯誤</string>
+    <string name="hc_stop_cmd_sent">已傳送停止命令喵~</string>
+    <string name="hc_terminal_settings">終端機設定</string>
+    <string name="hc_settings_saved">設定已儲存</string>
+    <string name="hc_quick_cmd_collapse">▼ 收合快捷命令</string>
+    <string name="hc_quick_cmd_expand">▲ 快捷命令</string>
+    <string name="hc_cmd_send_fail">傳送命令失敗：%1$s</string>
+    <string name="hc_terminal_start_fail">終端機啟動失敗：%1$s</string>
+    <string name="hc_terminal_exited">終端機已結束</string>
+    <string name="hc_settings_cd">設定</string>
+    <string name="hc_custom_punct_hint">自訂觸發標點（如 。！？，）</string>
+    <string name="hc_load_fail_home">首頁載入失敗，請嘗試切換主題</string>
+    <string name="hc_load_fail_mode">模式頁載入失敗，請嘗試切換主題</string>
+    <string name="hc_load_fail_rules">規則頁載入失敗，請嘗試切換主題</string>
+    <string name="hc_load_fail_settings">設定頁載入失敗，請嘗試切換主題</string>
+    <string name="hc_follow_system">跟隨系統</string>
+    <string name="hc_theme_neko_toast">已啟用貓娘主題喵~ 全 UI 已切換為貓娘用語</string>
+    <string name="log_tag_fatal">致命異常</string>
+    <string name="log_tag_crash">崩潰</string>
+    <string name="log_tag_caused_by">原因</string>
+    <string name="log_tag_process">處理程序：</string>
+    <string name="log_tag_at_nekotype">位置（NekoType）：</string>
+    <string name="log_tag_atm">工作管理</string>
+    <string name="log_tag_wm">視窗管理</string>
+    <string name="log_tag_fg">懸浮服務</string>
+    <string name="log_tag_a11y">無障礙服務</string>
+    <string name="log_tag_fab">懸浮按鈕服務</string>
+    <string name="log_tag_stderr">系統錯誤</string>
+    <string name="log_tag_dalvik">虛擬機</string>
+    <string name="log_tag_art">執行階段</string>
+
+    <!-- i18n: hardcoded Chinese extracted -->
+    <string name="hc_download">下載</string>
+    <string name="hc_preset_save_msg">將目前規則另存為新預設</string>
+    <string name="hc_dev_need_components">偵測到開發者操作。開發者模式元件未安裝，需要下載額外元件（約 8.6 MB）才能啟用。\n\n該過程僅在本機模擬進行，不會產生任何流量。</string>
 </resources>

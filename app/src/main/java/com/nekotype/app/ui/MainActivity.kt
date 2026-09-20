@@ -575,11 +575,11 @@ class MainActivity : AppCompatActivity() {
             }
             !SysPower.isShizukuPermissionGranted() -> {
                 // Shizuku 11+：UserService 绑定前必须先获得 API 权限，否则服务端拒绝绑定（onServiceConnected 永不回调）
-                binding.tvPrivLog.text = "正在请求 Shizuku API 权限（请在弹窗点允许）..."
+                binding.tvPrivLog.text = getString(R.string.hc_shizuku_requesting)
                 try {
                     SysPower.requestShizukuPermission(1001)
                 } catch (t: Throwable) {
-                    binding.tvPrivLog.text = "请求 Shizuku 权限失败：${t.javaClass.simpleName}: ${t.message}"
+                    binding.tvPrivLog.text = getString(R.string.hc_shizuku_req_fail, t.javaClass.simpleName, t.message)
                 }
             }
             else -> {

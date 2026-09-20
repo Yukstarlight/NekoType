@@ -72,7 +72,7 @@ class SettingsFragment : Fragment() {
             NekoLog.error("设置页布局加载失败：${e.javaClass.simpleName}")
             return android.widget.FrameLayout(inflater.context).apply {
                 addView(android.widget.TextView(context).apply {
-                    text = "设置页加载失败，请尝试切换主题"
+                    text = getString(R.string.hc_load_fail_settings)
                     gravity = android.view.Gravity.CENTER
                 })
             }
@@ -179,7 +179,7 @@ class SettingsFragment : Fragment() {
             }
         } catch (_: Throwable) { }
 
-        // 开发者模式：关于标题连点 7 次触发（带"下载额外组件"确认）
+        // 开发者模式：关于标题连点 7 次触发（带getString(R.string.hc_download_extra_title)确认）
         try {
             wireDevModeTrigger()
         } catch (_: Throwable) { }
@@ -266,7 +266,7 @@ class SettingsFragment : Fragment() {
                         showDevDownloadDialog()
                     }
                 }
-                taps >= 3 -> toast("进入开发者模式还需连点 ${7 - taps} 次")
+                taps >= 3 -> toast(getString(R.string.hc_dev_mode_taps, 7 - taps))
             }
         }
         binding.tvAboutTitle.setOnClickListener { onClick() }
@@ -276,9 +276,9 @@ class SettingsFragment : Fragment() {
     /** 「下载额外组件」确认弹窗：确认后模拟下载进度，完成即开启开发者模式 */
     private fun showDevDownloadDialog() {
         val dialog = NekoDialog.builder(requireContext())
-            .setTitle("开发者模式")
-            .setMessage("检测到开发者操作。开发者模式组件未安装，需要下载额外组件（约 8.6 MB）才能启用。\n\n该过程仅在本机模拟进行，不会产生任何流量。")
-            .setPositiveButton("下载") { d, _ ->
+            .setTitle(getString(R.string.hc_dev_mode_title))
+            .setMessage(getString(R.string.hc_dev_need_components))
+            .setPositiveButton(getString(R.string.hc_download)) { d, _ ->
                 d.dismiss()
                 showDevDownloadProgress()
             }
@@ -296,11 +296,11 @@ class SettingsFragment : Fragment() {
             progress = 0
         }
         val tvState = android.widget.TextView(requireContext()).apply {
-            text = "正在下载开发者组件… 0%"
+            text = getString(R.string.hc_downloading, 0)
             textSize = 13f
         }
         val dialog = NekoDialog.builder(requireContext())
-            .setTitle("下载额外组件")
+            .setTitle(getString(R.string.hc_download_extra_title))
             .setView(NekoDialog.column(requireContext(), tvState, progress))
             .setCancelable(false)
             .create()
@@ -311,14 +311,14 @@ class SettingsFragment : Fragment() {
             override fun run() {
                 step++
                 progress.progress = step * 2
-                tvState.text = "正在下载开发者组件… ${step * 2}%"
+                tvState.text = getString(R.string.hc_downloading, step * 2)
                 if (step < 50) {
                     handler.postDelayed(this, 50)
                 } else {
                     AppPrefs.devModeEnabled = true
                     dialog.dismiss()
                     NekoLog.adjust("开发者模式已开启")
-                    toast("开发者模式已开启：首页顶部出现 DEV 入口")
+                    toast(getString(R.string.hc_dev_mode_on))
                 }
             }
         }
@@ -395,7 +395,7 @@ class SettingsFragment : Fragment() {
             "dark" -> getString(R.string.u134)
             "light" -> getString(R.string.u135)
             "star" -> getString(R.string.theme_star_hint)
-            "neko" -> "已启用猫娘主题喵~ 全UI已切换为猫娘用语"
+            "neko" -> getString(R.string.hc_theme_neko_toast)
             else -> getString(R.string.u136)
         }
     }
@@ -620,7 +620,7 @@ class SettingsFragment : Fragment() {
             val preset = AppPrefs.presetList().firstOrNull { it.second == name }
             if (preset != null) {
                 AppPrefs.selectPreset(preset.first)
-                toast("已切换到「$name」")
+                toast(getString(R.string.hc_switched_to, name))
                 NekoLog.adjust("切换人设语气包：$name")
                 return
             }
@@ -637,11 +637,11 @@ class SettingsFragment : Fragment() {
             else -> emptyList()
         }
         if (rules.isEmpty()) {
-            toast("生成规则失败")
+            toast(getString(R.string.hc_rule_gen_fail))
             return
         }
         AppPrefs.createPreset(name = name, rules = rules, switchTo = true)
-        toast("已创建并切换到「$name」")
+        toast(getString(R.string.hc_preset_created, name))
         NekoLog.adjust("创建人设语气包：$name（${rules.size}条规则）")
     }
 

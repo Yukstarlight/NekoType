@@ -488,7 +488,7 @@ object SysPower {
             )
         } catch (_: Throwable) {
             try {
-                android.widget.Toast.makeText(context, "无法打开自启动设置，请在系统设置中手动查找", android.widget.Toast.LENGTH_SHORT).show()
+                android.widget.Toast.makeText(context, context.getString(R.string.hc_autostart_fail), android.widget.Toast.LENGTH_SHORT).show()
             } catch (_: Throwable) { }
         }
     }

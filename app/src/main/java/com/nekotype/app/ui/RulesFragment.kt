@@ -50,7 +50,7 @@ class RulesFragment : Fragment() {
             NekoLog.error("规则页布局加载失败：${e.javaClass.simpleName}")
             return android.widget.FrameLayout(inflater.context).apply {
                 addView(android.widget.TextView(context).apply {
-                    text = "规则页加载失败，请尝试切换主题"
+                    text = getString(R.string.hc_load_fail_rules)
                     gravity = android.view.Gravity.CENTER
                 })
             }
@@ -196,16 +196,16 @@ class RulesFragment : Fragment() {
 
     /** 新建预设：把当前规则保存为新预设 */
     private fun showNewPresetDialog() {
-        val inName = NekoDialog.input(requireContext(), "输入预设名称")
+        val inName = NekoDialog.input(requireContext(), getString(R.string.hc_preset_name_hint))
         val box = NekoDialog.column(requireContext(), inName)
         NekoDialog.builder(requireContext())
-            .setTitle("新建规则预设")
-            .setMessage("将当前规则另存为新预设")
+            .setTitle(getString(R.string.hc_preset_new_title))
+            .setMessage(getString(R.string.hc_preset_save_msg))
             .setView(box)
-            .setPositiveButton("保存") { _, _ ->
+            .setPositiveButton(getString(R.string.u89)) { _, _ ->
                 val name = NekoDialog.textOf(inName).trim()
-                if (name.isEmpty()) { toast("名称不能为空"); return@setPositiveButton }
-                if (AppPrefs.hasPresetName(name)) { toast("已存在同名预设"); return@setPositiveButton }
+                if (name.isEmpty()) { toast(getString(R.string.hc_preset_name_empty)); return@setPositiveButton }
+                if (AppPrefs.hasPresetName(name)) { toast(getString(R.string.hc_preset_name_dup)); return@setPositiveButton }
                 AppPrefs.createPreset(
                     name = name,
                     rules = AppPrefs.rules().toList(),
@@ -214,7 +214,7 @@ class RulesFragment : Fragment() {
                     styleUpper = AppPrefs.styleUpper
                 )
                 NekoLog.rule("新建规则预设：$name")
-                toast("已创建并切换到「$name」")
+                toast(getString(R.string.hc_preset_created, name))
                 renderRules()
             }
             .setNegativeButton(getString(R.string.u72), null)

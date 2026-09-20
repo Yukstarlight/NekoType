@@ -1164,6 +1164,16 @@ object AppPrefs {
         get() = sp.getString("theme_mode", "system")!!
         set(v) { sp.edit().putString("theme_mode", v).commit() }
 
+    /**
+     * 应用语言（BCP-47 标签，"" = 跟随系统）。
+     *
+     * Android 12 及以下 AppCompat 不会自动记住 setApplicationLocales 的选择，
+     * 这里自行持久化，并在 NekoTypeApp.onCreate 启动时重新应用。
+     */
+    var appLangTag: String
+        get() = sp.getString("app_lang_tag", "") ?: ""
+        set(v) { sp.edit().putString("app_lang_tag", v).commit() }
+
     /** 猫娘模式：UI文字变猫娘用语 */
     var nekoMode: Boolean
         get() = sp.getBoolean("neko_mode", false)

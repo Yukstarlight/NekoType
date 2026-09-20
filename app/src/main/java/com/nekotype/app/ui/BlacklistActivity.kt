@@ -103,7 +103,7 @@ class BlacklistActivity : AppCompatActivity() {
                 runOnUiThread {
                     findViewById<android.view.View>(R.id.llLoading)?.visibility = android.view.View.GONE
                     findViewById<android.view.View>(R.id.rvApps)?.visibility = android.view.View.VISIBLE
-                    toast("应用列表加载失败：${t.message}")
+                    toast(getString(R.string.hc_applist_fail, t.message ?: ""))
                 }
             }
         }.start()

@@ -75,9 +75,9 @@ class HomeFragment : Fragment() {
                 AppPrefs.customFabIconPath = out.absolutePath
                 updateFabIconPreview()
                 restartFabIfRunning()
-                toast("悬浮球图标已更新")
+                toast(getString(R.string.hc_fab_icon_updated))
             } catch (_: Throwable) {
-                toast("图片保存失败")
+                toast(getString(R.string.hc_image_save_fail))
             }
         }
     }
@@ -94,7 +94,7 @@ class HomeFragment : Fragment() {
             NekoLog.error("首页布局加载失败：${e.javaClass.simpleName}")
             return android.widget.FrameLayout(inflater.context).apply {
                 addView(android.widget.TextView(context).apply {
-                    text = "首页加载失败，请尝试切换主题"
+                    text = getString(R.string.hc_load_fail_home)
                     gravity = android.view.Gravity.CENTER
                 })
             }
@@ -148,13 +148,13 @@ class HomeFragment : Fragment() {
 
         // 自定义悬浮球图标
         binding.btnPickFabIcon.setOnClickListener {
-            try { fabIconPicker.launch("image/*") } catch (_: Throwable) { toast("无法打开图片选择器") }
+            try { fabIconPicker.launch("image/*") } catch (_: Throwable) { toast(getString(R.string.hc_no_image_picker)) }
         }
         binding.btnResetFabIcon.setOnClickListener {
             AppPrefs.customFabIconPath = ""
             updateFabIconPreview()
             restartFabIfRunning()
-            toast("已恢复默认图标")
+            toast(getString(R.string.hc_icon_restored))
         }
         updateFabIconPreview()
 
@@ -200,7 +200,7 @@ class HomeFragment : Fragment() {
     /** 全局 UI 语言切换：跟随系统（默认）/ 简体中文 / 繁體中文 / English */
     private fun showLanguageDialog() {
         val tags = arrayOf("", "zh", "zh-TW", "en", "tr", "ru", "ja", "ko", "de")
-        val langs = arrayOf("跟随系统", "简体中文", "繁體中文", "English", "Türkçe", "Русский", "日本語", "한국어", "Deutsch")
+        val langs = arrayOf(getString(R.string.hc_follow_system), "简体中文", "繁體中文", "English", "Türkçe", "Русский", "日本語", "한국어", "Deutsch")
         val checked = when (androidx.appcompat.app.AppCompatDelegate.getApplicationLocales().toLanguageTags()) {
             "zh" -> 1
             "zh-TW" -> 2
@@ -227,6 +227,7 @@ class HomeFragment : Fragment() {
                         androidx.core.os.LocaleListCompat.forLanguageTags(tags[chosen])
                     }
                     androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(list)
+                    com.nekotype.app.prefs.AppPrefs.appLangTag = tags[chosen]
                     NekoLog.adjust("语言切换为：${langs[chosen]}")
                 } catch (_: Throwable) {
                     toast(getString(R.string.u14))
@@ -326,11 +327,11 @@ class HomeFragment : Fragment() {
             }
             !SysPower.isShizukuPermissionGranted() -> {
                 // Shizuku 13.x：UserService 绑定前需先获取 API 权限，否则静默拒绝
-                binding.tvPrivLog.text = "正在请求 Shizuku API 权限（请在弹窗点允许）..."
+                binding.tvPrivLog.text = getString(R.string.hc_shizuku_requesting)
                 try {
                     SysPower.requestShizukuPermission(shizukuRequestCode)
                 } catch (t: Throwable) {
-                    binding.tvPrivLog.text = "请求 Shizuku 权限失败：${t.javaClass.simpleName}: ${t.message}"
+                    binding.tvPrivLog.text = getString(R.string.hc_shizuku_req_fail, t.javaClass.simpleName, t.message)
                 }
             }
             else -> {
@@ -342,7 +343,7 @@ class HomeFragment : Fragment() {
 
     /** 绑定 UserService 探测通道（API 权限已获取后调用） */
     private fun probeShizukuChannel() {
-        binding.tvPrivLog.text = "正在绑定 Shizuku UserService..."
+        binding.tvPrivLog.text = getString(R.string.hc_shizuku_binding)
         lifecycleScope.launch {
             val r = withContext(Dispatchers.IO) { SysPower.execIdForStatus() }
             if (r.success) {
@@ -351,9 +352,9 @@ class HomeFragment : Fragment() {
                 toast(getString(R.string.u3))
             } else {
                 val diag = withContext(Dispatchers.IO) { SysPower.diagnoseShizuku() }
-                binding.tvPrivLog.text = "Shizuku 通道探测失败：\n$diag"
-                NekoLog.warn("Shizuku 通道探测失败：\n$diag")
-                toast("Shizuku 绑定失败，见日志区详情")
+                binding.tvPrivLog.text = getString(R.string.hc_shizuku_probe_fail, diag)
+                NekoLog.warn(getString(R.string.hc_shizuku_probe_fail, diag))
+                toast(getString(R.string.hc_shizuku_bind_fail))
             }
             refreshStatus()
         }
@@ -375,11 +376,11 @@ class HomeFragment : Fragment() {
         }
         // Shizuku 11+：UserService 绑定前必须先获得 API 权限，否则所有步骤必然失败
         if (!SysPower.isShizukuPermissionGranted()) {
-            binding.tvPrivLog.text = "正在请求 Shizuku API 权限（请在弹窗点允许），授权后请再次点击一键授权..."
+            binding.tvPrivLog.text = getString(R.string.hc_shizuku_requesting2)
             try {
                 SysPower.requestShizukuPermission(shizukuRequestCode)
             } catch (t: Throwable) {
-                binding.tvPrivLog.text = "请求 Shizuku 权限失败：${t.javaClass.simpleName}: ${t.message}"
+                binding.tvPrivLog.text = getString(R.string.hc_shizuku_req_fail, t.javaClass.simpleName, t.message)
             }
             return
         }

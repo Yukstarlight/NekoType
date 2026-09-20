@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  应用支持的语言列表（Android 13+ 系统「应用语言」设置会读取此文件）。
+  NekoType 同时提供应用内语言选择器，低版本通过 AppCompat 存储并持久化。
+-->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="zh-Hans" />
+    <locale android:name="zh-Hant" />
+    <locale android:name="en" />
+    <locale android:name="tr" />
+    <locale android:name="ru" />
+    <locale android:name="ja" />
+    <locale android:name="ko" />
+    <locale android:name="de" />
+</locale-config>
