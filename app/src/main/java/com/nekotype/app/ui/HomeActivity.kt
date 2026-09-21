@@ -68,6 +68,11 @@ class HomeActivity : AppCompatActivity() {
             switchFragment(homeFragment)
         }
 
+        // 里程碑赞助提醒（第 10 次起，见 SponsorDialog.MILESTONES）
+        binding.root.postDelayed({
+            try { com.nekotype.app.util.SponsorDialog.maybeShow(this) } catch (_: Throwable) { }
+        }, 800)
+
         // 预加载其他 Fragment：首屏显示后延迟创建，避免首次切换卡顿
         binding.root.postDelayed({
             preloadFragments()

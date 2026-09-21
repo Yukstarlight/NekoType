@@ -584,4 +584,10 @@
 
     <!-- i18n: theme hints -->
     <string name="theme_cccp_hint">소비에트 테마가 활성화되었습니다: 붉은 깃발색과 금색 배색</string>
+
+    <!-- i18n: sponsor dialog -->
+    <string name="sp_title">감사합니다! NekoType을 %1$d번째로 열었어요</string>
+    <string name="sp_hint">아래 후원 코드를 길게 눌러 인식하거나 스크린샷으로 저장하세요\n후원이 계속 업데이트하는 힘이 됩니다</string>
+    <string name="sp_later">다음에</string>
+    <string name="sp_sponsored">후원했어요</string>
 </resources>

@@ -511,4 +511,10 @@
 
     <!-- i18n: theme hints -->
     <string name="theme_cccp_hint">已启用前苏联主题：红旗红 + 鎏金配色</string>
+
+    <!-- i18n: sponsor dialog -->
+    <string name="sp_title">谢谢你第 %1$d 次打开 NekoType</string>
+    <string name="sp_hint">赞助码见下方，长按识别或截图保存\n你的支持会让小猫继续更新</string>
+    <string name="sp_later">下次一定</string>
+    <string name="sp_sponsored">已赞助</string>
 </resources>

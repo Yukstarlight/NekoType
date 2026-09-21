@@ -515,4 +515,10 @@
 
     <!-- i18n: theme hints -->
     <string name="theme_cccp_hint">Soviet theme enabled: flag red with gilded accents</string>
+
+    <!-- i18n: sponsor dialog -->
+    <string name="sp_title">Thanks for opening NekoType for the %1$dth time</string>
+    <string name="sp_hint">Scan or screenshot the sponsor code below.\nYour support keeps the cat updating.</string>
+    <string name="sp_later">Later</string>
+    <string name="sp_sponsored">Sponsored</string>
 </resources>

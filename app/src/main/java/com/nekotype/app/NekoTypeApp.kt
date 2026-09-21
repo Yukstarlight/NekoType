@@ -25,6 +25,8 @@ class NekoTypeApp : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        // 启动次数 +1（进程启动即计一次），用于里程碑赞助提醒
+        try { AppPrefs.launchCount = AppPrefs.launchCount + 1 } catch (_: Throwable) { }
         // 初始化 Shizuku 长连接通道（注册 Binder 监听 + 预绑定 UserService）
         com.nekotype.app.sys.SysPower.initShizukuChannel()
         // 防篡改检测：签名不匹配（重打包）或检测到 Hook 框架 → 标记，各入口拒绝运行

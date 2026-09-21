@@ -1174,6 +1174,16 @@ object AppPrefs {
         get() = sp.getString("app_lang_tag", "") ?: ""
         set(v) { sp.edit().putString("app_lang_tag", v).commit() }
 
+    /** 应用启动次数（进程启动即 +1），用于里程碑赞助提醒 */
+    var launchCount: Int
+        get() = sp.getInt("launch_count", 0)
+        set(v) { sp.edit().putInt("launch_count", v).apply() }
+
+    /** 下一个需要弹赞助提醒的启动次数里程碑（默认第 10 次） */
+    var nextSponsorMilestone: Int
+        get() = sp.getInt("next_sponsor_milestone", 10)
+        set(v) { sp.edit().putInt("next_sponsor_milestone", v).apply() }
+
     /** 猫娘模式：UI文字变猫娘用语 */
     var nekoMode: Boolean
         get() = sp.getBoolean("neko_mode", false)
