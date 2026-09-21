@@ -404,7 +404,7 @@ object AppPrefs {
         set(v) = sp.edit().putBoolean("delete_optimize", v).apply()
 
     /** 语音输入优化：语音输入时使用更长的停顿判定再接改写，避免说到一半被打断。
-     *  默认关（照抄喵喵助手）：开启会把停顿判定拉到 voiceDebounceMs，普通打字延迟明显变高 */
+     *  默认关：开启会把停顿判定拉到 voiceDebounceMs，普通打字延迟明显变高 */
     var voiceInputOptimizeEnabled: Boolean
         get() = sp.getBoolean("voice_input_optimize", false)
         set(v) = sp.edit().putBoolean("voice_input_optimize", v).apply()
@@ -984,12 +984,12 @@ object AppPrefs {
         get() = sp.getBoolean("shizuku_hide", false)
         set(v) = sp.edit().putBoolean("shizuku_hide", v).apply()
 
-    /** 心跳保活：AlarmManager 定时唤醒拉活服务（皆成同款；耗电略增，默认关） */
+    /** 心跳保活：AlarmManager 定时唤醒拉活服务（耗电略增，默认关） */
     var heartbeatEnabled: Boolean
         get() = sp.getBoolean("heartbeat", false)
         set(v) = sp.edit().putBoolean("heartbeat", v).apply()
 
-    /** 崩溃自启：进程崩溃时自动拉起悬浮服务（皆成同款；默认开，无害） */
+    /** 崩溃自启：进程崩溃时自动拉起悬浮服务（默认开，无害） */
     var crashRestartEnabled: Boolean
         get() = sp.getBoolean("crash_restart", true)
         set(v) = sp.edit().putBoolean("crash_restart", v).apply()

@@ -171,7 +171,7 @@ class FloatingButtonService : Service() {
         wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         createNotificationChannel()
         startForeground(NOTIF_ID, buildNotification())
-        // 心跳保活（皆成同款，用户开关控制）：每 60 秒闹钟唤醒检查，服务被系统杀了也能自动拉活
+        // 心跳保活（用户开关控制）：每 60 秒闹钟唤醒检查，服务被系统杀了也能自动拉活
         startHeartbeat()
         NekoLog.ok("悬浮服务已启动，按钮常驻屏幕边缘")
     }
@@ -260,7 +260,7 @@ class FloatingButtonService : Service() {
     private val ACTION_RESTART by lazy { "$packageName.action.RESTART_FLOATING" }
     private val ACTION_HEARTBEAT by lazy { "$packageName.action.HEARTBEAT" }
 
-    // ---------- 心跳保活（皆成同款，用户开关控制） ----------
+    // ---------- 心跳保活（用户开关控制） ----------
 
     private val HEARTBEAT_INTERVAL_MS = 60_000L
 

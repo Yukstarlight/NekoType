@@ -384,7 +384,7 @@ class MainActivity : AppCompatActivity() {
                 restoreHiddenSwitch()
                 return
             }
-            // 前置条件 2：设备管理员必须已激活（防卸载 + 皆成同款路线）
+            // 前置条件 2：设备管理员必须已激活（防卸载 + 保活路线）
             if (!SysPower.isDeviceAdminActive()) {
                 toast(getString(R.string.u54))
                 restoreHiddenSwitch()

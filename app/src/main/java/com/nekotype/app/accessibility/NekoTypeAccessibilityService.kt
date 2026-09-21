@@ -41,7 +41,7 @@ class NekoTypeAccessibilityService : AccessibilityService() {
         // API 34 起 ACTION_IME_ACTION_SEND 不再暴露为公开常量，固定值为 4（EditorInfo.IME_ACTION_SEND）
         private const val ACTION_IME_ACTION_SEND = 4
 
-        // ===== 微信深度适配（照抄开源实现的多级兜底策略）=====
+        // ===== 微信深度适配（多级兜底策略）=====
         /** 微信包名 */
         const val WECHAT_PKG = "com.tencent.mm"
 
@@ -83,7 +83,7 @@ class NekoTypeAccessibilityService : AccessibilityService() {
     /** 删除优化的恢复任务：用户停手 500ms 后解除"删除模式"并重新改写 */
     private var deleteRecoveryJob: Job? = null
 
-    /** 防重入处理锁（照抄开源实现 processing 标志：并发事件不重复处理） */
+    /** 防重入处理锁（processing 标志：并发事件不重复处理） */
     @Volatile private var autoProcessing = false
 
     /**
@@ -103,7 +103,7 @@ class NekoTypeAccessibilityService : AccessibilityService() {
 
     private val autoStates = HashMap<String, AutoState>()
 
-    /** 最近一次窗口切换的包名（仅记录，不用于取消任务 —— 照抄喵喵助手） */
+    /** 最近一次窗口切换的包名（仅记录，不用于取消任务） */
     private var lastWindowPkg = ""
 
     /** 强制篡改键盘：内容变化事件（微信刷屏式触发）的短防抖毫秒数 */
@@ -174,7 +174,7 @@ class NekoTypeAccessibilityService : AccessibilityService() {
                 if (src.isEditable) {
                     NekoTypeAccessibilityBridge.setActiveNode(src)
                 } else if (pkgOf(src) == WECHAT_PKG) {
-                    // 照抄开源实现：微信 FOCUSED 事件同样触发处理（微信靠 FOCUS + CONTENT_CHANGED 驱动）
+                    // 微信 FOCUSED 事件同样触发处理（微信靠 FOCUS + CONTENT_CHANGED 驱动）
                     getBestRoot()?.let { r ->
                         val edit = findWeChatEditById(r) ?: findEditableNode()
                         if (edit != null) {
@@ -219,7 +219,7 @@ class NekoTypeAccessibilityService : AccessibilityService() {
             }
 
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
-                // 照抄喵喵助手：窗口切换只记录包名，**不取消防抖、不清空状态**。
+                // 窗口切换只记录包名，**不取消防抖、不清空状态**。
                 // 旧实现在这里取消 pending 任务 + 清空 autoStates，微信里切键盘/面板时会打断 1000ms 防抖，
                 // 导致"强制篡改键盘"永远排不上队（篡改模式在微信失效的元凶之一）。
                 lastWindowPkg = event.packageName?.toString().orEmpty()
@@ -315,7 +315,7 @@ class NekoTypeAccessibilityService : AccessibilityService() {
                 return@launch
             }
 
-            // 读取文本：只读 node.text（照抄喵喵助手，不碰剪贴板——反复复制会打扰用户剪贴板）；
+            // 读取文本：只读 node.text（不碰剪贴板——反复复制会打扰用户剪贴板）；
             // 读不到（自定义输入框不暴露文本）则跳过本轮
             var current = node.text?.toString().orEmpty()
             android.util.Log.e("NekoA11y", "读取 node.text 长度=${current.length} pkg=${pkgOf(node)}")
@@ -385,7 +385,7 @@ class NekoTypeAccessibilityService : AccessibilityService() {
             } catch (_: Throwable) { pkg ?: getString(R.string.u163) }
             NekoLog.ok("在「$appLabel」中已变换发送（${ruleCount} 条规则生效，累计 ${AppPrefs.transformCount} 次）")
 
-            // 微信下不自动发送（照抄喵喵助手：用户自己点发送），其他应用保持自动发送
+            // 微信下不自动发送（用户自己点发送），其他应用保持自动发送
             if (AppPrefs.autoSend && pkg != WECHAT_PKG) {
                 // 语音输入优化开启时：延迟 3 秒发送，避免语音补标点后没说完就发出
                 delay(if (AppPrefs.voiceInputOptimizeEnabled) 3000L else 120L)
@@ -431,7 +431,7 @@ class NekoTypeAccessibilityService : AccessibilityService() {
 
     /**
      * 取当前根节点：优先 rootInActiveWindow；为空时遍历所有窗口兜底
-     * （照抄开源实现：部分 ROM/应用在特定场景取不到"活动窗口"，直接 return null 会导致整体失效）。
+     * （部分 ROM/应用在特定场景取不到"活动窗口"，直接 return null 会导致整体失效）。
      */
     private fun getBestRoot(): AccessibilityNodeInfo? {
         try {
@@ -646,7 +646,7 @@ class NekoTypeAccessibilityService : AccessibilityService() {
 
     /**
      * 原生键盘输入触发自动篡改。
-     * immediate=true（文本变化事件，照抄喵喵助手 realtime）：立即处理不防抖——之前"半秒延迟"就来自防抖等待；
+     * immediate=true（文本变化事件 realtime）：立即处理不防抖——之前"半秒延迟"就来自防抖等待；
      * immediate=false（微信内容变化事件）：短防抖合并高频事件（微信会刷屏式触发）。
      * 语音输入优化开启时统一用长停顿判定（语音出字断续，立即改写会打断）。
      */
@@ -667,7 +667,7 @@ class NekoTypeAccessibilityService : AccessibilityService() {
     }
 
     private suspend fun autoTransform(src: AccessibilityNodeInfo, fromSendFallback: Boolean = false) {
-        // 防重入（照抄开源实现 processing 标志）
+        // 防重入（processing 标志）
         if (autoProcessing) {
             android.util.Log.e("NekoA11y", "自动篡改跳过：已有处理在进行")
             return
@@ -683,13 +683,13 @@ class NekoTypeAccessibilityService : AccessibilityService() {
     private suspend fun autoTransformInner(src: AccessibilityNodeInfo, fromSendFallback: Boolean = false) {
         try {
             // 篡改模式门槛：强制篡改键盘 + 首页「启动服务」都必须开（用户要求：
-            // 没开服务不许改字）。其余逻辑照抄喵喵助手（窗口切换不打断、处理时重找节点、微信不自动发送）
+            // 没开服务不许改字）。其余逻辑（窗口切换不打断、处理时重找节点、微信不自动发送）
             if (!AppPrefs.forceKeyboardEnabled || !AppPrefs.serviceEnabled) return
             if (isBlacklistedApp(src)) return
             val pkg = pkgOf(src)
             val isWeChat = pkg == WECHAT_PKG
             // 先用事件节点（立即处理时它刚被找到、是新鲜的，省去重找开销）；
-            // 失效时才重新查找兜底（微信视图可能已被回收，照抄喵喵助手）
+            // 失效时才重新查找兜底（微信视图可能已被回收）
             val node: AccessibilityNodeInfo = if (src.refresh()) {
                 src
             } else if (isWeChat) {
@@ -708,7 +708,7 @@ class NekoTypeAccessibilityService : AccessibilityService() {
                 stale.forEach { autoStates.remove(it) }
             }
             var trim = node.text?.toString()?.trim().orEmpty()
-            // 不再用剪贴板回读（照抄喵喵助手）：反复「全选→复制」会不停写剪贴板、
+            // 不再用剪贴板回读：反复「全选→复制」会不停写剪贴板、
             // 在微信里弹"已复制"，就是"老是复制东西"的元凶。读不到文本就跳过本轮。
             android.util.Log.e("NekoA11y", "自动篡改读取: pkg=$pkg len=${trim.length} text=${trim.take(20)}")
             if (trim.isEmpty()) return
@@ -735,7 +735,7 @@ class NekoTypeAccessibilityService : AccessibilityService() {
                 return
             }
 
-            // 1.5 删除优化（照抄开源实现 deleteOptimize）：用户正在删字 → 暂不改写，
+            // 1.5 删除优化（deleteOptimize）：用户正在删字 → 暂不改写，
             //     否则会出现"后缀删不掉/越删越多"。停手 500ms 后自动恢复并重新改写。
             //     微信例外：微信输入框回读的文本经常和我们写回的内容不一致（自定义控件 + 剪贴板回读），
             //     会被"删除"启发式误判成用户正在删字，导致微信里规则整体不生效（外部反馈的"微信不支持"）。
@@ -794,7 +794,7 @@ class NekoTypeAccessibilityService : AccessibilityService() {
             st.lastSeenText = r.text
             autoStates[key] = st
             if (isWeChat) {
-                // 微信：SET_TEXT 常"假成功"，失败立刻走剪贴板粘贴（照抄开源实现的 setText → setTextByPaste）
+                // 微信：SET_TEXT 常"假成功"，失败立刻走剪贴板粘贴（setText → setTextByPaste）
                 var w = setTextAndCursor(node, r.text)
                 delay(120)
                 if (!w || !verifyWritten(node, r.text)) {
@@ -817,7 +817,7 @@ class NekoTypeAccessibilityService : AccessibilityService() {
             } catch (_: Throwable) { getString(R.string.u163) }
             NekoLog.ok("强制篡改键盘：在「$appLabel」自动变换为「${r.text}」")
 
-            // 微信下不自动发送（照抄喵喵助手：改完由用户自己点发送，避免和手点发送叠加/抢发）
+            // 微信下不自动发送（改完由用户自己点发送，避免和手点发送叠加/抢发）
             if (AppPrefs.autoSend && !isWeChat) {
                 delay(if (AppPrefs.voiceInputOptimizeEnabled) 3000L else 120L)
                 performSend(node)

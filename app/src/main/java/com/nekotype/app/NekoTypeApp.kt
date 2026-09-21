@@ -34,7 +34,7 @@ class NekoTypeApp : Application() {
         if (tampered != AppPrefs.tampered) {
             AppPrefs.tampered = tampered
         }
-        // 崩溃自启（皆成同款，行为与样式开关控制）：进程崩溃时若服务在跑，
+        // 崩溃自启（行为与样式开关控制）：进程崩溃时若服务在跑，
         // 用闹钟延时拉起服务，避免一次崩溃导致悬浮服务/隐藏模式永久失联
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             try {
