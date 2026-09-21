@@ -9,6 +9,7 @@ import android.widget.TextView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.nekotype.app.R
 import com.nekotype.app.prefs.AppPrefs
+import com.nekotype.app.ui.NekoDialog
 
 /**
  * 启动次数里程碑 · 赞助提醒。
@@ -62,7 +63,7 @@ object SponsorDialog {
             gravity = Gravity.CENTER_HORIZONTAL
             setPadding(0, dp(ctx, 8), 0, 0)
         })
-        root.addView(ImageView(ctx).apply {
+        val qr = ImageView(ctx).apply {
             layoutParams = LinearLayout.LayoutParams(dp(ctx, 150), dp(ctx, 150)).apply {
                 gravity = Gravity.CENTER_HORIZONTAL
                 topMargin = dp(ctx, 14)
@@ -72,7 +73,12 @@ object SponsorDialog {
             scaleType = ImageView.ScaleType.FIT_CENTER
             setPadding(dp(ctx, 8), dp(ctx, 8), dp(ctx, 8), dp(ctx, 8))
             contentDescription = ctx.getString(R.string.sp_hint)
-        })
+            isClickable = true
+            foreground = ctx.getDrawable(android.R.drawable.list_selector_background)
+        }
+        // 点击放大（与设置页「支持与反馈」里的二维码同一行为）
+        qr.setOnClickListener { showEnlarged(ctx) }
+        root.addView(qr)
         MaterialAlertDialogBuilder(ctx)
             .setView(root)
             .setPositiveButton(ctx.getString(R.string.sp_sponsored)) { _, _ ->
@@ -81,6 +87,21 @@ object SponsorDialog {
             .setNegativeButton(ctx.getString(R.string.sp_later)) { _, _ ->
                 NekoLog.adjust("赞助提醒(第 $count 次启动)：下次一定")
             }
+            .show()
+    }
+
+    /** 放大查看赞助码（与设置页「支持与反馈」里的二维码同一实现） */
+    private fun showEnlarged(ctx: Context) {
+        val img = ImageView(ctx).apply {
+            setImageResource(R.drawable.sponsor_qr)
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            adjustViewBounds = true
+        }
+        NekoDialog.builder(ctx)
+            .setTitle(ctx.getString(R.string.u44))
+            .setMessage(ctx.getString(R.string.u31))
+            .setView(img)
+            .setPositiveButton(ctx.getString(R.string.u156), null)
             .show()
     }
 

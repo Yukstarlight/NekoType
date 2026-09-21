@@ -600,7 +600,7 @@
 
     <!-- i18n: sponsor dialog -->
     <string name="sp_title">Спасибо! Вы открываете NekoType в %1$d-й раз</string>
-    <string name="sp_hint">Код спонсорства ниже: прижмите или сделайте скриншот.\nТвоя поддержка помогает котёнку обновляться</string>
+    <string name="sp_hint">Нажмите на код ниже для увеличения, или сделайте скриншот.\nТвоя поддержка помогает котёнку обновляться.</string>
     <string name="sp_later">Pозже</string>
     <string name="sp_sponsored">Я спонсор</string>
 </resources>

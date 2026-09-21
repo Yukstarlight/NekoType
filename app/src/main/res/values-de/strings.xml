@@ -617,7 +617,7 @@
 
     <!-- i18n: sponsor dialog -->
     <string name="sp_title">Danke für den %1$d. Start von NekoType</string>
-    <string name="sp_hint">Sponsor-Code unten: gedrückt halten oder Screenshot machen.\nDeine Unterstützung hält das Projekt am Leben.</string>
+    <string name="sp_hint">Kod unten antippen zum Vergrößern oder Screenshot machen.\nDeine Unterstützung hält das Projekt am Leben.</string>
     <string name="sp_later">Später</string>
     <string name="sp_sponsored">Gesponsert</string>
 </resources>

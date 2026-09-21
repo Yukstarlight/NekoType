@@ -518,7 +518,7 @@
 
     <!-- i18n: sponsor dialog -->
     <string name="sp_title">謝謝你第 %1$d 次打開 NekoType</string>
-    <string name="sp_hint">贊助碼見下方，長按識別或截圖保存\n你的支持會讓小貓繼續更新</string>
+    <string name="sp_hint">贊助碼見下方，點擊可放大，長按識別或截圖保存\n你的支持會讓小貓繼續更新</string>
     <string name="sp_later">下次一定</string>
     <string name="sp_sponsored">已贊助</string>
 </resources>

@@ -518,7 +518,7 @@
 
     <!-- i18n: sponsor dialog -->
     <string name="sp_title">Thanks for opening NekoType for the %1$dth time</string>
-    <string name="sp_hint">Scan or screenshot the sponsor code below.\nYour support keeps the cat updating.</string>
+    <string name="sp_hint">Tap the code below to zoom in, or screenshot it.\nYour support keeps the cat updating.</string>
     <string name="sp_later">Later</string>
     <string name="sp_sponsored">Sponsored</string>
 </resources>

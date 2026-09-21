@@ -588,7 +588,7 @@
 
     <!-- i18n: sponsor dialog -->
     <string name="sp_title">NekoType を %1$d 回開いてくれてありがとう</string>
-    <string name="sp_hint">スペンサーコードは下記、長押しまたはスクショで保存\n応援が継続開発の力になります</string>
+    <string name="sp_hint">下のコードをタップすると拡大、長押しまたはスクショで保存\n応援が継続開発の力になります</string>
     <string name="sp_later">そのうち</string>
     <string name="sp_sponsored">すでに支援済み</string>
 </resources>

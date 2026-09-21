@@ -581,7 +581,7 @@
 
     <!-- i18n: sponsor dialog -->
     <string name="sp_title">Teşekkürler, NekoType\'i %1$d. kez açtın</string>
-    <string name="sp_hint">Sponsorluk kodu aşağıda, basılı tutun veya ekran görüntüsü alın.\nDestekleriniz kediyi güncel tutar.</string>
+    <string name="sp_hint">Aşağıdaki kodu büyütmek için dokunun veya ekran görüntüsü alın.\nDestekleriniz kediyi güncel tutar.</string>
     <string name="sp_later">Başka sefer</string>
     <string name="sp_sponsored">Bağışladım</string>
 </resources>
