@@ -148,19 +148,19 @@ class LogActivity : AppCompatActivity() {
     private fun localizeLogcat(raw: String): String {
         var s = raw
         val map = listOf(
-            "FATAL EXCEPTION" to "致命异常",
-            "AndroidRuntime" to "崩溃",
-            "Caused by" to "原因",
-            "Process:" to "进程：",
-            "at com.nekotype.app" to "位置（NekoType）：",
-            "ActivityTaskManager" to "任务管理",
-            "WindowManager" to "窗口管理",
-            "nekotype_fg" to "悬浮服务",
-            "NekoTypeAccessibilityService" to "无障碍服务",
-            "FloatingButtonService" to "悬浮按钮服务",
-            "System.err" to "系统错误",
-            "dalvikvm" to "虚拟机",
-            "art" to "运行时"
+            "FATAL EXCEPTION" to getString(R.string.log_tag_fatal),
+            "AndroidRuntime" to getString(R.string.log_tag_crash),
+            "Caused by" to getString(R.string.log_tag_caused_by),
+            "Process:" to getString(R.string.log_tag_process),
+            "at com.nekotype.app" to getString(R.string.log_tag_at_nekotype),
+            "ActivityTaskManager" to getString(R.string.log_tag_atm),
+            "WindowManager" to getString(R.string.log_tag_wm),
+            "nekotype_fg" to getString(R.string.log_tag_fg),
+            "NekoTypeAccessibilityService" to getString(R.string.log_tag_a11y),
+            "FloatingButtonService" to getString(R.string.log_tag_fab),
+            "System.err" to getString(R.string.log_tag_stderr),
+            "dalvikvm" to getString(R.string.log_tag_dalvik),
+            "art" to getString(R.string.log_tag_art)
         )
         map.forEach { (k, v) -> s = s.replace(k, v) }
         return s

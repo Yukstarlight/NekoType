@@ -34,6 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import com.nekotype.app.util.setTextSizeDimen
 
 /**
  * 设置页 Fragment：外观 / 悬浮按钮 / 高级 / 数据 / 黑名单 / 详细信息 / 关于 / 反馈。
@@ -72,7 +73,7 @@ class SettingsFragment : Fragment() {
             NekoLog.error("设置页布局加载失败：${e.javaClass.simpleName}")
             return android.widget.FrameLayout(inflater.context).apply {
                 addView(android.widget.TextView(context).apply {
-                    text = "设置页加载失败，请尝试切换主题"
+                    text = getString(R.string.hc_load_fail_settings)
                     gravity = android.view.Gravity.CENTER
                 })
             }
@@ -107,7 +108,8 @@ class SettingsFragment : Fragment() {
                 R.id.btnThemeDark to "dark",
                 R.id.btnThemeLight to "light",
                 R.id.btnThemeStar to "star",
-                R.id.btnThemeNeko to "neko"
+                R.id.btnThemeNeko to "neko",
+                R.id.btnThemeCccp to "cccp",
             )
             themeButtons.forEach { (id, mode) ->
                 view.findViewById<com.google.android.material.button.MaterialButton>(id)?.setOnClickListener {
@@ -151,6 +153,12 @@ class SettingsFragment : Fragment() {
                 AppPrefs.fabGlassEnabled = checked
                 FloatingButtonService.reload()
             }
+            binding.swFabLongMenu.isChecked = AppPrefs.fabLongPressMenu
+            binding.swFabLongMenu.setOnCheckedChangeListener { _, checked ->
+                AppPrefs.fabLongPressMenu = checked
+                // 关闭时收起已打开的菜单，避免遗留
+                if (!checked) FloatingButtonService.dismissMenu()
+            }
         } catch (_: Throwable) { }
 
         // 开机自启
@@ -166,6 +174,27 @@ class SettingsFragment : Fragment() {
             }
         } catch (_: Throwable) { }
 
+        // 打开应用自动启动服务 / 打开应用自动 Shizuku 授权
+        try {
+            binding.swAutoStartService.isChecked = AppPrefs.autoStartServiceOnLaunch
+            binding.swAutoStartService.setOnCheckedChangeListener { _, checked ->
+                AppPrefs.autoStartServiceOnLaunch = checked
+                NekoLog.adjust(if (checked) "开启：打开应用自动启动服务" else "关闭：打开应用自动启动服务")
+            }
+            binding.swAutoShizukuGrant.isChecked = AppPrefs.autoShizukuGrantOnLaunch
+            binding.swAutoShizukuGrant.setOnCheckedChangeListener { _, checked ->
+                AppPrefs.autoShizukuGrantOnLaunch = checked
+                NekoLog.adjust(if (checked) "开启：打开应用自动 Shizuku 授权所有权限" else "关闭：打开应用自动 Shizuku 授权")
+                if (checked) {
+                    when {
+                        !SysPower.isShizukuAvailable() -> toast(getString(R.string.u184))
+                        !SysPower.isShizukuPermissionGranted() -> toast(getString(R.string.hc_shizuku_requesting))
+                        else -> toast(getString(R.string.st_auto_shizuku_hint))
+                    }
+                }
+            }
+        } catch (_: Throwable) { }
+
         // 数据导入导出
         try {
             binding.btnExportConfig.setOnClickListener { exportConfig() }
@@ -177,6 +206,11 @@ class SettingsFragment : Fragment() {
             binding.btnBlacklist.setOnClickListener {
                 startActivity(Intent(requireContext(), BlacklistActivity::class.java))
             }
+        } catch (_: Throwable) { }
+
+        // 开发者模式：关于标题连点 7 次触发（带getString(R.string.hc_download_extra_title)确认）
+        try {
+            wireDevModeTrigger()
         } catch (_: Throwable) { }
 
         // 支持与反馈
@@ -240,6 +274,86 @@ class SettingsFragment : Fragment() {
         })
     }
 
+    // ---------- 开发者模式 ----------
+
+    /** 关于标题连点 7 次进入开发者模式；已开启则再点 7 次直接打开开发者页。
+     *  手感：2.5 秒内连点都计数，第 3 下开始有 toast 反馈，标题带水波纹按压效果。 */
+    private fun wireDevModeTrigger() {
+        var taps = 0
+        var lastAt = 0L
+        val onClick = {
+            val now = System.currentTimeMillis()
+            taps = if (now - lastAt < 2500) taps + 1 else 1
+            lastAt = now
+            when {
+                taps >= 7 -> {
+                    taps = 0
+                    if (AppPrefs.devModeEnabled) {
+                        startActivity(Intent(requireContext(), DevActivity::class.java))
+                        NekoLog.nav("开发者模式：进入开发者页")
+                    } else {
+                        showDevDownloadDialog()
+                    }
+                }
+                taps >= 3 -> toast(getString(R.string.hc_dev_mode_taps, 7 - taps))
+            }
+        }
+        binding.tvAboutTitle.setOnClickListener { onClick() }
+        binding.cardAbout.setOnClickListener { onClick() }
+    }
+
+    /** 「下载额外组件」确认弹窗：确认后模拟下载进度，完成即开启开发者模式 */
+    private fun showDevDownloadDialog() {
+        val dialog = NekoDialog.builder(requireContext())
+            .setTitle(getString(R.string.hc_dev_mode_title))
+            .setMessage(getString(R.string.hc_dev_need_components))
+            .setPositiveButton(getString(R.string.hc_download)) { d, _ ->
+                d.dismiss()
+                showDevDownloadProgress()
+            }
+            .setNegativeButton(getString(R.string.u72), null)
+            .create()
+        dialog.show()
+    }
+
+    /** 模拟下载进度条（约 2.5 秒到 100%），完成后开启开发者模式 */
+    private fun showDevDownloadProgress() {
+        val progress = android.widget.ProgressBar(
+            requireContext(), null, android.R.attr.progressBarStyleHorizontal
+        ).apply {
+            max = 100
+            progress = 0
+        }
+        val tvState = android.widget.TextView(requireContext()).apply {
+            text = getString(R.string.hc_downloading, 0)
+            setTextSizeDimen(R.dimen.ts_13)
+        }
+        val dialog = NekoDialog.builder(requireContext())
+            .setTitle(getString(R.string.hc_download_extra_title))
+            .setView(NekoDialog.column(requireContext(), tvState, progress))
+            .setCancelable(false)
+            .create()
+        dialog.show()
+        val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        var step = 0
+        val runnable = object : Runnable {
+            override fun run() {
+                step++
+                progress.progress = step * 2
+                tvState.text = getString(R.string.hc_downloading, step * 2)
+                if (step < 50) {
+                    handler.postDelayed(this, 50)
+                } else {
+                    AppPrefs.devModeEnabled = true
+                    dialog.dismiss()
+                    NekoLog.adjust("开发者模式已开启")
+                    toast(getString(R.string.hc_dev_mode_on))
+                }
+            }
+        }
+        handler.postDelayed(runnable, 50)
+    }
+
     override fun onResume() {
         super.onResume()
         if (_binding == null) return
@@ -287,6 +401,7 @@ class SettingsFragment : Fragment() {
             "dark" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             "star" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            "cccp" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             "neko" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         }
@@ -299,16 +414,18 @@ class SettingsFragment : Fragment() {
             "light" -> R.id.btnThemeLight
             "star" -> R.id.btnThemeStar
             "neko" -> R.id.btnThemeNeko
+            "cccp" -> R.id.btnThemeCccp
             else -> R.id.btnThemeSystem
         }
-        listOf(R.id.btnThemeSystem, R.id.btnThemeDark, R.id.btnThemeLight, R.id.btnThemeStar, R.id.btnThemeNeko).forEach { id ->
+        listOf(R.id.btnThemeSystem, R.id.btnThemeDark, R.id.btnThemeLight, R.id.btnThemeStar, R.id.btnThemeNeko, R.id.btnThemeCccp).forEach { id ->
             view?.findViewById<com.google.android.material.button.MaterialButton>(id)?.isChecked = (id == selectedId)
         }
         binding.tvThemeHint.text = when (AppPrefs.themeMode) {
             "dark" -> getString(R.string.u134)
             "light" -> getString(R.string.u135)
             "star" -> getString(R.string.theme_star_hint)
-            "neko" -> "已启用猫娘主题喵~ 全UI已切换为猫娘用语"
+            "neko" -> getString(R.string.hc_theme_neko_toast)
+            "cccp" -> getString(R.string.theme_cccp_hint)
             else -> getString(R.string.u136)
         }
     }
@@ -355,6 +472,15 @@ class SettingsFragment : Fragment() {
     private fun showImportDialog() {
         // Material 多行输入框（替代裸 EditText + 自定义按钮行，统一成交互规范的对话框按钮）
         val inText = NekoDialog.input(requireContext(), getString(R.string.u129), multiline = true)
+        // 限制输入区高度：粘贴超长配置时不会把「取消 / 导入」按钮顶出屏幕。
+        // 注意：不能改 editText 的 layoutParams —— TextInputLayout 内部按 FrameLayout.LayoutParams
+        // 取子 View 参数，塞 LinearLayout 参数会在 onMeasure 里抛 ClassCastException（导入直接崩）。
+        // 用 minLines/maxLines + maxHeight 限制即可。
+        inText.editText?.apply {
+            minLines = 3
+            maxLines = 5
+            maxHeight = (resources.displayMetrics.density * 128).toInt()
+        }
         try {
             val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             cm.primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.text?.toString()?.let {
@@ -365,7 +491,7 @@ class SettingsFragment : Fragment() {
         val dialog = NekoDialog.builder(requireContext())
             .setTitle(getString(R.string.u39))
             .setMessage(getString(R.string.u42))
-            .setView(NekoDialog.column(requireContext(), inText))
+            .setView(NekoDialog.scroll(NekoDialog.column(requireContext(), inText)))
             .setPositiveButton(getString(R.string.u130)) { _, _ ->
                 val text = NekoDialog.textOf(inText).trim()
                 if (text.isEmpty()) { toast(getString(R.string.u9)); return@setPositiveButton }
@@ -524,7 +650,7 @@ class SettingsFragment : Fragment() {
             val preset = AppPrefs.presetList().firstOrNull { it.second == name }
             if (preset != null) {
                 AppPrefs.selectPreset(preset.first)
-                toast("已切换到「$name」")
+                toast(getString(R.string.hc_switched_to, name))
                 NekoLog.adjust("切换人设语气包：$name")
                 return
             }
@@ -541,11 +667,11 @@ class SettingsFragment : Fragment() {
             else -> emptyList()
         }
         if (rules.isEmpty()) {
-            toast("生成规则失败")
+            toast(getString(R.string.hc_rule_gen_fail))
             return
         }
         AppPrefs.createPreset(name = name, rules = rules, switchTo = true)
-        toast("已创建并切换到「$name」")
+        toast(getString(R.string.hc_preset_created, name))
         NekoLog.adjust("创建人设语气包：$name（${rules.size}条规则）")
     }
 

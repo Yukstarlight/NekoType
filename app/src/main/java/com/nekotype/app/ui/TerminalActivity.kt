@@ -17,6 +17,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.nekotype.app.R
 import com.nekotype.app.prefs.AppPrefs
 import com.nekotype.app.util.NekoLang
 import com.nekotype.app.util.NekoLog
@@ -39,6 +40,7 @@ class TerminalActivity : AppCompatActivity(), TerminalSessionClient, TerminalVie
     private var quickCmdExpanded = false
 
     companion object {
+        private const val COPY_MENU_ID = 1
         private const val PREFS = "terminal_settings"
         private const val KEY_FONT_SIZE = "font_size"
         private const val KEY_ALPHA = "panel_alpha"
@@ -174,19 +176,19 @@ class TerminalActivity : AppCompatActivity(), TerminalSessionClient, TerminalVie
                 hint = "#RRGGBB"
             }
             NekoDialog.builder(this)
-                .setTitle("自定义颜色")
+                .setTitle(getString(R.string.hc_custom_color))
                 .setView(et)
-                .setPositiveButton("确定") { _, _ ->
+                .setPositiveButton(getString(R.string.u71)) { _, _ ->
                     try {
                         val input = et.text.toString().trim()
                         val color = if (input.startsWith("#")) android.graphics.Color.parseColor(input)
                         else android.graphics.Color.parseColor("#$input")
                         selectColor(dialogView.findViewById(com.nekotype.app.R.id.colorCustom), color)
                     } catch (_: Throwable) {
-                        Toast.makeText(this, "颜色格式错误", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, getString(R.string.hc_color_format_err), Toast.LENGTH_SHORT).show()
                     }
                 }
-                .setNegativeButton("取消", null)
+                .setNegativeButton(getString(R.string.u72), null)
                 .show()
         }
 
@@ -215,14 +217,14 @@ class TerminalActivity : AppCompatActivity(), TerminalSessionClient, TerminalVie
                 // 只发 catstop 会被运行中的循环缓冲住，无法生效
                 session?.write("\u0003")       // Ctrl+C → SIGINT，中断当前命令
                 session?.write("catstop\n")   // 重置 __CAT_BOMB_RUN=0
-                Toast.makeText(this, "已发送停止命令喵~", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.hc_stop_cmd_sent), Toast.LENGTH_SHORT).show()
             } catch (_: Throwable) { }
         }
 
         NekoDialog.builder(this)
-            .setTitle("终端设置")
+            .setTitle(getString(R.string.hc_terminal_settings))
             .setView(dialogView)
-            .setPositiveButton("保存") { _, _ ->
+            .setPositiveButton(getString(R.string.u89)) { _, _ ->
                 val size = seekFont.progress + 10
                 val a = seekAlpha.progress
                 prefs.edit()
@@ -231,9 +233,9 @@ class TerminalActivity : AppCompatActivity(), TerminalSessionClient, TerminalVie
                     .putInt(KEY_TEXT_COLOR, curColor)
                     .apply()
                 applyTerminalSettings(size, a, curColor)
-                Toast.makeText(this, "设置已保存", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.hc_settings_saved), Toast.LENGTH_SHORT).show()
             }
-            .setNegativeButton("取消", null)
+            .setNegativeButton(getString(R.string.u72), null)
             .show()
     }
 
@@ -244,7 +246,7 @@ class TerminalActivity : AppCompatActivity(), TerminalSessionClient, TerminalVie
         toggleBtn.setOnClickListener {
             quickCmdExpanded = !quickCmdExpanded
             scroll.visibility = if (quickCmdExpanded) View.VISIBLE else View.GONE
-            toggleBtn.text = if (quickCmdExpanded) "▼ 收起快捷命令" else "▲ 快捷命令"
+            toggleBtn.text = if (quickCmdExpanded) getString(R.string.hc_quick_cmd_collapse) else getString(R.string.hc_quick_cmd_expand)
         }
         val cmdMap = mapOf(
             com.nekotype.app.R.id.cmdLs to "ls",
@@ -279,7 +281,7 @@ class TerminalActivity : AppCompatActivity(), TerminalSessionClient, TerminalVie
             session?.write(cmd + "\n")
             terminalView?.requestFocus()
         } catch (e: Throwable) {
-            Toast.makeText(this, "发送命令失败: ${e.message}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.hc_cmd_send_fail, e.message ?: ""), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -665,13 +667,13 @@ class TerminalActivity : AppCompatActivity(), TerminalSessionClient, TerminalVie
                     NekoLog.ok("内嵌终端已启动")
                 } catch (t: Throwable) {
                     NekoLog.error("内嵌终端启动失败：${t.message}")
-                    Toast.makeText(this@TerminalActivity, "终端启动失败：${t.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@TerminalActivity, getString(R.string.hc_terminal_start_fail, t.message ?: ""), Toast.LENGTH_LONG).show()
                     finish()
                 }
             }
         } catch (t: Throwable) {
             NekoLog.error("内嵌终端启动失败：${t.message}")
-            Toast.makeText(this@TerminalActivity, "终端启动失败：${t.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(this@TerminalActivity, getString(R.string.hc_terminal_start_fail, t.message ?: ""), Toast.LENGTH_LONG).show()
             finish()
         }
     }
@@ -727,7 +729,7 @@ class TerminalActivity : AppCompatActivity(), TerminalSessionClient, TerminalVie
     override fun onTitleChanged(changedSession: TerminalSession) { }
     override fun onSessionFinished(finishedSession: TerminalSession) {
         runOnUiThread {
-            Toast.makeText(this@TerminalActivity, "终端已退出", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@TerminalActivity, getString(R.string.hc_terminal_exited), Toast.LENGTH_SHORT).show()
             this@TerminalActivity.finish()
         }
     }
@@ -763,7 +765,56 @@ class TerminalActivity : AppCompatActivity(), TerminalSessionClient, TerminalVie
     override fun shouldEnforceCharBasedInput(): Boolean = false
     override fun shouldUseCtrlSpaceWorkaround(): Boolean = false
     override fun isTerminalViewSelected(): Boolean = true
-    override fun copyModeChanged(copyMode: Boolean) { }
+    override fun copyModeChanged(copyMode: Boolean) {
+        runOnUiThread {
+            if (copyMode) showCopyActionMode() else copyActionMode?.finish()
+        }
+    }
+
+    private var copyActionMode: android.view.ActionMode? = null
+
+    private fun showCopyActionMode() {
+        if (copyActionMode != null) return
+        val callback = object : android.view.ActionMode.Callback {
+            override fun onCreateActionMode(mode: android.view.ActionMode, menu: android.view.Menu): Boolean {
+                menu.add(0, COPY_MENU_ID, 0, getString(R.string.copy_text))
+                return true
+            }
+            override fun onPrepareActionMode(mode: android.view.ActionMode, menu: android.view.Menu): Boolean = false
+            override fun onActionItemClicked(mode: android.view.ActionMode, item: android.view.MenuItem): Boolean {
+                if (item.itemId == COPY_MENU_ID) {
+                    copySelectedText()
+                    mode.finish()
+                    return true
+                }
+                return false
+            }
+            override fun onDestroyActionMode(mode: android.view.ActionMode) {
+                copyActionMode = null
+            }
+        }
+        copyActionMode = try {
+            startActionMode(callback, android.view.ActionMode.TYPE_FLOATING)
+        } catch (_: Throwable) {
+            try { startActionMode(callback) } catch (_: Throwable) { null }
+        }
+    }
+
+    private fun copySelectedText() {
+        val tv = terminalView ?: return
+        val text = try {
+            if (tv.isSelectingText) tv.selectedText else null
+        } catch (_: Throwable) {
+            null
+        }
+        if (text.isNullOrEmpty()) return
+        try {
+            val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            cm.setPrimaryClip(ClipData.newPlainText("terminal", text))
+            Toast.makeText(this, getString(R.string.u15, text.take(30)), Toast.LENGTH_SHORT).show()
+        } catch (_: Throwable) { }
+        try { tv.stopTextSelectionMode() } catch (_: Throwable) { }
+    }
     override fun onKeyDown(keyCode: Int, e: KeyEvent, session: TerminalSession): Boolean {
         if (keyCode == KeyEvent.KEYCODE_TAB) {
             return handleTabCompletion(session)

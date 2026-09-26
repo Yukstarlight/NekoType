@@ -571,8 +571,7 @@ public final class TerminalView extends View {
     }
 
     /** Perform a scroll, either from dragging the screen or by scrolling a mouse wheel. */
-    void doScroll(MotionEvent event, int rowsDown) {
-        boolean up = rowsDown < 0;
+    void doScroll(MotionEvent event, int rowsDown) {        boolean up = rowsDown < 0;
         int amount = Math.abs(rowsDown);
         for (int i = 0; i < amount; i++) {
             if (mEmulator.isMouseTrackingActive()) {
@@ -586,6 +585,19 @@ public final class TerminalView extends View {
                 if (!awakenScrollBars()) invalidate();
             }
         }
+    }
+
+    /**
+     * 选区拖动时的自动滚动（供 TextSelectionHandleView 调用）。
+     * @param direction -1 = 向上滚动（看更早内容），+1 = 向下滚动
+     */
+    public void selectionAutoScroll(int direction) {
+        if (mEmulator == null || direction == 0) return;
+        int historyRows = mEmulator.getScreen().getActiveTranscriptRows();
+        int next = Math.min(0, Math.max(-historyRows, mTopRow - direction));
+        if (next == mTopRow) return;
+        mTopRow = next;
+        if (!awakenScrollBars()) invalidate();
     }
 
     /** Overriding {@link View#onGenericMotionEvent(MotionEvent)}. */

@@ -25,6 +25,8 @@ class NekoTypeApp : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        // 启动次数 +1（进程启动即计一次），用于里程碑赞助提醒
+        try { AppPrefs.launchCount = AppPrefs.launchCount + 1 } catch (_: Throwable) { }
         // 初始化 Shizuku 长连接通道（注册 Binder 监听 + 预绑定 UserService）
         com.nekotype.app.sys.SysPower.initShizukuChannel()
         // 防篡改检测：签名不匹配（重打包）或检测到 Hook 框架 → 标记，各入口拒绝运行
@@ -32,7 +34,7 @@ class NekoTypeApp : Application() {
         if (tampered != AppPrefs.tampered) {
             AppPrefs.tampered = tampered
         }
-        // 崩溃自启（皆成同款，行为与样式开关控制）：进程崩溃时若服务在跑，
+        // 崩溃自启（行为与样式开关控制）：进程崩溃时若服务在跑，
         // 用闹钟延时拉起服务，避免一次崩溃导致悬浮服务/隐藏模式永久失联
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             try {
@@ -58,6 +60,8 @@ class NekoTypeApp : Application() {
             // 继续走系统默认处理（不吞崩溃，正常退出）
             originalHandler?.uncaughtException(thread, throwable)
         }
+        // 语言：AppCompat 在 Android 12 及以下不会自动记住选择，这里启动时重新应用
+        applySavedLocale()
         // 应用主题（深色 / 浅色 / 跟随系统 / 星空）
         applyAppTheme()
         // 星空主题需要在每个 Activity 创建前 setTheme
@@ -66,7 +70,8 @@ class NekoTypeApp : Application() {
                 try {
                     when (AppPrefs.themeMode) {
                         "star" -> activity.setTheme(R.style.Theme_NekoType_Star)
-                        "neko" -> activity.setTheme(R.style.Theme_NekoType_Neko)
+                        "cccp" -> activity.setTheme(R.style.Theme_NekoType_Cccp)
+            "neko" -> activity.setTheme(R.style.Theme_NekoType_Neko)
                     }
                 } catch (_: Throwable) { /* 主题应用失败不阻断页面 */ }
             }
@@ -79,12 +84,34 @@ class NekoTypeApp : Application() {
         })
     }
 
+    /**
+     * 启动时应用用户上次选择的语言。
+     *
+     * [AppCompatDelegate.setApplicationLocales] 在 Android 13+ 由系统持久化，
+     * 但 Android 12 及以下需要自行存储；否则杀掉进程重开后语言会回到系统默认。
+     * 与当前值相同时不重复设置，避免多余的 Activity 重建。
+     */
+    private fun applySavedLocale() {
+        try {
+            val tag = AppPrefs.appLangTag
+            val list = if (tag.isEmpty()) {
+                androidx.core.os.LocaleListCompat.getEmptyLocaleList()
+            } else {
+                androidx.core.os.LocaleListCompat.forLanguageTags(tag)
+            }
+            if (AppCompatDelegate.getApplicationLocales().toLanguageTags() != list.toLanguageTags()) {
+                AppCompatDelegate.setApplicationLocales(list)
+            }
+        } catch (_: Throwable) { /* 语言应用失败不阻断启动 */ }
+    }
+
     /** 根据 themeMode 设置夜间模式（星空/猫娘主题走深色） */
     fun applyAppTheme() {
         val mode = when (AppPrefs.themeMode) {
             "dark" -> AppCompatDelegate.MODE_NIGHT_YES
             "light" -> AppCompatDelegate.MODE_NIGHT_NO
             "star" -> AppCompatDelegate.MODE_NIGHT_YES
+            "cccp" -> AppCompatDelegate.MODE_NIGHT_YES
             "neko" -> AppCompatDelegate.MODE_NIGHT_NO
             else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         }

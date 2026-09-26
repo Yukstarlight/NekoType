@@ -39,6 +39,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rikka.shizuku.Shizuku
+import com.nekotype.app.util.setTextSizeDimen
 
 /**
  * 主界面：顶部 Hero + 两个选项卡（权限 / 规则）。
@@ -384,7 +385,7 @@ class MainActivity : AppCompatActivity() {
                 restoreHiddenSwitch()
                 return
             }
-            // 前置条件 2：设备管理员必须已激活（防卸载 + 皆成同款路线）
+            // 前置条件 2：设备管理员必须已激活（防卸载 + 保活路线）
             if (!SysPower.isDeviceAdminActive()) {
                 toast(getString(R.string.u54))
                 restoreHiddenSwitch()
@@ -573,8 +574,16 @@ class MainActivity : AppCompatActivity() {
                 NekoLog.warn("Shizuku：未检测到服务")
                 toast(getString(R.string.u26))
             }
+            !SysPower.isShizukuPermissionGranted() -> {
+                // Shizuku 11+：UserService 绑定前必须先获得 API 权限，否则服务端拒绝绑定（onServiceConnected 永不回调）
+                binding.tvPrivLog.text = getString(R.string.hc_shizuku_requesting)
+                try {
+                    SysPower.requestShizukuPermission(1001)
+                } catch (t: Throwable) {
+                    binding.tvPrivLog.text = getString(R.string.hc_shizuku_req_fail, t.javaClass.simpleName, t.message)
+                }
+            }
             else -> {
-                // UserService 绑定无需 API 权限；直接探测通道，首次绑定会弹系统确认框
                 binding.tvPrivLog.text = getString(R.string.u187)
                 lifecycleScope.launch {
                     val r = withContext(Dispatchers.IO) { SysPower.execIdForStatus() }
@@ -761,7 +770,7 @@ class MainActivity : AppCompatActivity() {
         // 类型徽标（点击 = 编辑）
         val badge = TextView(this).apply {
             text = getString(rule.type.resId)
-            textSize = 11f
+            setTextSizeDimen(R.dimen.ts_11)
             setTextColor(ContextCompat.getColor(this@MainActivity, R.color.md_theme_primary))
             background = ContextCompat.getDrawable(this@MainActivity, R.drawable.bg_circle)
             setPadding(18, 6, 18, 6)
@@ -779,7 +788,7 @@ class MainActivity : AppCompatActivity() {
         }
         val tvValue = TextView(this).apply {
             text = valueText
-            textSize = 14f
+            setTextSizeDimen(R.dimen.ts_14)
             setTextColor(ContextCompat.getColor(this@MainActivity, R.color.text_primary))
             maxLines = 2
             ellipsize = android.text.TextUtils.TruncateAt.END
@@ -793,7 +802,7 @@ class MainActivity : AppCompatActivity() {
         // 编辑按钮
         val edit = TextView(this).apply {
             text = getString(R.string.u79)
-            textSize = 13f
+            setTextSizeDimen(R.dimen.ts_13)
             setTextColor(ContextCompat.getColor(this@MainActivity, R.color.md_theme_primary))
             gravity = Gravity.CENTER
             setPadding(12, 8, 8, 8)
@@ -826,7 +835,7 @@ class MainActivity : AppCompatActivity() {
         // 删除（密码锁定：需验证）
         val del = TextView(this).apply {
             text = "✕"
-            textSize = 15f
+            setTextSizeDimen(R.dimen.ts_15)
             setTextColor(ContextCompat.getColor(this@MainActivity, R.color.fg_2))
             gravity = Gravity.CENTER
             setPadding(24, 8, 12, 8)

@@ -74,7 +74,7 @@ class BlacklistActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-        loadApps()
+        loadAppsAsync()
     }
 
     private fun updateHint() {
@@ -82,6 +82,48 @@ class BlacklistActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tvBlacklistHint).text =
             if (AppPrefs.blacklistEnabled) getString(R.string.u160, cnt)
             else getString(R.string.u161)
+    }
+
+    /**
+     * 异步加载应用列表：扫描已安装应用 + 查桌面入口 + 取名称图标，主线程做要卡好几秒，
+     * 这里放到后台线程，期间显示加载动画，完成后切回主线程刷新列表。
+     */
+    private fun loadAppsAsync() {
+        Thread {
+            try {
+                val list = collectApps()
+                runOnUiThread {
+                    apps.clear()
+                    apps.addAll(list)
+                    adapter.notifyDataSetChanged()
+                    findViewById<android.view.View>(R.id.llLoading)?.visibility = android.view.View.GONE
+                    findViewById<android.view.View>(R.id.rvApps)?.visibility = android.view.View.VISIBLE
+                }
+            } catch (t: Throwable) {
+                runOnUiThread {
+                    findViewById<android.view.View>(R.id.llLoading)?.visibility = android.view.View.GONE
+                    findViewById<android.view.View>(R.id.rvApps)?.visibility = android.view.View.VISIBLE
+                    toast(getString(R.string.hc_applist_fail, t.message ?: ""))
+                }
+            }
+        }.start()
+    }
+
+    /** 在后台线程收集应用列表（不触碰 UI） */
+    private fun collectApps(): List<Pair<ApplicationInfo, String>> {
+        val pm = packageManager
+        val self = packageName
+        val out = ArrayList<Pair<ApplicationInfo, String>>()
+        pm.getInstalledApplications(PackageManager.MATCH_ALL).forEach { info ->
+            if (info.packageName == self) return@forEach
+            // 只列有桌面入口的应用（更干净）
+            if (pm.getLaunchIntentForPackage(info.packageName) != null) {
+                val label = try { pm.getApplicationLabel(info).toString() } catch (_: Throwable) { info.packageName }
+                out.add(info to label)
+            }
+        }
+        out.sortBy { it.second.lowercase(Locale.getDefault()) }
+        return out
     }
 
     private fun loadApps() {

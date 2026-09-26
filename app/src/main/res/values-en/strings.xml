@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">NekoType</string>
     <string name="splash_subtitle">Welcome to Mist Unveils Infinite Tomorrows</string>
-    <string name="splash_version">v2.7.5</string>
+    <string name="splash_version">v2.7.9</string>
     <string name="accessibility_label">NekoType Message Transform</string>
     <string name="accessibility_description">NekoType needs accessibility permission to detect keyboard input, read the message being typed, automatically add prefix/suffix/text replacement, and send after rewriting via the floating button. All text processing is done locally.</string>
     <string name="admin_label">NekoType Device Admin</string>
@@ -447,4 +447,138 @@
     <string name="i60">Reset: the disclaimer dialog will show again on next launch</string>
     <string name="i31">Mesugaki</string>
     <string name="i32">Neko Girl</string>
+    <string name="bl_loading">Loading app list…</string>
+    <string name="theme_cccp">Soviet (CCCP)</string>
+
+    <!-- i18n: hardcoded Chinese extracted -->
+    <string name="hc_autostart_fail">Cannot open auto-start settings, please find it manually in system settings</string>
+    <string name="hc_applist_fail">Failed to load app list: %1$s</string>
+    <string name="hc_shizuku_denied">Shizuku API permission denied, UserService binding may fail.\nPlease enable NekoType in the Shizuku app → App management, then retry.</string>
+    <string name="hc_fab_icon_updated">Floating ball icon updated</string>
+    <string name="hc_image_save_fail">Failed to save the image</string>
+    <string name="hc_no_image_picker">Cannot open the image picker</string>
+    <string name="hc_icon_restored">Default icon restored</string>
+    <string name="hc_shizuku_requesting">Requesting Shizuku API permission (tap Allow in the dialog)...</string>
+    <string name="hc_shizuku_req_fail">Failed to request Shizuku permission: %1$s: %2$s</string>
+    <string name="hc_shizuku_binding">Binding Shizuku UserService...</string>
+    <string name="hc_shizuku_probe_fail">Shizuku channel probe failed:\n%1$s</string>
+    <string name="hc_shizuku_bind_fail">Shizuku binding failed, see the log area for details</string>
+    <string name="hc_shizuku_requesting2">Requesting Shizuku API permission (tap Allow). After granting, tap one-click grant again...</string>
+    <string name="hc_preset_name_hint">Enter a preset name</string>
+    <string name="hc_preset_new_title">New rule preset</string>
+    <string name="hc_preset_name_empty">Name cannot be empty</string>
+    <string name="hc_preset_name_dup">A preset with this name already exists</string>
+    <string name="hc_preset_created">Created and switched to “%1$s”</string>
+    <string name="hc_dev_mode_taps">%1$d more taps to enter developer mode</string>
+    <string name="hc_dev_mode_title">Developer mode</string>
+    <string name="hc_download_extra_title">Download extra components</string>
+    <string name="hc_downloading">Downloading developer components… %1$d%%</string>
+    <string name="hc_dev_mode_on">Developer mode enabled: a DEV entry now appears at the top of Home</string>
+    <string name="hc_switched_to">Switched to “%1$s”</string>
+    <string name="hc_rule_gen_fail">Failed to generate rules</string>
+    <string name="hc_custom_color">Custom color</string>
+    <string name="hc_color_format_err">Invalid color format</string>
+    <string name="hc_stop_cmd_sent">Stop command sent, meow~</string>
+    <string name="hc_terminal_settings">Terminal settings</string>
+    <string name="hc_settings_saved">Settings saved</string>
+    <string name="hc_quick_cmd_collapse">▼ Collapse quick commands</string>
+    <string name="hc_quick_cmd_expand">▲ Quick commands</string>
+    <string name="hc_cmd_send_fail">Failed to send command: %1$s</string>
+    <string name="hc_terminal_start_fail">Failed to start the terminal: %1$s</string>
+    <string name="hc_terminal_exited">Terminal exited</string>
+    <string name="hc_settings_cd">Settings</string>
+    <string name="hc_custom_punct_hint">Custom trigger punctuation (e.g. 。！？，)</string>
+    <string name="hc_load_fail_home">Failed to load Home, try switching the theme</string>
+    <string name="hc_load_fail_mode">Failed to load Modes, try switching the theme</string>
+    <string name="hc_load_fail_rules">Failed to load Rules, try switching the theme</string>
+    <string name="hc_load_fail_settings">Failed to load Settings, try switching the theme</string>
+    <string name="hc_follow_system">Follow system</string>
+    <string name="hc_theme_neko_toast">Neko theme enabled, meow~ The whole UI now speaks cat</string>
+    <string name="log_tag_fatal">Fatal exception</string>
+    <string name="log_tag_crash">Crash</string>
+    <string name="log_tag_caused_by">Caused by</string>
+    <string name="log_tag_process">Process:</string>
+    <string name="log_tag_at_nekotype">Location (NekoType):</string>
+    <string name="log_tag_atm">Activity manager</string>
+    <string name="log_tag_wm">Window manager</string>
+    <string name="log_tag_fg">Foreground service</string>
+    <string name="log_tag_a11y">Accessibility service</string>
+    <string name="log_tag_fab">Floating button service</string>
+    <string name="log_tag_stderr">System error</string>
+    <string name="log_tag_dalvik">Dalvik VM</string>
+    <string name="log_tag_art">ART runtime</string>
+
+    <!-- i18n: hardcoded Chinese extracted -->
+    <string name="hc_download">Download</string>
+    <string name="hc_preset_save_msg">Save current rules as a new preset</string>
+    <string name="hc_dev_need_components">Developer action detected. The developer mode components are not installed; download the extra components (about 8.6 MB) to enable it.\n\nThis process is simulated on-device only and generates no network traffic.</string>
+
+    <!-- i18n: theme hints -->
+    <string name="theme_cccp_hint">Soviet theme enabled: flag red with gilded accents</string>
+
+    <!-- i18n: sponsor dialog -->
+    <string name="sp_title">Thanks for opening NekoType for the %1$dth time</string>
+    <string name="sp_hint">Tap the code below to zoom in, or screenshot it.\nYour support keeps the cat updating.</string>
+    <string name="sp_later">Later</string>
+    <string name="sp_sponsored">Sponsored</string>
+
+    <!-- i18n: floating button long-press quick menu -->
+    <string name="fm_title">Floating button menu</string>
+    <string name="fm_current_preset">Current preset: %1$s</string>
+    <string name="fm_open_app">Open app</string>
+    <string name="fm_section_presets">Rule presets</string>
+    <string name="fm_section_other">More</string>
+    <string name="fm_no_preset">No presets yet. Create one in the app.</string>
+    <string name="fm_preset_rules_count">%1$d rules</string>
+    <string name="fm_preset_manage">Manage presets…</string>
+    <string name="fm_preset_switched">Switched to preset \"%1$s\"</string>
+    <string name="fm_action_transform">Transform &amp; send now</string>
+    <string name="fm_action_autosend">Auto send</string>
+    <string name="fm_action_silent">Silent modify (Shizuku)</string>
+    <string name="fm_action_haptic">Haptic feedback</string>
+    <string name="fm_action_snap">Snap to edge after drag</string>
+    <string name="fm_action_rules">Edit rules</string>
+    <string name="fm_action_settings">Settings</string>
+    <string name="fm_action_log">Run logs</string>
+    <string name="fm_action_terminal">Open terminal</string>
+    <string name="fm_action_stop">Stop service</string>
+    <string name="fm_on">On</string>
+    <string name="fm_off">Off</string>
+    <string name="fm_close">Close</string>
+    <string name="fm_hint_long_press">Quick menu opened. Long-press the floating button anytime to open it again.</string>
+    <string name="fm_open_fail">Can\'t open the app. Please launch it from the home screen icon.</string>
+    <string name="fm_setting_long_press">Long-press for quick menu</string>
+    <string name="fm_setting_long_press_desc">Long-press the floating button to open a menu: jump back to the app, switch rule presets, toggle features.</string>
+    <string name="fm_open_rules_panel">Rule switches</string>
+    <string name="fm_open_behavior_panel">Behavior &amp; style</string>
+    <string name="fm_back">Back</string>
+    <string name="fm_edit">Edit</string>
+    <string name="fm_no_rules">No rules in the current preset</string>
+    <string name="st_auto_service">Auto-start service on launch</string>
+    <string name="st_auto_service_desc">Start the floating service automatically each time you reopen the app (only if it was enabled last time; stays stopped if you stopped it on purpose)</string>
+    <string name="st_auto_shizuku">Auto Shizuku grant on launch</string>
+    <string name="st_auto_shizuku_desc">Grant all permissions via Shizuku every time the app opens (accessibility / device admin / battery whitelist / overlay). Requires Shizuku running. Off by default</string>
+    <string name="st_auto_shizuku_hint">Enabled: permissions will be granted automatically on next launch (Shizuku must be running)</string>
+    <string name="bm_blind_no_suffix">This app hides its input box content, so only suffix-type rules can be appended. No usable suffix rule found (prefix/replace rules can\'t work here).</string>
+
+    <!-- i18n: rule preset advanced management (rename / merge / undo merge) -->
+    <string name="pm_manage">Manage</string>
+    <string name="pm_btn_select">Select preset</string>
+    <string name="pm_btn_delete">Delete</string>
+    <string name="pm_manage_title">Manage rule presets</string>
+    <string name="pm_manage_empty">No presets to manage</string>
+    <string name="pm_rename">Rename</string>
+    <string name="pm_rename_title">Rename preset</string>
+    <string name="pm_rename_hint">New name</string>
+    <string name="pm_name_empty">Name cannot be empty</string>
+    <string name="pm_name_dup">A preset with this name already exists</string>
+    <string name="pm_renamed">Renamed to \"%1$s\"</string>
+    <string name="pm_merge_hint">Tick presets to merge — their rules are appended to the current preset (source presets are unchanged).</string>
+    <string name="pm_merge_btn">Merge selected</string>
+    <string name="pm_merged">Merged %1$d rules into \"%2$s\"</string>
+    <string name="pm_merge_none_sel">No mergeable preset selected (the current preset can\'t merge into itself)</string>
+    <string name="pm_confirm">Confirm</string>
+    <string name="pm_close">Close</string>
+    <string name="pm_current_row">%1$s (%2$d rules · current)</string>
+    <string name="pm_count">%1$s (%2$d rules)</string>
 </resources>

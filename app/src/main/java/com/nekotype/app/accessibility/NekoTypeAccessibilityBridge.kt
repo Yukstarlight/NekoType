@@ -36,4 +36,7 @@ object NekoTypeAccessibilityBridge {
     fun requestTransformAndSend() {
         service?.transformActiveTextAndSend()
     }
+
+    /** 开发者模式：导出当前窗口的无障碍节点树（文本） */
+    fun dumpWindowTree(): String? = service?.dumpWindowTree()
 }

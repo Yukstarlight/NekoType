@@ -84,4 +84,24 @@
         <item name="android:navigationBarColor">#1A1030</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
+    <!-- 前苏联主题：红旗红 + 鎏金，构造主义斜带背景 -->
+    <style name="Theme.NekoType.Cccp" parent="Theme.NekoType.Main">
+        <item name="colorPrimary">@color/cccp_red</item>
+        <item name="colorOnPrimary">@color/cccp_text</item>
+        <item name="colorPrimaryContainer">@color/cccp_red_dark</item>
+        <item name="colorOnPrimaryContainer">@color/cccp_text</item>
+        <item name="colorSecondary">@color/cccp_gold</item>
+        <item name="colorOnSecondary">@color/cccp_bg</item>
+        <item name="colorSecondaryContainer">@color/cccp_red_dark</item>
+        <item name="colorOnSecondaryContainer">@color/cccp_gold</item>
+        <item name="colorSurface">@color/cccp_surface</item>
+        <item name="colorOnSurface">@color/cccp_text</item>
+        <item name="colorOnSurfaceVariant">@color/cccp_text_soft</item>
+        <item name="colorOutlineVariant">#40E8C36A</item>
+        <item name="android:windowBackground">@color/cccp_bg</item>
+        <item name="android:statusBarColor">@color/cccp_bg</item>
+        <item name="android:navigationBarColor">@color/cccp_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowAnimationStyle">@style/NekoWindowAnim</item>
+    </style>
 </resources>

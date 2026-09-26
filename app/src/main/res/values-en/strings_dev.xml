@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Developer mode strings (English) -->
+<resources>
+    <string name="dev_title">Developer Mode</string>
+    <string name="dev_refresh_info">Refresh info</string>
+    <string name="dev_copy_diag">Copy diagnostics (info + recent logs)</string>
+    <string name="dev_copy_config">Copy current config (importable by others)</string>
+
+    <string name="dev_log_hint">With Shizuku the full system log is captured; without it, only this app\'s process log.</string>
+    <string name="dev_log_filter">Tag filter (optional, e.g. NekoA11y)</string>
+    <string name="dev_grab_sys">Capture system log</string>
+    <string name="dev_grab_crash">Capture crash log</string>
+    <string name="dev_app_log">View in-app log</string>
+    <string name="dev_clear_log">Clear in-app log</string>
+
+    <string name="dev_bl_title">App blacklist · fuzzy search</string>
+    <string name="dev_bl_hint">Multiple keywords (space separated), substring on name/package and subsequence matching, sorted by relevance. Tap a result to add or remove it from the blacklist.</string>
+    <string name="dev_bl_query">Search apps (name / package / initials)</string>
+    <string name="dev_bl_search">Search and manage blacklist</string>
+    <string name="dev_bl_only">Show blacklisted only</string>
+    <string name="dev_bl_summary">%1$d visible apps, %2$d blacklisted</string>
+    <string name="dev_bl_matched">%1$d apps matched (tap the button below to manage)</string>
+    <string name="dev_bl_result_title">Results (%1$d)</string>
+    <string name="dev_bl_only_title">Blacklisted (%1$d)</string>
+    <string name="dev_bl_added">Added to blacklist: %1$s</string>
+    <string name="dev_bl_removed">Removed from blacklist: %1$s</string>
+    <string name="dev_bl_empty">No blacklisted apps yet</string>
+    <string name="dev_bl_nomatch">No matching app</string>
+
+    <string name="dev_maint_title">Maintenance &amp; reset</string>
+    <string name="dev_reload_fab">Reload floating button</string>
+    <string name="dev_trace">View Shizuku channel trace</string>
+    <string name="dev_trace_title">Shizuku channel trace</string>
+    <string name="dev_rebind">Reset and rebind Shizuku channel</string>
+    <string name="dev_rebind_title">Rebind Shizuku</string>
+    <string name="dev_reset_disclaimer">Reset disclaimer (shown again on next launch)</string>
+    <string name="dev_clear_rules">Clear all rules of the current preset</string>
+    <string name="dev_restart">Restart app</string>
+
+    <string name="dev_toast_log_cleared">In-app log cleared</string>
+    <string name="dev_toast_reloaded">Floating button reload requested</string>
+    <string name="dev_toast_disclaimer_reset">Reset: the disclaimer will be shown again on next launch</string>
+    <string name="dev_restarting">Restarting…</string>
+    <string name="dev_restart_failed">Restart failed: %1$s</string>
+    <string name="dev_confirm_title">Clear current preset rules</string>
+    <string name="dev_confirm_msg">All %2$d rules in \"%1$s\" will be deleted. This cannot be undone.\n\nContinue?</string>
+    <string name="dev_confirm_ok">Clear</string>
+    <string name="dev_cleared">Cleared %1$d rules</string>
+    <string name="dev_no_rules">The current preset has no rules</string>
+    <string name="dev_copy_done">%1$s copied (%2$d chars)</string>
+    <string name="dev_share">Share</string>
+    <string name="dev_copy">Copy</string>
+    <string name="dev_grab_failed">Capture failed: %1$s</string>
+    <string name="dev_source_shizuku">Shizuku (whole system)</string>
+    <string name="dev_source_local">this app process (no Shizuku)</string>
+    <string name="dev_source_label">Source: %1$s</string>
+    <string name="dev_filter_label">Filter: %1$s</string>
+    <string name="dev_filter_none">none</string>
+    <string name="dev_logcat_title">System log (logcat)</string>
+    <string name="dev_crash_title">Crash log (crash buffer)</string>
+    <string name="dev_applog_title">In-app log (%1$d)</string>
+    <string name="dev_applog_empty">(no in-app log yet)</string>
+    <string name="dev_diag_what">Diagnostics</string>
+    <string name="dev_config_what">Current config</string>
+    <string name="dev_recent_logs">---------- Recent logs ----------</string>
+    <string name="dev_clipboard_title">Clipboard</string>
+    <string name="dev_tools_title">Debug tools</string>
+    <string name="dev_tree">Accessibility node tree snapshot (current window)</string>
+    <string name="dev_tree_title">Node tree snapshot</string>
+    <string name="dev_perf">Rule engine benchmark (200 transforms)</string>
+    <string name="dev_perf_title">Rule engine benchmark</string>
+    <string name="dev_reset_factory">Factory reset (erase all data)</string>
+    <string name="dev_factory_title">Factory reset</string>
+    <string name="dev_factory_msg">All local data will be erased: rules and presets, behaviour and style, password lock, app blacklist, usage stats and in-app logs.\n\nYour current config is copied to the clipboard first as a backup. This cannot be undone.\n\nContinue?</string>
+    <string name="dev_factory_confirm_title">Final confirmation</string>
+    <string name="dev_factory_confirm_msg">Really erase all data?\n\nThe app restarts immediately and every setting returns to default.</string>
+    <string name="dev_factory_ok">Erase all data</string>
+    <string name="dev_factory_done">Factory reset done, restarting…</string></resources>

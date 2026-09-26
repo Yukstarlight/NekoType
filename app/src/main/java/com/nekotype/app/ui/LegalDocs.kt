@@ -36,7 +36,7 @@ object LegalDocs {
     fun privacy(): String = when (lang()) {
         "zh" -> """
             NekoType 隐私政策
-            更新日期：2026-09-17
+            更新日期：2026-09-24
 
             【一、我们不收集你的任何数据】
             本应用未申请 INTERNET（联网）权限，从系统层面就无法把任何内容发送到任何服务器。
@@ -79,7 +79,7 @@ object LegalDocs {
 
         "tw" -> """
             NekoType 隱私政策
-            更新日期：2026-09-17
+            更新日期：2026-09-24
 
             【一、我們不收集你的任何資料】
             本應用未申請 INTERNET（連網）權限，在系統層面就無法把任何內容傳送到任何伺服器。
@@ -122,7 +122,7 @@ object LegalDocs {
 
         else -> """
             NekoType Privacy Policy
-            Last updated: 2026-09-17
+            Last updated: 2026-09-24
 
             [1. We collect nothing]
             This app does not request the INTERNET permission, so at the system level it cannot
@@ -173,7 +173,7 @@ object LegalDocs {
     fun thirdParty(): String = when (lang()) {
         "zh" -> """
             NekoType 第三方信息共享清单
-            更新日期：2026-09-17
+            更新日期：2026-09-24
 
             【结论：不与任何第三方共享你的个人信息】
             本应用不收集设备标识（IMEI / OAID / Android ID / MAC 地址），
@@ -200,7 +200,7 @@ object LegalDocs {
 
         "tw" -> """
             NekoType 第三方資訊共享清單
-            更新日期：2026-09-17
+            更新日期：2026-09-24
 
             【結論：不與任何第三方共享你的個人資訊】
             本應用不收集裝置識別碼（IMEI / OAID / Android ID / MAC 位址），
@@ -227,7 +227,7 @@ object LegalDocs {
 
         else -> """
             NekoType Third-Party Data Sharing List
-            Last updated: 2026-09-17
+            Last updated: 2026-09-24
 
             [Summary: nothing is shared with any third party]
             The app does not collect device identifiers (IMEI / OAID / Android ID / MAC),
@@ -259,7 +259,7 @@ object LegalDocs {
     fun licenses(): String = when (lang()) {
         "zh" -> """
             NekoType 开源许可
-            更新日期：2026-09-17
+            更新日期：2026-09-26
 
             本应用基于以下开源项目构建，在此致谢并保留其原始许可：
 
@@ -277,17 +277,30 @@ object LegalDocs {
               许可全文：https://www.gnu.org/licenses/gpl-3.0.html
             说明：依据 GPLv3，包含该部分代码的完整对应源码可公开获取，
                   见下方项目主页；该部分代码的修改与再分发需遵循 GPLv3。
+            · Hail（雹）—— 应用冻结 / 隐藏工具
+              来源：https://github.com/aistra0528/Hail
+              许可全文：https://www.gnu.org/licenses/gpl-3.0.html
+            说明：本应用的 Shizuku 特权通道（经 moe.shizuku.server.IShizukuService
+                  直连 newProcess 起 shell 进程执行固定动作）参考其实现思路。
+
+            【GNU Lesser General Public License v3.0】
+            · Operit AI —— Android 端 AI 助手
+              来源：https://github.com/AAswordman/Operit
+              许可全文：https://www.gnu.org/licenses/lgpl-3.0.html
+            说明：集成终端的文本选取复制交互（长按选取后经 ActionMode 弹出「复制」
+                  菜单、拖动选区时的放大镜与边缘自动滚动）参考其实现思路。
 
             【本项目自身】
             项目主页：https://github.com/Yukstarlight/NekoType
-            许可：见项目仓库中的 LICENSE 文件
+            许可：GNU General Public License v3.0（GPL-3.0）
+            许可全文：https://www.gnu.org/licenses/gpl-3.0.html
 
             向所有开源作者致谢。
         """.trimIndent()
 
         "tw" -> """
             NekoType 開源授權
-            更新日期：2026-09-17
+            更新日期：2026-09-26
 
             本應用基於以下開源專案建置，在此致謝並保留其原始授權：
 
@@ -305,17 +318,30 @@ object LegalDocs {
               授權全文：https://www.gnu.org/licenses/gpl-3.0.html
             說明：依 GPLv3，包含該部分程式碼的完整對應原始碼可公開取得，
                   見下方專案首頁；該部分程式碼的修改與再散布需遵循 GPLv3。
+            · Hail（雹）—— 應用凍結 / 隱藏工具
+              來源：https://github.com/aistra0528/Hail
+              授權全文：https://www.gnu.org/licenses/gpl-3.0.html
+            說明：本應用的 Shizuku 特權通道（經 moe.shizuku.server.IShizukuService
+                  直連 newProcess 起 shell 行程執行固定動作）參考其實作思路。
+
+            【GNU Lesser General Public License v3.0】
+            · Operit AI —— Android 端 AI 助手
+              來源：https://github.com/AAswordman/Operit
+              授權全文：https://www.gnu.org/licenses/lgpl-3.0.html
+            說明：整合終端的文字選取複製互動（長按選取後經 ActionMode 彈出「複製」
+                  選單、拖動選取區時的放大鏡與邊緣自動捲動）參考其實作思路。
 
             【本專案自身】
             專案首頁：https://github.com/Yukstarlight/NekoType
-            授權：見專案倉庫中的 LICENSE 檔案
+            授權：GNU General Public License v3.0（GPL-3.0）
+            授權全文：https://www.gnu.org/licenses/gpl-3.0.html
 
             向所有開源作者致謝。
         """.trimIndent()
 
         else -> """
             NekoType Open Source Licenses
-            Last updated: 2026-09-17
+            Last updated: 2026-09-26
 
             This app is built on the following open-source projects. Thanks to their authors;
             their original licenses are retained.
@@ -335,10 +361,25 @@ object LegalDocs {
             Note: under GPLv3 the complete corresponding source for that part is publicly
                   available at the project page below; modifications and redistribution of that
                   part must follow GPLv3.
+            · Hail - app freezer / hider
+              Source: https://github.com/aistra0528/Hail
+              Full text: https://www.gnu.org/licenses/gpl-3.0.html
+            Note: this app's Shizuku privileged channel (directly calling
+                  moe.shizuku.server.IShizukuService#newProcess to run fixed actions in a
+                  shell process) follows its implementation approach.
+
+            [GNU Lesser General Public License v3.0]
+            · Operit AI - Android AI assistant
+              Source: https://github.com/AAswordman/Operit
+              Full text: https://www.gnu.org/licenses/lgpl-3.0.html
+            Note: the integrated terminal's text-selection copy interaction (long-press to
+                  select, then an ActionMode menu with "Copy", plus magnifier and edge
+                  auto-scroll while dragging) follows its implementation approach.
 
             [This project]
             Project page: https://github.com/Yukstarlight/NekoType
-            License: see the LICENSE file in the repository
+            License: GNU General Public License v3.0 (GPL-3.0)
+            Full text: https://www.gnu.org/licenses/gpl-3.0.html
 
             Thanks to every open-source author.
         """.trimIndent()

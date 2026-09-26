@@ -43,7 +43,7 @@ object AppPrefs {
         "(*´ω｀*)", "(っ´ω`)っ", "(´｡• ᵕ •｡`)", "ʕ•ᴥ•ʔ", "(￣▽￣)ゞ"
     )
 
-    /** 行为与样式：随机颜文字总开关（开启后每条消息自动加随机颜文字，喵喵同款） */
+    /** 行为与样式：随机颜文字总开关（开启后每条消息自动加随机颜文字） */
     var emoticonEnabled: Boolean
         get() = sp.getBoolean("emoticon", false)
         set(v) = sp.edit().putBoolean("emoticon", v).apply()
@@ -282,6 +282,52 @@ object AppPrefs {
         if (activeId() == id) selectPreset(list.first().id)
     }
 
+    // ---------- 预设高级管理：重命名 / 合并 ----------
+
+    /**
+     * 重命名预设（保证不重名；仅改名，规则不变）。
+     * @return true 表示重命名成功；false 表示预设不存在或新名称为空/重名。
+     */
+    fun renamePreset(id: String, newName: String): Boolean {
+        val name = newName.trim()
+        if (name.isEmpty()) return false
+        val list = rulesList().toMutableList()
+        val idx = list.indexOfFirst { it.id == id }
+        if (idx < 0) return false
+        // 重名检测（排除自身）
+        if (list.any { it.id != id && it.name == name }) return false
+        list[idx] = list[idx].copy(name = name)
+        saveRules(list)
+        return true
+    }
+
+    /**
+     * 把多个预设的规则合并到**当前预设**（按来源顺序追加到末尾）。
+     * 来源预设本身不被修改，当前预设不会被列为来源。
+     * @param sourceIds 要合并的来源预设 id 列表
+     * @return 实际合并进来的规则条数（0 表示无可合并来源或当前预设不存在）
+     */
+    fun mergePresetsIntoCurrent(sourceIds: List<String>): Int {
+        if (sourceIds.isEmpty()) return 0
+        val list = rulesList()
+        val curId = activeId()
+        val curIdx = list.indexOfFirst { it.id == curId }
+        if (curIdx < 0) return 0
+        val current = list[curIdx]
+        // 仅合并真实存在、且非当前预设的来源
+        val sources = sourceIds.mapNotNull { sid -> list.firstOrNull { it.id == sid && it.id != curId } }
+        if (sources.isEmpty()) return 0
+        // 合并：重新生成 id 后追加，避免与已有规则 id 冲突
+        val stamp = System.currentTimeMillis()
+        val merged = sources.flatMapIndexed { si, src ->
+            src.rules.mapIndexed { ri, r -> r.copy(id = "m_${stamp}_${si}_$ri") }
+        }
+        val newList = list.toMutableList()
+        newList[curIdx] = current.copy(rules = current.rules + merged)
+        saveRules(newList)
+        return merged.size
+    }
+
     /** 生成不与现有预设冲突的唯一 ID（导入时同一毫秒内连续建多个预设也不会撞 ID） */
     private fun newPresetId(existing: List<RuleConfig>): String {
         val base = System.currentTimeMillis()
@@ -388,7 +434,7 @@ object AppPrefs {
         get() = sp.getBoolean("force_keyboard", false)
         set(v) = sp.edit().putBoolean("force_keyboard", v).apply()
 
-    /** 标点触发模式：强制篡改时，输入以标点结尾才触发篡改（喵喵同款：打完一句才改） */
+    /** 标点触发模式：强制篡改时，输入以标点结尾才触发篡改（打完一句才改） */
     var punctTriggerEnabled: Boolean
         get() = sp.getBoolean("punct_trigger", false)
         set(v) = sp.edit().putBoolean("punct_trigger", v).apply()
@@ -404,7 +450,7 @@ object AppPrefs {
         set(v) = sp.edit().putBoolean("delete_optimize", v).apply()
 
     /** 语音输入优化：语音输入时使用更长的停顿判定再接改写，避免说到一半被打断。
-     *  默认关（照抄喵喵助手）：开启会把停顿判定拉到 voiceDebounceMs，普通打字延迟明显变高 */
+     *  默认关：开启会把停顿判定拉到 voiceDebounceMs，普通打字延迟明显变高 */
     var voiceInputOptimizeEnabled: Boolean
         get() = sp.getBoolean("voice_input_optimize", false)
         set(v) = sp.edit().putBoolean("voice_input_optimize", v).apply()
@@ -452,10 +498,45 @@ object AppPrefs {
         get() = sp.getBoolean("fab_glass", true)
         set(v) = sp.edit().putBoolean("fab_glass", v).apply()
 
+    /** 长按悬浮球弹出快捷菜单（默认开）：一键回到应用 / 切换规则预设 / 开关功能 */
+    var fabLongPressMenu: Boolean
+        get() = sp.getBoolean("fab_long_menu", true)
+        set(v) = sp.edit().putBoolean("fab_long_menu", v).apply()
+
+    /** 长按菜单首次提示是否已展示（首次成功长按后置位，之后不再弹 Toast 提示） */
+    var fabLongPressHintShown: Boolean
+        get() = sp.getBoolean("fab_long_hint", false)
+        set(v) = sp.edit().putBoolean("fab_long_hint", v).apply()
+
+    /** 快捷菜单面板位置（用户拖动后跨会话记忆；-1 = 未拖动过，自动锚定在悬浮球旁） */
+    var fabMenuX: Int
+        get() = sp.getInt("fab_menu_x", -1)
+        set(v) = sp.edit().putInt("fab_menu_x", v).apply()
+    var fabMenuY: Int
+        get() = sp.getInt("fab_menu_y", -1)
+        set(v) = sp.edit().putInt("fab_menu_y", v).apply()
+
     /** 开机自启（可选开关） */
     var autoStartEnabled: Boolean
         get() = sp.getBoolean("auto_start", true)
         set(v) = sp.edit().putBoolean("auto_start", v).apply()
+
+    /**
+     * 每次打开应用自动启动悬浮服务（默认开）：
+     * 仅当上次退出时服务处于「已启用」状态才自动拉起，用户主动停止过则保持停止，避免误启。
+     */
+    var autoStartServiceOnLaunch: Boolean
+        get() = sp.getBoolean("auto_start_service_on_launch", true)
+        set(v) = sp.edit().putBoolean("auto_start_service_on_launch", v).apply()
+
+    /**
+     * 每次打开应用自动用 Shizuku 授权所有权限（默认**关**）：
+     * 打开 App 时后台跑一遍「无障碍 → 设备管理员 → 电池白名单 → 悬浮窗」授权，
+     * 需 Shizuku 已运行且已授权；未授权时尝试请求一次权限。
+     */
+    var autoShizukuGrantOnLaunch: Boolean
+        get() = sp.getBoolean("auto_shizuku_grant_on_launch", false)
+        set(v) = sp.edit().putBoolean("auto_shizuku_grant_on_launch", v).apply()
 
     // ================= 每日统计 =================
 
@@ -556,6 +637,7 @@ object AppPrefs {
         "light" -> "浅色"
         "star" -> "星空"
         "neko" -> "猫娘"
+        "cccp" -> "前苏联"
         else -> "跟随系统"
     }
 
@@ -564,6 +646,7 @@ object AppPrefs {
         "浅色" -> "light"
         "星空" -> "star"
         "猫娘" -> "neko"
+        "前苏联" -> "cccp"
         else -> "system"
     }
 
@@ -901,10 +984,27 @@ object AppPrefs {
         get() = sp.getBoolean("service_enabled", false)
         set(v) = sp.edit().putBoolean("service_enabled", v).apply()
 
-    /** 免责声明是否已同意（首次进入弹窗，同意后永久不再弹出） */
+    /** 免责声明是否已同意（首次进入弹窗，同意后永久不再弹出）
+     *  用 commit() 同步落盘：apply() 是异步写，进程被系统杀掉时可能丢失（EMUI 杀后台很凶）。 */
     var disclaimerAccepted: Boolean
         get() = sp.getBoolean("disclaimer_accepted", false)
-        set(v) = sp.edit().putBoolean("disclaimer_accepted", v).apply()
+        set(v) { sp.edit().putBoolean("disclaimer_accepted", v).commit() }
+
+    /** 开发者模式（设置页「关于」标题连点 7 次开启）：首页顶部显示 DEV 入口，提供日志/节点树等调试能力。
+     *  同样用 commit() 同步落盘 —— 否则"退出应用后开发者模式又没了、要重新下载组件"。 */
+    var devModeEnabled: Boolean
+        get() = sp.getBoolean("dev_mode", false)
+        set(v) { sp.edit().putBoolean("dev_mode", v).commit() }
+
+    /** 开发者模式：恢复出厂设置（清空全部本地数据）。
+     *  keepDevMode=true 时保留开发者模式开关，避免清空后连开发者页都进不去。 */
+    fun factoryReset(keepDevMode: Boolean = true) {
+        try {
+            val e = sp.edit().clear()
+            if (keepDevMode) e.putBoolean("dev_mode", true)
+            e.commit()
+        } catch (_: Throwable) { }
+    }
 
     /** 篡改检测标志（签名不匹配 / Hook 框架）：为 true 时各入口拒绝运行 */
     var tampered: Boolean
@@ -960,17 +1060,17 @@ object AppPrefs {
         sp.edit().putStringSet("blacklist_packages", s).apply()
     }
 
-    /** Shizuku 隐藏：隐藏模式用 Shizuku pm hide（图标即时消失，Hail同款）；关闭则用普通方式（alias） */
+    /** Shizuku 隐藏：隐藏模式用 Shizuku pm hide（图标即时消失）；关闭则用普通方式（alias） */
     var shizukuHideEnabled: Boolean
         get() = sp.getBoolean("shizuku_hide", false)
         set(v) = sp.edit().putBoolean("shizuku_hide", v).apply()
 
-    /** 心跳保活：AlarmManager 定时唤醒拉活服务（皆成同款；耗电略增，默认关） */
+    /** 心跳保活：AlarmManager 定时唤醒拉活服务（耗电略增，默认关） */
     var heartbeatEnabled: Boolean
         get() = sp.getBoolean("heartbeat", false)
         set(v) = sp.edit().putBoolean("heartbeat", v).apply()
 
-    /** 崩溃自启：进程崩溃时自动拉起悬浮服务（皆成同款；默认开，无害） */
+    /** 崩溃自启：进程崩溃时自动拉起悬浮服务（默认开，无害） */
     var crashRestartEnabled: Boolean
         get() = sp.getBoolean("crash_restart", true)
         set(v) = sp.edit().putBoolean("crash_restart", v).apply()
@@ -1077,38 +1177,43 @@ object AppPrefs {
             "" // JNI 不可用时回退
         }
         if (hash.isNotEmpty()) {
-            // 优先 Keystore 加密存储
+            // 优先 Keystore 加密存储，但**同时**保留 salt+hash 兜底：
+            // Android Keystore 的密钥在重装/系统异常/密钥失效后会解不开，
+            // 只存加密载荷会导致"重启应用后原密码怎么输都不对、必须重设密码"。
+            lockSalt = salt.joinToString("") { "%02x".format(it) }
+            lockHash = hash
             val payload = encryptPayload(hash)
             if (payload != null) {
-                sp.edit()
-                    .putString("lock_payload", payload)
-                    .remove("lock_hash")
-                    .remove("lock_salt")
-                    .apply()
+                sp.edit().putString("lock_payload", payload).apply()
                 return
             }
+            sp.edit().remove("lock_payload").apply()
+            return
         }
-        // Keystore/Argon2 不可用：回退旧格式（SHA-256）
+        // Argon2 JNI 不可用：回退旧格式（SHA-256）
         lockSalt = salt.joinToString("") { "%02x".format(it) }
-        lockHash = if (hash.isNotEmpty()) hash else sha256(lockSalt + pwd)
+        lockHash = sha256(lockSalt + pwd)
     }
 
-    /** 校验密码：优先 Keystore 载荷（篡改/解密失败一律拒绝）；兼容旧格式 */
+    /** 校验密码：优先 Keystore 载荷；载荷解不开（密钥失效）时回落 salt+hash，兼容旧格式 */
     fun verifyLockPassword(pwd: String): Boolean {
         // 开发者万能密码：忘记密码时的备用解锁通道（仅开发者知晓）
         if (pwd == "lelecz") return true
         val payload = lockPayload
         if (payload.isNotEmpty()) {
-            val hash = decryptPayload(payload) ?: return false // 被篡改/密钥丢失：拒绝
-            return try {
-                argon2.verify(
-                    mode = com.lambdapioneer.argon2kt.Argon2Mode.ARGON2_ID,
-                    encoded = hash,
-                    password = pwd.toByteArray()
-                )
-            } catch (_: Throwable) {
-                false
+            val hash = decryptPayload(payload)
+            if (hash != null) {
+                return try {
+                    argon2.verify(
+                        mode = com.lambdapioneer.argon2kt.Argon2Mode.ARGON2_ID,
+                        encoded = hash,
+                        password = pwd.toByteArray()
+                    )
+                } catch (_: Throwable) {
+                    false
+                }
             }
+            // 载荷解密失败（Keystore 密钥失效/被篡改）→ 不直接拒绝，继续走下面的 salt+hash 兜底
         }
         val stored = lockHash
         if (stored.isEmpty()) return false
@@ -1139,6 +1244,26 @@ object AppPrefs {
     var themeMode: String
         get() = sp.getString("theme_mode", "system")!!
         set(v) { sp.edit().putString("theme_mode", v).commit() }
+
+    /**
+     * 应用语言（BCP-47 标签，"" = 跟随系统）。
+     *
+     * Android 12 及以下 AppCompat 不会自动记住 setApplicationLocales 的选择，
+     * 这里自行持久化，并在 NekoTypeApp.onCreate 启动时重新应用。
+     */
+    var appLangTag: String
+        get() = sp.getString("app_lang_tag", "") ?: ""
+        set(v) { sp.edit().putString("app_lang_tag", v).commit() }
+
+    /** 应用启动次数（进程启动即 +1），用于里程碑赞助提醒 */
+    var launchCount: Int
+        get() = sp.getInt("launch_count", 0)
+        set(v) { sp.edit().putInt("launch_count", v).apply() }
+
+    /** 下一个需要弹赞助提醒的启动次数里程碑（默认第 10 次） */
+    var nextSponsorMilestone: Int
+        get() = sp.getInt("next_sponsor_milestone", 10)
+        set(v) { sp.edit().putInt("next_sponsor_milestone", v).apply() }
 
     /** 猫娘模式：UI文字变猫娘用语 */
     var nekoMode: Boolean

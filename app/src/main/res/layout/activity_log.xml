@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+<LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -18,14 +22,14 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/t114"
-            android:textSize="17sp"
+            android:textSize="@dimen/ts_17"
             android:textStyle="bold"
             android:textColor="?attr/colorOnSurface"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/t115"
-            android:textSize="12sp"
+            android:textSize="@dimen/ts_12"
             android:textColor="?attr/colorOnSurfaceVariant"/>
         <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/swLogEnabled"
@@ -35,7 +39,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/t116"
-            android:textSize="12sp"
+            android:textSize="@dimen/ts_12"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:layout_marginStart="8dp"/>
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -140,7 +144,7 @@
                 android:id="@+id/tvSysLog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="10sp"
+                android:textSize="@dimen/ts_10"
                 android:fontFamily="monospace"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:lineSpacingExtra="1dp"
@@ -159,7 +163,7 @@
                 android:id="@+id/tvLog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="11sp"
+                android:textSize="@dimen/ts_11"
                 android:fontFamily="monospace"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:lineSpacingExtra="2dp"
@@ -167,3 +171,4 @@
         </ScrollView>
     </FrameLayout>
 </LinearLayout>
+</FrameLayout>

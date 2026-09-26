@@ -12,6 +12,7 @@ import android.graphics.Outline
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import android.view.Gravity
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
@@ -42,6 +43,7 @@ class FloatingButtonService : Service() {
     companion object {
         const val CHANNEL_ID = "nekotype_fg"
         const val NOTIF_ID = 1001
+        private const val TAG = "NekoFab"
 
         @Volatile private var instance: FloatingButtonService? = null
 
@@ -71,11 +73,17 @@ class FloatingButtonService : Service() {
         /** 设置页调整大小/透明度后调用：立即重建悬浮按钮 */
         fun reload() {
             instance?.let {
+                try { it.menuPanel?.dismiss() } catch (_: Throwable) { }
                 it.hideButton()
                 it.button = null
                 it.params = null
                 it.showButton()
             }
+        }
+
+        /** 关闭快捷菜单（若已显示）——设置页关闭「长按弹出菜单」开关时调用 */
+        fun dismissMenu() {
+            instance?.let { try { it.menuPanel?.dismiss() } catch (_: Throwable) { } }
         }
 
         /** 取消心跳闹钟（关闭心跳保活开关时调用） */
@@ -103,6 +111,9 @@ class FloatingButtonService : Service() {
     private var button: ImageView? = null
     private var params: WindowManager.LayoutParams? = null
     private var buttonAdded = false
+
+    // ---------- 长按快捷菜单 ----------
+    private var menuPanel: FloatingMenuPanel? = null
 
     // ---------- 收起成小圆点 ----------
     private var collapsed = false
@@ -171,7 +182,7 @@ class FloatingButtonService : Service() {
         wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         createNotificationChannel()
         startForeground(NOTIF_ID, buildNotification())
-        // 心跳保活（皆成同款，用户开关控制）：每 60 秒闹钟唤醒检查，服务被系统杀了也能自动拉活
+        // 心跳保活（用户开关控制）：每 60 秒闹钟唤醒检查，服务被系统杀了也能自动拉活
         startHeartbeat()
         NekoLog.ok("悬浮服务已启动，按钮常驻屏幕边缘")
     }
@@ -249,6 +260,8 @@ class FloatingButtonService : Service() {
 
     override fun onDestroy() {
         cancelHeartbeat()
+        try { menuPanel?.dismiss() } catch (_: Throwable) { }
+        menuPanel = null
         hideButton()
         instance = null
         super.onDestroy()
@@ -260,7 +273,7 @@ class FloatingButtonService : Service() {
     private val ACTION_RESTART by lazy { "$packageName.action.RESTART_FLOATING" }
     private val ACTION_HEARTBEAT by lazy { "$packageName.action.HEARTBEAT" }
 
-    // ---------- 心跳保活（皆成同款，用户开关控制） ----------
+    // ---------- 心跳保活（用户开关控制） ----------
 
     private val HEARTBEAT_INTERVAL_MS = 60_000L
 
@@ -467,6 +480,21 @@ class FloatingButtonService : Service() {
         private var originParamX = 0
         private var originParamY = 0
         private var moved = false
+        // 长按快捷菜单：按下后达到系统长按超时（约 500ms）且未移动则触发
+        private var longPressFired = false
+        // 本次按下时是否处于「收起成小圆点」状态（抬手时据此决定是否只展开）
+        private var wasCollapsed = false
+        private val longPressTimeout = ViewConfiguration.getLongPressTimeout().toLong()
+        private val longPressRunnable = Runnable { triggerLongPress() }
+
+        private fun triggerLongPress() {
+            longPressFired = true
+            Log.i(TAG, "long press fired -> show menu")
+            NekoLog.info("悬浮球长按：弹出快捷菜单")
+            // 收起状态先展开：此时长按已判定完成，改窗口尺寸不会再影响本次手势
+            try { if (collapsed) expandFromDot() } catch (t: Throwable) { Log.w(TAG, "expand failed", t) }
+            this@FloatingButtonService.showLongPressMenu()
+        }
 
         override fun onTouch(v: View, event: MotionEvent): Boolean {
             when (event.actionMasked) {
@@ -476,14 +504,19 @@ class FloatingButtonService : Service() {
                     originParamX = p.x
                     originParamY = p.y
                     moved = false
-                    // 收起状态下点击 = 先展开，本次不触发变换
-                    if (collapsed) {
-                        expandOnlyNextClick = true
-                        expandFromDot()
-                    } else {
-                        expandOnlyNextClick = false
-                    }
+                    longPressFired = false
+                    wasCollapsed = collapsed
+                    expandOnlyNextClick = false
+                    // 注意：收起状态下**不在按下时展开**。
+                    // 手势进行中调用 updateViewLayout 改窗口尺寸会导致触摸序列被系统取消
+                    // （收到 ACTION_CANCEL），长按回调随之被移除 → 菜单永远弹不出来。
+                    // 改为抬手时展开（ACTION_UP），长按则在 triggerLongPress 里展开。
                     v.removeCallbacks(collapseRunnable)
+                    // 长按快捷菜单：监听长按（用户可在设置关闭）
+                    if (AppPrefs.fabLongPressMenu) {
+                        v.removeCallbacks(longPressRunnable)
+                        v.postDelayed(longPressRunnable, longPressTimeout)
+                    }
                     // 按压反馈：按下变暗
                     v.alpha = 0.8f
                     return true
@@ -491,7 +524,11 @@ class FloatingButtonService : Service() {
                 MotionEvent.ACTION_MOVE -> {
                     val totalDx = event.rawX - originX
                     val totalDy = event.rawY - originY
-                    if (!moved && (abs(totalDx) > slop || abs(totalDy) > slop)) moved = true
+                    if (!moved && (abs(totalDx) > slop || abs(totalDy) > slop)) {
+                        moved = true
+                        // 一旦判定为拖动，取消长按
+                        v.removeCallbacks(longPressRunnable)
+                    }
                     if (moved) {
                         p.x = originParamX + totalDx.toInt()
                         p.y = originParamY + totalDy.toInt()
@@ -500,8 +537,20 @@ class FloatingButtonService : Service() {
                     return true
                 }
                 MotionEvent.ACTION_UP -> {
+                    v.removeCallbacks(longPressRunnable)
                     v.alpha = 1f
+                    // 长按已触发菜单：本次抬手不再执行点击（避免误触发变换）
+                    if (longPressFired) {
+                        scheduleCollapse()
+                        return true
+                    }
                     if (!moved) {
+                        // 收起状态下单击 = 只展开，本次不触发变换
+                        if (wasCollapsed) {
+                            expandFromDot()
+                            scheduleCollapse()
+                            return true
+                        }
                         v.performClick()
                         return true
                     }
@@ -512,6 +561,7 @@ class FloatingButtonService : Service() {
                     return true
                 }
                 MotionEvent.ACTION_CANCEL -> {
+                    v.removeCallbacks(longPressRunnable)
                     v.alpha = 1f
                     scheduleCollapse()
                     return true
@@ -529,6 +579,65 @@ class FloatingButtonService : Service() {
                 val rightDist = out.x - p.x - v.width
                 p.x = if (leftDist < rightDist) 0 else out.x - v.width
             } catch (_: Throwable) { }
+        }
+    }
+
+    // ---------- 长按快捷菜单 ----------
+
+    /** 长按悬浮球：弹出快捷菜单（回到应用 / 规则预设 / 其他功能） */
+    private fun showLongPressMenu() {
+        val b = button
+        if (b == null) {
+            Log.w(TAG, "showLongPressMenu: button is null")
+            return
+        }
+        Log.i(TAG, "showLongPressMenu: collapsed=$collapsed enabled=${AppPrefs.fabLongPressMenu}")
+        // 长按触感
+        if (AppPrefs.hapticEnabled) {
+            try { b.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS) } catch (_: Throwable) { }
+        }
+        // 首次提示：告诉用户长按可随时再次打开此菜单
+        if (!AppPrefs.fabLongPressHintShown) {
+            AppPrefs.fabLongPressHintShown = true
+            try { Toast.makeText(this, getString(R.string.fm_hint_long_press), Toast.LENGTH_SHORT).show() } catch (_: Throwable) { }
+        }
+        val loc = IntArray(2)
+        try { b.getLocationOnScreen(loc) } catch (_: Throwable) {
+            loc[0] = params?.x ?: 0
+            loc[1] = params?.y ?: 0
+        }
+        try {
+            if (menuPanel == null) menuPanel = FloatingMenuPanel(this)
+            menuPanel?.show(loc[0], loc[1], b.width, b.height)
+        } catch (t: Throwable) {
+            // 不再静默吞异常：记录到 logcat 与应用内日志
+            Log.e(TAG, "showLongPressMenu failed", t)
+            NekoLog.error("悬浮菜单弹出异常：${t.javaClass.simpleName}: ${t.message}")
+            try {
+                Toast.makeText(this, "菜单弹出异常：${t.javaClass.simpleName}", Toast.LENGTH_SHORT).show()
+            } catch (_: Throwable) { }
+        }
+    }
+
+    /** 立即执行一次「读取输入框 → 变换 → 发送」（供快捷菜单调用） */
+    fun performTransformNow() {
+        val b = button
+        if (AppPrefs.hapticEnabled && b != null) {
+            try { b.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP) } catch (_: Throwable) { }
+        }
+        when {
+            !NekoTypeAccessibilityBridge.isServiceReady() -> {
+                NekoLog.warn("快捷菜单：无障碍服务未开启")
+                Toast.makeText(this, getString(R.string.u169), Toast.LENGTH_SHORT).show()
+            }
+            !NekoTypeAccessibilityBridge.hasActiveNode() -> {
+                NekoLog.warn("快捷菜单：未检测到输入框焦点")
+                Toast.makeText(this, getString(R.string.u170), Toast.LENGTH_SHORT).show()
+            }
+            else -> {
+                NekoTypeAccessibilityBridge.requestTransformAndSend()
+                Toast.makeText(this, getString(R.string.u171), Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

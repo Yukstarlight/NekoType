@@ -21,6 +21,7 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:localeConfig="@xml/locales_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.NekoType">
@@ -99,6 +100,13 @@
             android:label="应用黑名单"
             android:theme="@style/Theme.NekoType.Main" />
 
+        <!-- 开发者模式（隐藏入口：设置页「关于」连点 7 次开启） -->
+        <activity
+            android:name=".ui.DevActivity"
+            android:exported="false"
+            android:label="开发者模式"
+            android:theme="@style/Theme.NekoType.Main" />
+
         <!-- Accessibility Service -->
         <service
             android:name=".accessibility.NekoTypeAccessibilityService"
@@ -174,6 +182,19 @@
             android:enabled="true"
             android:exported="true"
             tools:ignore="ExportedContentProvider" />
+
+        <!-- 应用语言本地持久化（AppCompat 1.6+）：
+             Android 13+ 由系统存储语言选择；13 以下必须声明此服务并开启 autoStoreLocales，
+             否则 setApplicationLocales 的选择在进程重启后会丢失。 -->
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false"
+            tools:ignore="MissingClass">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
 
     </application>
 </manifest>

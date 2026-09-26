@@ -77,7 +77,7 @@ object TextTransformEngine {
         // 3. 后缀：固定后缀 + 随机后缀
         rules.filter { it.type == RuleType.SUFFIX }.byPriority().forEach { r ->
             if (r.value.isNotEmpty()) {
-                text = text + r.value
+                text = appendSuffixSmart(text, r.value)
                 addedSuffix += r.value
             }
         }
@@ -87,7 +87,7 @@ object TextTransformEngine {
                 val pool = parsePool(r.value)
                 if (pool.isNotEmpty()) {
                     val pick = pool.random()
-                    text = text + pick
+                    text = appendSuffixSmart(text, pick)
                     addedSuffix += pick
                 }
             }
@@ -98,7 +98,7 @@ object TextTransformEngine {
         }
         if (onceSuffixRules.isNotEmpty()) {
             val pick = parsePool(onceSuffixRules.random().value).random()
-            text = text + pick
+            text = appendSuffixSmart(text, pick)
             addedSuffix += pick
         }
 
@@ -123,7 +123,7 @@ object TextTransformEngine {
                     addedPrefix += r.value
                 }
                 RuleType.SUFFIX -> if (r.value.isNotEmpty()) {
-                    text = text + r.value
+                    text = appendSuffixSmart(text, r.value)
                     addedSuffix += r.value
                 }
                 RuleType.RANDOM_PREFIX, RuleType.RANDOM_PREFIX_ONCE ->
@@ -140,7 +140,7 @@ object TextTransformEngine {
                         val pool = parsePool(r.value)
                         if (pool.isNotEmpty()) {
                             val pick = pool.random()
-                            text = text + pick
+                            text = appendSuffixSmart(text, pick)
                             addedSuffix += pick
                         }
                     }
@@ -169,6 +169,45 @@ object TextTransformEngine {
             text = text.uppercase()
         }
         return text to addedSuffix
+    }
+
+    /**
+     * 句末标点集合：追加后缀时要插到这些标点**之前**。
+     * 句号 / 逗号 / 感叹号 / 问号 / 顿号 / 分号 / 冒号 / 省略号 / 引号括号收尾等，
+     * 逗号与其他标点同等对待（用户需求：标点问题）。
+     */
+    private const val TRAILING_PUNCT =
+        "。．.！!？?❓❕，,、；;：:…~～）)】」』》〉\"'”“’‘｣»"
+
+    /**
+     * 智能追加后缀：把后缀插到文本末尾的句末标点**之前**，
+     * 让原来的 "你好。" + "喵" = "你好。喵" 变成 "你好喵。"。
+     * 结尾没有标点则直接追加。
+     * 适用：固定后缀 / 随机后缀 / 断句追加模式（均走本引擎 transform）。
+     */
+    fun appendSuffixSmart(text: String, suffix: String): String {
+        if (suffix.isEmpty()) return text
+        if (text.isEmpty()) return suffix
+        var i = text.length
+        while (i > 0 && text[i - 1] in TRAILING_PUNCT) i--
+        return if (i == text.length) text + suffix
+               else text.substring(0, i) + suffix + text.substring(i)
+    }
+
+    /**
+     * 剥离 [appendSuffixSmart] 智能追加的后缀（与它配对，供强制篡改键盘的增量原文算法用）。
+     * 因为后缀被插到了句末标点**之前**，直接 `endsWith(suffix)` 会失配（结尾是标点），
+     * 这里先吃掉末尾标点再剥后缀、最后把标点还回去：`"你好喵。" - "喵"` → `"你好。"`。
+     * 没有匹配则原样返回。
+     */
+    fun stripSmartSuffix(text: String, suffix: String): String {
+        if (suffix.isEmpty() || text.isEmpty()) return text
+        var core = text
+        while (core.isNotEmpty() && core.last() in TRAILING_PUNCT) core = core.substring(0, core.length - 1)
+        return if (core.endsWith(suffix)) {
+            val punctTail = text.substring(core.length)
+            core.substring(0, core.length - suffix.length) + punctTail
+        } else text
     }
 
     /** 随机池解析（| 分隔） */

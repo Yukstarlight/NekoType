@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      俄语（Русский）专用字号：西里尔文平均更长，同一字号下更容易"塞不下"。
+      按需求把俄语**全部字号统一压到 9sp**；其他语言走 values/dimens.xml 的原字号，完全不受影响。
+      只在需要微调俄语时改这一个文件即可。
+    -->
+    <dimen name="ts_10">9sp</dimen>
+    <dimen name="ts_11">9sp</dimen>
+    <dimen name="ts_11_5">9sp</dimen>
+    <dimen name="ts_12">9sp</dimen>
+    <dimen name="ts_12_5">9sp</dimen>
+    <dimen name="ts_13">9sp</dimen>
+    <dimen name="ts_13_5">9sp</dimen>
+    <dimen name="ts_14">9sp</dimen>
+    <dimen name="ts_14_5">9sp</dimen>
+    <dimen name="ts_15">9sp</dimen>
+    <dimen name="ts_15_5">9sp</dimen>
+    <dimen name="ts_16">9sp</dimen>
+    <dimen name="ts_17">9sp</dimen>
+    <dimen name="ts_18">9sp</dimen>
+    <dimen name="ts_20">9sp</dimen>
+    <dimen name="ts_22">9sp</dimen>
+    <dimen name="ts_24">9sp</dimen>
+</resources>

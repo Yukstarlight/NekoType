@@ -23,14 +23,14 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/t100"
-                android:textSize="17sp"
+                android:textSize="@dimen/ts_17"
                 android:textStyle="bold"
                 android:textColor="?attr/colorOnSurface"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/t124"
-                android:textSize="12sp"
+                android:textSize="@dimen/ts_12"
                 android:textColor="?attr/colorOnSurfaceVariant"/>
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/swBlacklist"
@@ -42,7 +42,7 @@
             android:id="@+id/tvBlacklistHint"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="12sp"
+            android:textSize="@dimen/ts_12"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:layout_marginTop="2dp"/>
 
@@ -60,7 +60,7 @@
                 android:hint="@string/i1"
                 android:background="@drawable/bg_bubble_in"
                 android:padding="10dp"
-                android:textSize="13sp"
+                android:textSize="@dimen/ts_13"
                 android:textColor="?attr/colorOnSurface"
                 android:textColorHint="?attr/colorOnSurfaceVariant"
                 android:minHeight="42dp"/>
@@ -69,7 +69,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/t125"
-                android:textSize="13sp"
+                android:textSize="@dimen/ts_13"
                 android:textColor="?attr/colorPrimary"
                 android:gravity="center"
                 android:padding="12dp"
@@ -79,7 +79,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/t121"
-                android:textSize="13sp"
+                android:textSize="@dimen/ts_13"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:gravity="center"
                 android:padding="12dp"
@@ -87,11 +87,34 @@
         </LinearLayout>
     </LinearLayout>
 
+    <!-- 加载中提示（应用列表需要扫描已安装应用，较慢；先显示动画避免"点了没反应"） -->
+    <LinearLayout
+        android:id="@+id/llLoading"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="visible">
+        <ProgressBar
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:indeterminate="true"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/bl_loading"
+            android:textSize="@dimen/ts_13"
+            android:textColor="?attr/colorOnSurfaceVariant"/>
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvApps"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:visibility="gone"
         android:clipToPadding="false"
         android:paddingBottom="16dp"/>
 </LinearLayout>

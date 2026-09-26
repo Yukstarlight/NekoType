@@ -52,7 +52,7 @@ class ModeFragment : Fragment() {
             NekoLog.error("模式页布局加载失败：${e.javaClass.simpleName}")
             return android.widget.FrameLayout(inflater.context).apply {
                 addView(android.widget.TextView(context).apply {
-                    text = "模式页加载失败，请尝试切换主题"
+                    text = getString(R.string.hc_load_fail_mode)
                     gravity = android.view.Gravity.CENTER
                 })
             }

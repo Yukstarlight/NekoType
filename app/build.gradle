@@ -12,8 +12,8 @@ android {
         applicationId "com.nekotype.app"
         minSdk 26
         targetSdk 34
-        versionCode 84
-        versionName "2.7.5"
+        versionCode 88
+        versionName "2.7.9"
         ndk {
             abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64'
         }
@@ -89,6 +89,9 @@ dependencies {
     // Shizuku API (system-level enhancement via adb shell permission)
     implementation 'dev.rikka.shizuku:api:13.1.5'
     implementation 'dev.rikka.shizuku:provider:13.1.5'
+    // AIDL 接口（moe.shizuku.server.IShizukuService）：newProcess 降级通道直连 Shizuku 服务端用。
+    // 客户端 API 的 Shizuku.newProcess() 是 private，但 AIDL 接口本身公开，走它无需反射/隐藏 API。
+    implementation 'dev.rikka.shizuku:aidl:13.1.5'
     // Argon2id 密码哈希（2022 哈希之王：内存硬 + 抗 GPU 暴力破解，OWASP 首选）
     implementation 'com.lambdapioneer.argon2kt:argon2kt:1.5.0'
 }

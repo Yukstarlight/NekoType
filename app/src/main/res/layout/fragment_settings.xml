@@ -54,14 +54,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/app_name"
-                            android:textSize="22sp"
+                            android:textSize="@dimen/ts_22"
                             android:textStyle="bold"
                             android:textColor="?attr/colorOnSurface"/>
                         <TextView
                             android:id="@+id/tvVersion"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/ts_12"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:layout_marginTop="2dp"/>
                     </LinearLayout>
@@ -72,7 +72,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/t95"
                     android:checkable="true"
-                        android:textSize="14sp"
+                        android:textSize="@dimen/ts_14"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"
                     android:layout_marginTop="16dp"/>
@@ -80,7 +80,7 @@
                     android:id="@+id/tvStatsDaily"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/ts_12"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:lineSpacingExtra="3dp"
                     android:layout_marginTop="6dp"
@@ -93,7 +93,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
                     android:minHeight="50dp"
-                    android:textSize="15sp"
+                    android:textSize="@dimen/ts_15"
                     android:text="@string/t_terminal_open"
                     app:icon="@drawable/ic_nav_terminal"
                     app:iconGravity="textStart"/>
@@ -119,7 +119,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/t74"
-                    android:textSize="16sp"
+                    android:textSize="@dimen/ts_16"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
                 <GridLayout
@@ -138,7 +138,7 @@
                         android:layout_marginBottom="6dp"
                         android:minHeight="44dp"
                         android:checkable="true"
-                        android:textSize="14sp"
+                        android:textSize="@dimen/ts_14"
                         android:text="@string/t75"/>
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnThemeDark"
@@ -150,7 +150,7 @@
                         android:layout_marginBottom="6dp"
                         android:minHeight="44dp"
                         android:checkable="true"
-                        android:textSize="14sp"
+                        android:textSize="@dimen/ts_14"
                         android:text="@string/t76"/>
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnThemeLight"
@@ -162,7 +162,7 @@
                         android:layout_marginTop="6dp"
                         android:minHeight="44dp"
                         android:checkable="true"
-                        android:textSize="14sp"
+                        android:textSize="@dimen/ts_14"
                         android:text="@string/t77"/>
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnThemeStar"
@@ -174,7 +174,7 @@
                         android:layout_marginTop="6dp"
                         android:minHeight="44dp"
                         android:checkable="true"
-                        android:textSize="14sp"
+                        android:textSize="@dimen/ts_14"
                         android:text="@string/theme_star"/>
                 </GridLayout>
                 <com.google.android.material.button.MaterialButton
@@ -185,13 +185,25 @@
                     android:layout_marginTop="8dp"
                     android:minHeight="44dp"
                     android:checkable="true"
-                    android:textSize="14sp"
+                    android:textSize="@dimen/ts_14"
                     android:text="@string/i16"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnThemeCccp"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:minHeight="44dp"
+                    android:checkable="true"
+                    android:textSize="@dimen/ts_14"
+                    app:icon="@drawable/ic_cccp_star"
+                    app:iconGravity="textStart"
+                    android:text="@string/theme_cccp"/>
                 <TextView
                     android:id="@+id/tvThemeHint"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/ts_12"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="8dp"/>
                 <View
@@ -210,7 +222,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t78"
-                        android:textSize="15sp"
+                        android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnPickBg"
@@ -233,7 +245,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/t81"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:paddingBottom="4dp"/>
             </LinearLayout>
@@ -258,14 +270,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/i17"
-                    android:textSize="16sp"
+                    android:textSize="@dimen/ts_16"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/i18"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/ts_12"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="2dp"/>
                 <LinearLayout
@@ -280,7 +292,7 @@
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="@string/i19"
-                        android:textSize="13sp"
+                        android:textSize="@dimen/ts_13"
                         android:textColor="?attr/colorOnSurface"
                         android:background="@drawable/bg_quick_cmd"
                         android:foreground="?attr/selectableItemBackground"
@@ -294,7 +306,7 @@
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="@string/i20"
-                        android:textSize="13sp"
+                        android:textSize="@dimen/ts_13"
                         android:textColor="?attr/colorOnSurface"
                         android:background="@drawable/bg_quick_cmd"
                         android:foreground="?attr/selectableItemBackground"
@@ -308,7 +320,7 @@
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="@string/i21"
-                        android:textSize="13sp"
+                        android:textSize="@dimen/ts_13"
                         android:textColor="?attr/colorOnSurface"
                         android:background="@drawable/bg_quick_cmd"
                         android:foreground="?attr/selectableItemBackground"
@@ -327,7 +339,7 @@
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="@string/i22"
-                        android:textSize="13sp"
+                        android:textSize="@dimen/ts_13"
                         android:textColor="?attr/colorOnSurface"
                         android:background="@drawable/bg_quick_cmd"
                         android:foreground="?attr/selectableItemBackground"
@@ -341,7 +353,7 @@
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="@string/i23"
-                        android:textSize="13sp"
+                        android:textSize="@dimen/ts_13"
                         android:textColor="?attr/colorOnSurface"
                         android:background="@drawable/bg_quick_cmd"
                         android:foreground="?attr/selectableItemBackground"
@@ -355,7 +367,7 @@
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="@string/i24"
-                        android:textSize="13sp"
+                        android:textSize="@dimen/ts_13"
                         android:textColor="?attr/colorOnSurface"
                         android:background="@drawable/bg_quick_cmd"
                         android:foreground="?attr/selectableItemBackground"
@@ -374,7 +386,7 @@
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="@string/i31"
-                        android:textSize="13sp"
+                        android:textSize="@dimen/ts_13"
                         android:textColor="?attr/colorOnSurface"
                         android:background="@drawable/bg_quick_cmd"
                         android:foreground="?attr/selectableItemBackground"
@@ -388,7 +400,7 @@
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="@string/i32"
-                        android:textSize="13sp"
+                        android:textSize="@dimen/ts_13"
                         android:textColor="?attr/colorOnSurface"
                         android:background="@drawable/bg_quick_cmd"
                         android:foreground="?attr/selectableItemBackground"
@@ -399,7 +411,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/i25"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="8dp"/>
             </LinearLayout>
@@ -423,14 +435,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/i26"
-                    android:textSize="16sp"
+                    android:textSize="@dimen/ts_16"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/i27"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/ts_12"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="4dp"/>
                 <LinearLayout
@@ -452,7 +464,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:text="30%"
-                        android:textSize="14sp"
+                        android:textSize="@dimen/ts_14"
                         android:textColor="?attr/colorOnSurface"
                         android:minWidth="60dp"
                         android:gravity="end"/>
@@ -462,7 +474,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/i28"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="4dp"/>
             </LinearLayout>
@@ -487,7 +499,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/t82"
-                    android:textSize="16sp"
+                    android:textSize="@dimen/ts_16"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
                 <LinearLayout
@@ -502,7 +514,7 @@
                         android:layout_weight="1"
                         android:text="@string/t83"
                         android:checkable="true"
-                        android:textSize="14sp"
+                        android:textSize="@dimen/ts_14"
                         android:textColor="?attr/colorOnSurface"/>
                     <TextView
                         android:id="@+id/tvFabSize"
@@ -510,7 +522,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/t84"
                         android:checkable="true"
-                        android:textSize="14sp"
+                        android:textSize="@dimen/ts_14"
                         android:textColor="?attr/colorPrimary"/>
                 </LinearLayout>
                 <com.google.android.material.slider.Slider
@@ -532,7 +544,7 @@
                         android:layout_weight="1"
                         android:text="@string/t85"
                         android:checkable="true"
-                        android:textSize="14sp"
+                        android:textSize="@dimen/ts_14"
                         android:textColor="?attr/colorOnSurface"/>
                     <TextView
                         android:id="@+id/tvFabOpacity"
@@ -540,7 +552,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/t86"
                         android:checkable="true"
-                        android:textSize="14sp"
+                        android:textSize="@dimen/ts_14"
                         android:textColor="?attr/colorPrimary"/>
                 </LinearLayout>
                 <com.google.android.material.slider.Slider
@@ -555,7 +567,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/t87"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="2dp"/>
                 <View
@@ -574,7 +586,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t88"
-                        android:textSize="15sp"
+                        android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/swFabCollapse"
@@ -585,7 +597,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/t89"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"/>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -598,7 +610,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t90"
-                        android:textSize="15sp"
+                        android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/swFabGlass"
@@ -609,7 +621,36 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/t91"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
+                    android:textColor="?attr/colorOnSurfaceVariant"/>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="?attr/colorOutlineVariant"
+                    android:layout_marginTop="8dp"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingTop="8dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/fm_setting_long_press"
+                        android:textSize="@dimen/ts_15"
+                        android:textColor="?attr/colorOnSurface"/>
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/swFabLongMenu"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/fm_setting_long_press_desc"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -636,7 +677,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/t92"
-                    android:textSize="16sp"
+                    android:textSize="@dimen/ts_16"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"
                     android:paddingBottom="4dp"/>
@@ -652,7 +693,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t93"
-                        android:textSize="15sp"
+                        android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/swAutoStart"
@@ -663,7 +704,60 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/t94"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
+                    android:textColor="?attr/colorOnSurfaceVariant"/>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="?attr/colorOutlineVariant"
+                    android:layout_marginTop="8dp"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingTop="8dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/st_auto_service"
+                        android:textSize="@dimen/ts_15"
+                        android:textColor="?attr/colorOnSurface"/>
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/swAutoStartService"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/st_auto_service_desc"
+                    android:textSize="@dimen/ts_11"
+                    android:textColor="?attr/colorOnSurfaceVariant"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingTop="8dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/st_auto_shizuku"
+                        android:textSize="@dimen/ts_15"
+                        android:textColor="?attr/colorOnSurface"/>
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/swAutoShizukuGrant"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/st_auto_shizuku_desc"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -687,7 +781,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/t96"
-                    android:textSize="16sp"
+                    android:textSize="@dimen/ts_16"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
                 <LinearLayout
@@ -703,7 +797,7 @@
                         android:layout_weight="1"
                         android:layout_marginEnd="6dp"
                         android:minHeight="44dp"
-                        android:textSize="13sp"
+                        android:textSize="@dimen/ts_13"
                         android:text="@string/t97"/>
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnImportConfig"
@@ -713,14 +807,14 @@
                         android:layout_weight="1"
                         android:layout_marginStart="6dp"
                         android:minHeight="44dp"
-                        android:textSize="13sp"
+                        android:textSize="@dimen/ts_13"
                         android:text="@string/t98"/>
                 </LinearLayout>
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/t99"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="6dp"/>
             </LinearLayout>
@@ -745,14 +839,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/t100"
-                    android:textSize="16sp"
+                    android:textSize="@dimen/ts_16"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/t101"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="4dp"/>
                 <com.google.android.material.button.MaterialButton
@@ -762,7 +856,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:minHeight="44dp"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/ts_13"
                     android:text="@string/t102"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -786,14 +880,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/t103"
-                    android:textSize="16sp"
+                    android:textSize="@dimen/ts_16"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
                 <TextView
                     android:id="@+id/tvDetails"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/ts_13"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:lineSpacingExtra="4dp"
                     android:layout_marginTop="8dp"
@@ -820,14 +914,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/t107"
-                    android:textSize="16sp"
+                    android:textSize="@dimen/ts_16"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/t108"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/ts_12"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="10dp"/>
                 <ImageView
@@ -849,7 +943,7 @@
                     android:layout_marginTop="12dp"
                     android:minHeight="46dp"
                     android:text="@string/t109"
-                    android:textSize="13sp"/>
+                    android:textSize="@dimen/ts_13"/>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -863,7 +957,7 @@
                         android:layout_weight="1"
                         android:text="@string/t110"
                         android:checkable="true"
-                        android:textSize="14sp"
+                        android:textSize="@dimen/ts_14"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnCopyGroup"
@@ -879,6 +973,7 @@
 
         <!-- 关于 -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardAbout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="20dp"
@@ -893,17 +988,21 @@
                 android:orientation="vertical"
                 android:padding="16dp">
                 <TextView
+                    android:id="@+id/tvAboutTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/t105"
-                    android:textSize="16sp"
+                    android:textSize="@dimen/ts_16"
                     android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface"/>
+                    android:textColor="?attr/colorOnSurface"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"/>
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:checkable="true"
-                        android:textSize="14sp"
+                        android:textSize="@dimen/ts_14"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:lineSpacingExtra="6dp"
                     android:layout_marginTop="8dp"
@@ -933,13 +1032,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/t112"
-                    android:textSize="16sp"
+                    android:textSize="@dimen/ts_16"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/ts_12"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:lineSpacingExtra="5dp"
                     android:layout_marginTop="8dp"

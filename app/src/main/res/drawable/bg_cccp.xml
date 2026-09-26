@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 前苏联主题背景：深褐底 + 构造主义红色斜带（纯矢量，任意分辨率都不糊） -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="360dp"
+    android:height="800dp"
+    android:viewportWidth="360"
+    android:viewportHeight="800">
+    <!-- 底色 -->
+    <path
+        android:fillColor="#1A1512"
+        android:pathData="M0,0h360v800h-360z"/>
+    <!-- 主斜带（暗红） -->
+    <path
+        android:fillColor="#8E0B20"
+        android:pathData="M0,560 L360,330 L360,470 L0,700 z"/>
+    <!-- 亮红细斜带（构造主义排版感） -->
+    <path
+        android:fillColor="#C8102E"
+        android:pathData="M0,660 L360,430 L360,470 L0,700 z"/>
+    <!-- 金色斜线 -->
+    <path
+        android:fillColor="#E8C36A"
+        android:pathData="M0,742 L360,512 L360,520 L0,750 z"/>
+    <!-- 左上角红星 -->
+    <path
+        android:fillColor="#C8102E"
+        android:pathData="M60,74L64.7,88.4l15.1,0.1l-12.2,8.9l4.6,14.5L60,103.2L47.8,111.9l4.6,-14.5l-12.2,-8.9l15.1,-0.1z"/>
+    <path
+        android:fillColor="#E8C36A"
+        android:pathData="M60,86.5l2.1,6.5l6.8,0l-5.5,4l2.1,6.5L60,99.5l-5.5,4l2.1,-6.5l-5.5,-4l6.8,0z"/>
+</vector>
