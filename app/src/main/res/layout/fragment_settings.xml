@@ -721,30 +721,6 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="@string/st_auto_service"
-                        android:textSize="@dimen/ts_15"
-                        android:textColor="?attr/colorOnSurface"/>
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/swAutoStartService"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
-                </LinearLayout>
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/st_auto_service_desc"
-                    android:textSize="@dimen/ts_11"
-                    android:textColor="?attr/colorOnSurfaceVariant"/>
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingTop="8dp">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:text="@string/st_auto_shizuku"
                         android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
@@ -757,6 +733,37 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/st_auto_shizuku_desc"
+                    android:textSize="@dimen/ts_11"
+                    android:textColor="?attr/colorOnSurfaceVariant"/>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="?attr/colorOutlineVariant"
+                    android:layout_marginTop="8dp"/>
+                <LinearLayout
+                    android:id="@+id/rowLog"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/t114"
+                        android:textSize="@dimen/ts_15"
+                        android:textColor="?attr/colorOnSurface"/>
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/swLogEnabled"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/st_log_settings_desc"
                     android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"/>
             </LinearLayout>

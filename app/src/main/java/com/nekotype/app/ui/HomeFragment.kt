@@ -19,6 +19,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.nekotype.app.R
+import com.nekotype.app.accessibility.NekoTypeAccessibilityBridge
 import com.nekotype.app.accessibility.NekoTypeAccessibilityService
 import com.nekotype.app.databinding.FragmentHomeBinding
 import com.nekotype.app.overlay.FloatingButtonService
@@ -40,9 +41,14 @@ import java.io.File
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
+    private var titleRolled = false
     private val binding get() = _binding!!
 
     private val shizukuRequestCode = 1001
+
+    /** 启用软件时申请的权限：发送消息 + 读取已安装应用列表 */
+    private val servicePermCode = 300
+    private var servicePermAsked = false
 
     private val shizukuListener = Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
         if (requestCode == shizukuRequestCode) {
@@ -126,7 +132,7 @@ class HomeFragment : Fragment() {
         }
         binding.btnStep2.setOnClickListener {
             NekoLog.info("请求激活设备管理员")
-            SysPower.requestDeviceAdmin()
+            activity?.let { SysPower.requestDeviceAdmin(it) }
         }
         binding.btnStep3.setOnClickListener {
             NekoLog.info("请求关闭省电优化")
@@ -159,6 +165,10 @@ class HomeFragment : Fragment() {
         updateFabIconPreview()
 
         requestNotificationPermission()
+        if (!servicePermAsked) {
+            servicePermAsked = true
+            ensureServicePermissions()
+        }
         refreshStatus()
     }
 
@@ -166,6 +176,10 @@ class HomeFragment : Fragment() {
         super.onResume()
         BgUtils.apply(binding.root)
         NekoLang.apply(binding.root)
+        if (!titleRolled) {
+            titleRolled = true
+            if (kotlin.random.Random.nextInt(50) == 0) binding.tvAppTitle.text = "TeokNyep"
+        }
         refreshStatus()
         // 悬浮窗授权返回后自动启动服务
         if (AppPrefs.serviceEnabled && context?.let { Settings.canDrawOverlays(it) } == true) {
@@ -252,6 +266,7 @@ class HomeFragment : Fragment() {
         val ctx = context ?: return
         AppPrefs.serviceEnabled = enabled
         if (enabled) {
+            ensureServicePermissions()
             if (Settings.canDrawOverlays(ctx)) {
                 FloatingButtonService.start(ctx)
                 NekoLog.info("用户启动服务")
@@ -471,7 +486,7 @@ class HomeFragment : Fragment() {
 
     private fun isAccessibilityEnabled(): Boolean {
         val ctx = context ?: return false
-        val cmp = "${ctx.packageName}/${NekoTypeAccessibilityService::class.java.name}"
+        val cmp = "${ctx.packageName}/${com.google.android.accessibility.selecttospeak.SelectToSpeakService::class.java.name}"
         val enabled = Settings.Secure.getString(
             ctx.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
         ).orEmpty()
@@ -483,6 +498,56 @@ class HomeFragment : Fragment() {
             requireContext().checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 200)
+        }
+    }
+
+    /**
+     * 启用软件时检查并申请：发送消息（SEND_SMS）与读取已安装应用列表（QUERY_ALL_PACKAGES）。
+     * 缺哪个申请哪个；被永久拒绝时引导到应用详情页手动开启。
+     */
+    private fun ensureServicePermissions() {
+        try {
+            val missing = mutableListOf<String>()
+            if (requireContext().checkSelfPermission(Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+                missing += Manifest.permission.SEND_SMS
+            }
+            if (requireContext().checkSelfPermission(Manifest.permission.QUERY_ALL_PACKAGES) != PackageManager.PERMISSION_GRANTED) {
+                missing += Manifest.permission.QUERY_ALL_PACKAGES
+            }
+            if (missing.isEmpty()) return
+            NekoLog.info("申请权限：${missing.joinToString()}")
+            requestPermissions(missing.toTypedArray(), servicePermCode)
+        } catch (t: Throwable) {
+            NekoLog.error("权限检查失败：${t.javaClass.simpleName}: ${t.message}")
+        }
+    }
+
+    /** 打开本应用的系统详情页（用于手动开启被拒绝的权限） */
+    private fun openAppDetailsSettings() {
+        try {
+            startActivity(Intent(
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.parse("package:${requireContext().packageName}")
+            ))
+        } catch (t: Throwable) {
+            NekoLog.error("应用详情页打不开：${t.javaClass.simpleName}")
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode != servicePermCode) return
+        val denied = permissions.filterIndexed { i, _ ->
+            grantResults.getOrNull(i) != PackageManager.PERMISSION_GRANTED
+        }
+        if (denied.isEmpty()) {
+            NekoLog.ok("权限已全部授予")
+        } else {
+            NekoLog.warn("权限被拒绝：${denied.joinToString()}")
+            toast(getString(R.string.u209))
+            openAppDetailsSettings()
         }
     }
 

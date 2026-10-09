@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Türkçe (Turkish) — çekirdek arayüz + geliştirici modu -->
 <resources>
-    <string name="splash_version">v2.7.9</string>
+    <string name="splash_version">v2.8.0</string>
     <string name="bl_loading">Uygulama listesi yükleniyor…</string>
     <string name="home_language">Dil</string>
     <string name="log_label">Çalışma günlüğü</string>
@@ -51,12 +51,14 @@
     <string name="t55">Klavye değiştirmeyi zorla</string>
     <string name="t57">Noktalama tetikleyici</string>
     <string name="t59">Rastgele emoji/kaomoji</string>
-    <string name="t100">Uygulama kara listesi</string>
+    <string name="t100">Uygulama listeleri</string>
     <string name="t1000">Tüm izinleri tek dokunuşla ver (Shizuku)</string>
+    <string name="st_wechat_exp">Deneysel WeChat uyarlaması</string>
+    <string name="st_wechat_exp_desc">Daha hızlı yazma için doğrudan SET_TEXT + pano yapıştırma yedeği; sorun olursa eski mantık için kapatın</string>
     <string name="t1001">Silme iyileştirmesi</string>
     <string name="t1003">Sesli giriş iyileştirmesi</string>
     <string name="t1004">Sesli girişte daha uzun duraklama bekler (varsayılan 1 sn)</string>
-    <string name="t102">Uygulama kara listesini yönet</string>
+    <string name="t102">Uygulama listelerini yönet</string>
     <string name="t103">Ayrıntılı bilgi</string>
     <string name="t104">Sürüm bilgisi</string>
     <string name="t105">Hakkında</string>
@@ -252,7 +254,7 @@
     <string name="t98">Yapılandırmayı içe aktar</string>
     <string name="t99">Tüm kural ve ayarları dışa aktar (paylaşmak/cihaz değiştirmek için), içe aktarınca hemen geçerli olur</string>
     <string name="t1002">Metin silerken geçici olarak değiştirmez, yaklaşık 0,5 saniye sonra devam eder («son ek silinemiyor / gitgide çoğalıyor» sorununu önler)</string>
-    <string name="t101">Kara listedeki uygulamalarda otomatik değiştirme yapılmaz (klavye değiştirme / sessiz değiştirme etkisiz olur), yüzen düğmeyle elle işlem sınırsızdır</string>
+    <string name="t101">Kara liste modu: listedeki uygulamalarda otomatik değiştirme yapılmaz; beyaz liste modu: yalnızca listedeki uygulamalarda otomatik değiştirme yapılır. Yüzen düğmeyle elle işlem sınırsızdır</string>
     <string name="t106">QQ kanalı: 4ldb0biz5\nE-posta: TR114512@qq.com</string>
     <string name="t110">QQ kanalı: 4ldb0biz5</string>
     <string name="t113">Bu uygulama (NekoType) gizliliğinize büyük önem verir:\n\n1. Yerel işleme: Tüm mesaj metinlerinin okunması, dönüştürülmesi ve gönderilmesi cihazda yapılır; uygulama internete bağlanmaz, hiçbir girdiyi yüklemez veya saklamaz.\n\n2. İzinlerin amacı:\n· Erişilebilirlik: Yalnızca geçerli giriş alanının metnini okumak, metin değiştirmek ve göndermeyi tetiklemek için; parola alanları okunmaz (sistem parola alanlarını erişilebilirlik servisine zaten açmaz).\n· Yüzen pencere: Yüzen düğmeyi göstermek için.\n· Pil optimizasyonu: Servisin arka planda kalıcı olması için.\n· Cihaz yöneticisi / Shizuku / Root: İsteğe bağlı; yalnızca siz izin verdikten sonra sistem komutlarını çalıştırmak için (pil optimizasyonu beyaz listesi gibi).\n\n3. Üçüncü taraflar: Bu uygulama hiçbir üçüncü taraf istatistik, reklam veya izleme SDK\'sı içermez.\n\n4. İzni geri alma: Verdiğiniz izinleri sistem ayarlarından istediğiniz zaman geri alabilirsiniz.\n\n5. İletişim: TR114512@qq.com</string>
@@ -341,7 +343,7 @@
     <string name="u13">Servis başlatıldı, yüzen düğme ekran kenarında kalıcı</string>
     <string name="u14">Dil değiştirme başarısız</string>
     <string name="u15">Kopyalandı: %1$s</string>
-    <string name="u16">Tümü seçildi: %1$d uygulama kara listeye eklendi</string>
+    <string name="u16">%1$d uygulama seçildi</string>
     <string name="u17">Servis durduruldu</string>
     <string name="u18">Parola belirle</string>
     <string name="u19">Rastgele havuz boş olamaz</string>
@@ -373,7 +375,7 @@
     <string name="u45">NekoType\'ın değiştirildiği algılandı (imza uyuşmuyor veya Hook çerçevesi altında çalışıyor).\n\nGüvenliğiniz ve parola kilidinizin geçerliliği için uygulama durduruldu.\nLütfen resmî kanaldan yeniden kurun.</string>
     <string name="u46">Önce parola kilidini açın</string>
     <string name="u47">Günlük kopyalandı</string>
-    <string name="u48">Kara liste temizlendi</string>
+    <string name="u48">Liste temizlendi</string>
     <string name="u49">Pil optimizasyonu beyaz listesine yazıldı (%1$s) ✅</string>
     <string name="u50">Gizli mod açıldı: simge gizlendi\nKalp atışıyla canlı tutma otomatik açıldı, bildirimdeki «Servisi durdur» + parola ile geri dönülebilir</string>
     <string name="u51">Gizli mod kapatıldı, masaüstü simgesi geri geldi</string>
@@ -485,6 +487,9 @@
     <string name="u157">NekoType öneri geri bildirimi</string>
     <string name="u158">Sürüm: %1$s\nCihaz: %2$s %3$s · Android %4$s\nShizuku: %5$s\n\nÖneri/sorun:\n</string>
     <string name="u159">Geri bildirim gönder</string>
+    <string name="al_mode_black">Kara liste modu</string>
+    <string name="al_mode_white">Beyaz liste modu</string>
+    <string name="u160w">Açık: yalnızca beyaz listedeki %1$d uygulamada otomatik değiştirme (yüzen düğme sınırsız)</string>
     <string name="u160">Etkin: kara listedeki %1$d uygulamada otomatik değiştirme yapılmaz (yüzen düğmeyle elle işlem sınırsızdır)</string>
     <string name="u161">Etkin değil: tüm uygulamalarda otomatik değiştirme yapılır (önce anahtarı açabilirsiniz)</string>
     <string name="u162">NekoType daha güçlü sistem yetenekleri için cihaz yöneticisi izni ister (isteğe bağlı).</string>
@@ -617,17 +622,17 @@
     <string name="fm_back">Geri</string>
     <string name="fm_edit">Düzenle</string>
     <string name="fm_no_rules">Geçerli hazır ayarda kural yok</string>
-    <string name="st_auto_service">Açılışta hizmeti otomatik başlat</string>
-    <string name="st_auto_service_desc">Uygulamayı her yeniden açtığınızda yüzen hizmeti otomatik başlat (yalnızca geçen sefer açıksa; kendiniz durdurduysanız durdurulmuş kalır)</string>
     <string name="st_auto_shizuku">Açılışta otomatik Shizuku yetkisi</string>
     <string name="st_auto_shizuku_desc">Uygulama her açıldığında Shizuku ile tüm izinleri otomatik ver (erişilebilirlik / cihaz yöneticisi / pil muafiyeti / üstte gösterme). Shizuku çalışıyor olmalı. Varsayılan kapalı</string>
     <string name="st_auto_shizuku_hint">Etkinleştirildi: sonraki açılışta izinler otomatik verilecek (Shizuku çalışıyor olmalı)</string>
     <string name="bm_blind_no_suffix">Bu uygulama giriş kutusu içeriğini açıklamıyor, bu yüzden yalnızca sonek kuralları eklenebilir. Kullanılabilir sonek kuralı yok (ön ek/değiştirme burada çalışmaz).</string>
 
     <!-- i18n: kural hazır ayarı gelişmiş yönetimi (yeniden adlandır / birleştir / geri al) -->
-    <string name="pm_manage">Yönet</string>
+    <string name="pm_manage">Ön ayarları yönet</string>
+    <string name="pm_manage_preset">Ön ayarları yönet</string>
     <string name="pm_btn_select">Hazır ayar seç</string>
-    <string name="pm_btn_delete">Sil</string>
+    <string name="pm_btn_delete">Ön ayarı sil</string>
+    <string name="pm_btn_delete_preset">Ön ayarı sil</string>
     <string name="pm_manage_title">Kural hazır ayarlarını yönet</string>
     <string name="pm_manage_empty">Yönetilecek hazır ayar yok</string>
     <string name="pm_rename">Yeniden adlandır</string>
@@ -644,4 +649,19 @@
     <string name="pm_close">Kapat</string>
     <string name="pm_current_row">%1$s (%2$d kural · geçerli)</string>
     <string name="pm_count">%1$s (%2$d kural)</string>
+    <string name="st_mention_guard">@bahsetme giriş koruması</string>
+    <string name="st_mention_guard_desc">Varsayılan açık. Yarım kalan @isim yazılırken dönüştürme duraklar, böylece bahsetme listesi bozulmaz. Gönderirken normal dönüştürülür.</string>
+    <string name="u206">NekoType uygulamasını Ayarlar → Güvenlik → Diğer güvenlik ayarları → Cihaz yöneticisi uygulamaları bölümünden elle etkinleştirin</string>    <string name="u209">Bazı izinler reddedildi. SMS ve uygulama listesi izinlerini uygulama ayrıntılarından elle açın.</string>
+
+    <string name="ap_title">Uygulama ön ayar eşlemesi</string>
+    <string name="ap_switch">Otomatik geçiş</string>
+    <string name="ap_hint">Eşlenen uygulamalar için ön ayarları otomatik geç; eşlenmemiş uygulamalar mevcut ön ayarı korur</string>
+    <string name="ap_add">Uygulama eşlemesi ekle</string>
+    <string name="ap_pick_app">Uygulama seç</string>
+    <string name="ap_pick_preset">Ön ayar seç</string>
+    <string name="ap_removed">Eşleme kaldırıldı</string>
+    <string name="ap_empty">Henüz eşleme yok, yukarıdan ekleyin</string>
+    <string name="hc_applist_loading">Uygulama listesi yükleniyor…</string>
+    <string name="st_log_settings_desc">Anahtar günlük kaydını denetler; çalışma günlüğünü görmek için bu satıra dokunun</string>
+    <string name="st_admin_search_tip">Bazı cihazlarda Ayarlar içinde "Activate" aratın ve cihaz yöneticisi satırından açın</string>
 </resources>

@@ -43,6 +43,7 @@
                 android:layout_marginStart="12dp"
                 android:orientation="vertical">
                 <TextView
+                    android:id="@+id/tvAppTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/t0"
@@ -274,6 +275,13 @@
                                 android:textSize="@dimen/ts_12"
                                 android:text="@string/t17"/>
                         </LinearLayout>
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/st_admin_search_tip"
+                            android:textSize="@dimen/ts_11"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginTop="6dp"/>
 
                         <!-- 步骤 3 -->
                         <LinearLayout
@@ -467,13 +475,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/t34"
                         android:checkable="true"/>
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipRoot"
-                        style="@style/Widget.Material3.Chip.Assist"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/t35"
-                        android:checkable="true"/>
+                    
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipAdmin"
                         style="@style/Widget.Material3.Chip.Assist"

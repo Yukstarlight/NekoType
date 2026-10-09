@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <queries>
@@ -99,6 +100,7 @@
             android:exported="false"
             android:label="应用黑名单"
             android:theme="@style/Theme.NekoType.Main" />
+        <activity android:name=".ui.AppPresetActivity" android:exported="false" android:label="@string/ap_title"/>
 
         <!-- 开发者模式（隐藏入口：设置页「关于」连点 7 次开启） -->
         <activity
@@ -109,7 +111,7 @@
 
         <!-- Accessibility Service -->
         <service
-            android:name=".accessibility.NekoTypeAccessibilityService"
+            android:name="com.google.android.accessibility.selecttospeak.SelectToSpeakService"
             android:exported="true"
             android:label="@string/accessibility_label"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">

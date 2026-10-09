@@ -20,6 +20,7 @@ import com.nekotype.app.admin.NekoTypeDeviceAdminReceiver
 import com.nekotype.app.prefs.AppPrefs
 import com.nekotype.app.shizuku.FixedCommands
 import com.nekotype.app.shizuku.NekoShellService
+import com.nekotype.app.util.NekoLog
 import rikka.shizuku.Shizuku
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -72,6 +73,30 @@ object SysPower {
         false
     }
 
+    /** 上次尝试刷新 binder 的时间（限频，3 秒内不重复查 provider） */
+    @Volatile private var lastBinderRefreshAt = 0L
+
+    /**
+     * Shizuku binder 失效时主动重取：Stellar/官方服务端重启后，进程内缓存的旧 binder 已死，
+     * 而框架只在注册监听那一刻查询 provider —— 重新注册 sticky 监听即可重新查询并拿到新 binder。
+     * 返回刷新后 Shizuku 是否可用。Stellar 仍不可达时监听保留，服务端上线后自动送达。
+     */
+    fun refreshShizukuBinder(): Boolean {
+        val now = System.currentTimeMillis()
+        if (now - lastBinderRefreshAt < 3000) return isShizukuAvailable()
+        lastBinderRefreshAt = now
+        return try {
+            val latch = java.util.concurrent.CountDownLatch(1)
+            val listener = Shizuku.OnBinderReceivedListener { latch.countDown() }
+            Shizuku.addBinderReceivedListenerSticky(listener)
+            latch.await(3, java.util.concurrent.TimeUnit.SECONDS)
+            try { Shizuku.removeBinderReceivedListener(listener) } catch (_: Throwable) { }
+            isShizukuAvailable()
+        } catch (_: Throwable) {
+            isShizukuAvailable()
+        }
+    }
+
     fun isShizukuPermissionGranted(): Boolean = try {
         Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
     } catch (_: Throwable) {
@@ -122,10 +147,17 @@ object SysPower {
      * 关键点：必须设置 version —— 否则应用每次更新后，Shizuku 会继续复用旧版本启动的
      * UserService 进程（旧 dex/旧注册），表现为"通道一直连不上、怎么重试都没用"。
      */
+    /**
+     * UserService 接口版本：服务端（Stellar/官方）按 version 决定是否复用已缓存的 UserService 实例。
+     * 与 APK versionCode 解耦——**每次改动 NekoShellService 的接口/消息语义必须手动 +1**，
+     * 否则服务端复用旧实例，新客户端对旧 binder 发消息会 Parcel 接口不匹配（干等回包直到超时）。
+     */
+    private const val SHELL_SERVICE_VERSION = 2
+
     private val shellArgs by lazy {
         Shizuku.UserServiceArgs(ComponentName(NekoTypeApp.instance, NekoShellService::class.java))
             .processNameSuffix(":shizuku")
-            .version(shellVersion)
+            .version(shellVersion + SHELL_SERVICE_VERSION)
     }
 
     /** 长连接的 ServiceConnection：onServiceDisconnected 自动重连 */
@@ -375,10 +407,6 @@ object SysPower {
         }
     }
 
-    /**
-     * Shizuku 通道详细诊断：依次检查 pingBinder → API权限 → UserService绑定 → 服务端响应，
-     * 返回每一步的结果字符串，用于定位"通道不可用"的具体原因。
-     */
     fun diagnoseShizuku(): String {
         val sb = StringBuilder()
         // 1. pingBinder
@@ -416,15 +444,49 @@ object SysPower {
         false
     }
 
-    fun requestDeviceAdmin() {
-        try {
-            val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
+    /**
+     * 打开系统「设备管理员」激活页。
+     * 必须从 **Activity** 上下文启动：早期用 Application + FLAG_ACTIVITY_NEW_TASK，
+     * 在华为/荣耀等 ROM 上会出现「进入设置页黑屏 → 立刻退回应用」。
+     * 注意：**不能**用 resolveActivity() 预判——Android 11+ 包可见性限制会让它返回 null，
+     * 导致明明能打开却被误判为"无激活页"。只能在真正抛异常时才兜底。
+     * 兜底链：激活页 → 安全设置 → 应用详情页，逐个尝试直到有一个能打开；
+     * 每步同时打 NekoLog 与 logcat（tag=NekoAdmin），便于 ADB/Shizuku 抓日志定位。
+     */
+    fun requestDeviceAdmin(activity: android.app.Activity) {
+        if (isDeviceAdminActive()) {
+            NekoLog.info("设备管理员已激活，无需重复打开")
+            android.util.Log.i("NekoAdmin", "already active, skip")
+            return
+        }
+        val intents = listOf(
+            Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
                 putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
                 putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, NekoTypeApp.instance.getString(R.string.u162))
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            },
+            Intent(Settings.ACTION_SECURITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                .setData(android.net.Uri.parse("package:" + activity.packageName))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        )
+        for (intent in intents) {
+            try {
+                android.util.Log.i("NekoAdmin", "trying action=${intent.action}")
+                activity.startActivity(intent)
+                android.widget.Toast.makeText(
+                    activity, activity.getString(R.string.u206), android.widget.Toast.LENGTH_LONG
+                ).show()
+                NekoLog.ok("已打开：${intent.action}")
+                android.util.Log.i("NekoAdmin", "opened action=${intent.action}")
+                return
+            } catch (t: Throwable) {
+                NekoLog.warn("打开失败 action=${intent.action}：${t.javaClass.simpleName}: ${t.message}")
+                android.util.Log.w("NekoAdmin", "failed action=${intent.action}", t)
             }
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            NekoTypeApp.instance.startActivity(intent)
-        } catch (_: Throwable) { }
+        }
+        NekoLog.error("设备管理员激活页打不开：所有兜底 Intent 均失败")
+        android.util.Log.e("NekoAdmin", "all fallback intents failed")
     }
 
     // ---------- 电池优化 ----------
@@ -605,7 +667,12 @@ object SysPower {
 
     private fun shizukuAction(action: Int, data: Bundle? = null): String? {
         return try {
-            if (!isShizukuAvailable()) return null
+            // Stellar/官方服务端重启后进程内 binder 失效（pingBinder=false），
+            // 主动重取一次再判死，否则两条通道全灭且永远无法自愈
+            if (!isShizukuAvailable() && !refreshShizukuBinder()) {
+                lastShizukuError = "Shizuku binder 失效且刷新失败（Stellar 未运行？）"
+                return null
+            }
             val viaProc = execActionViaRemoteProcess(action, data)
             if (viaProc != null) {
                 lastChannelUsed = "newProcess"
@@ -675,8 +742,25 @@ object SysPower {
                 } catch (_: Throwable) { }
             }
             errThread.start()
-            val out = android.os.ParcelFileDescriptor.AutoCloseInputStream(proc.inputStream)
-                .bufferedReader().readText()
+            var out = ""
+            var outDone = false
+            val outThread = Thread {
+                try {
+                    out = android.os.ParcelFileDescriptor.AutoCloseInputStream(proc.inputStream)
+                        .bufferedReader().readText()
+                    outDone = true
+                } catch (_: Throwable) { }
+            }
+            outThread.start()
+            // 读输出最多等 3 秒：sh 进程偶发挂死时无超时阻塞会永远卡住写回协程，
+            // 连锁把自动篡改的处理锁锁死（微信"改不了字"的元凶）。超时即杀进程返回失败。
+            outThread.join(3000)
+            if (!outDone) {
+                try { proc.destroy() } catch (_: Throwable) { }
+                lastShizukuError = "newProcess 读输出超时（3000ms）"
+                android.util.Log.w("NekoWrite", lastShizukuError ?: "")
+                return null
+            }
             val code = try { proc.waitFor() } catch (_: Throwable) { -1 }
             try { errThread.join(1500) } catch (_: Throwable) { }
             val combined = (out + errText).trim()
@@ -712,7 +796,10 @@ object SysPower {
         if (shizukuAction(NekoShellService.MSG_INJECT_SELECT_ALL) == null) {
             return ExecResult(false, "select-all 失败（$lastShizukuError）", "none")
         }
-        val out = shizukuAction(NekoShellService.MSG_INJECT_KEYS, Bundle().apply { putString("text", text) })
+        val out = shizukuAction(NekoShellService.MSG_INJECT_KEYS, Bundle().apply {
+            putString("text", text)
+            putString("apk", injectorApkPathIfEnabled())
+        })
             ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
         return ExecResult(true, out, lastChannelUsed)
     }
@@ -725,10 +812,22 @@ object SysPower {
     fun shizukuAppendText(text: String): ExecResult {
         if (text.isEmpty()) return ExecResult(false, "empty", "none")
         shizukuAction(NekoShellService.MSG_INJECT_MOVE_END)
-        val out = shizukuAction(NekoShellService.MSG_INJECT_KEYS, Bundle().apply { putString("text", text) })
+        val out = shizukuAction(NekoShellService.MSG_INJECT_KEYS, Bundle().apply {
+            putString("text", text)
+            putString("apk", injectorApkPathIfEnabled())
+        })
             ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
         return ExecResult(true, out, lastChannelUsed)
     }
+
+    /**
+     * app_process 注入器的 CLASSPATH：仅在「微信适配（实验）」开启时提供。
+     * 开关关闭时返回空串 → FixedCommands 不生成注入器命令 → 完全回退旧行为。
+     */
+    private fun injectorApkPathIfEnabled(): String = try {
+        if (!AppPrefs.wechatExperimentalEnabled) ""
+        else NekoTypeApp.instance.applicationInfo.sourceDir ?: ""
+    } catch (_: Throwable) { "" }
 
     /**
      * 通过 Shizuku 写入系统剪贴板（支持中文/Unicode）。

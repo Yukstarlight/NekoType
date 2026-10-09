@@ -60,36 +60,64 @@
                         android:contentDescription="@string/t41"/>
                 </LinearLayout>
 
-                <!-- 操作按钮列（Y 轴纵向，靠卡片左侧）：选择预设在上 → 删除居中 → 管理在下 -->
+                <!-- 操作按钮双列（左列：选择预设/删除；右列：管理/应用映射）等宽对齐 -->
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
+                    android:orientation="horizontal"
                     android:layout_marginTop="2dp">
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnSelectRule"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:minHeight="38dp"
-                        android:textSize="@dimen/ts_15"
-                        android:text="@string/pm_btn_select"/>
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnDeleteRule"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:layout_width="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnSelectRule"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minHeight="38dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0dp"
+                            android:textSize="@dimen/ts_15"
+                            android:text="@string/pm_btn_select"/>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnDeleteRule"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minHeight="38dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0dp"
+                            android:textSize="@dimen/ts_15"
+                            android:text="@string/pm_btn_delete_preset"/>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:minHeight="38dp"
-                        android:textSize="@dimen/ts_15"
-                        android:text="@string/pm_btn_delete"/>
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnManagePreset"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:minHeight="38dp"
-                        android:textSize="@dimen/ts_15"
-                        android:text="@string/pm_manage"/>
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnManagePreset"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minHeight="38dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0dp"
+                            android:textSize="@dimen/ts_15"
+                            android:text="@string/pm_manage_preset"/>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnAppPreset"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minHeight="38dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0dp"
+                            android:textSize="@dimen/ts_15"
+                            android:text="@string/ap_title"/>
+                    </LinearLayout>
                 </LinearLayout>
 
                 <TextView
@@ -477,6 +505,61 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/i44"
+                    android:textSize="@dimen/ts_11"
+                    android:textColor="?attr/colorOnSurfaceVariant"/>
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/st_mention_guard"
+                        android:textSize="@dimen/ts_15"
+                        android:textColor="?attr/colorOnSurface"/>
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/swMentionGuard"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/st_mention_guard_desc"
+                    android:textSize="@dimen/ts_11"
+                    android:textColor="?attr/colorOnSurfaceVariant"/>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/st_wechat_exp"
+                        android:textSize="@dimen/ts_15"
+                        android:textColor="?attr/colorOnSurface"/>
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/swWeChatExp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/st_wechat_exp_desc"
                     android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"/>
             </LinearLayout>

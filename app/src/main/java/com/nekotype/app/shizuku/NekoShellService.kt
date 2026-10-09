@@ -20,7 +20,6 @@ import kotlin.concurrent.thread
  * 本服务【不接受任意 shell 命令】。对外只暴露一组【固定动作】消息类型，
  * 命令模板集中在 [FixedCommands]（两条特权通道共用同一份），参数（文本/包名/tag）
  * 只作为受限插值，绝不拼接任意 shell 字符串。
- * → 不存在 "onBind 返回 Messenger + handleMessage sh -c 任意命令" 的通道。
  *
  * 动作清单见 [FixedCommands.build]：
  * - MSG_BATTERY_WHITELIST / MSG_INJECT_SELECT_ALL / MSG_INJECT_TEXT / MSG_HIDE_SELF
@@ -88,7 +87,6 @@ class NekoShellService : Service() {
                         } else r.second
                     } else r.second
                 } catch (t: Throwable) {
-                    // 【关键】任何异常都必须回给调用方，否则调用方只能干等超时（旧版就是这样静默失败的）
                     ok = false
                     out = t.javaClass.simpleName + ": " + (t.message ?: "")
                     android.util.Log.e(TAG, "action $action 执行异常", t)
@@ -136,11 +134,9 @@ class NekoShellService : Service() {
     /**
      * 按键注入（Unicode 级真打字）：把任意文本（中文/颜文字/Emoji）拆成
      * ACTION_MULTIPLE KeyEvent 逐块注入当前焦点窗口的 InputConnection。
-     *
      * 为什么不用 `input text`：那条命令只收可打印 ASCII，中文会直接报错。
      * 为什么反射：`InputManager.injectInputEvent` 是 @hide API，公开 SDK 编译不过；
      * 本进程由 Shizuku 以 shell(2000) 权限拉起，运行时不受 hidden API 限制 → 反射调用。
-     * 效果等效外接键盘打字，微信 / Termux 等非原生输入框必须接受键盘通道，因此同样写得进去。
      * 注入按每 16 个码点一块（含代理对，Emoji 不拆坏），块间留 20ms 防丢。
      */
     private fun injectKeys(text: String): Pair<Boolean, String> {
@@ -167,7 +163,7 @@ class NekoShellService : Service() {
                     -1,
                     KeyEvent.FLAG_SOFT_KEYBOARD or KeyEvent.FLAG_KEEP_TOUCH_MODE
                 )
-                val ok = inject.invoke(im, ev, 0) as Boolean
+                val ok = inject.invoke(im, ev, 2) as Boolean
                 if (!ok) break
                 sent += end - i
                 i = end

@@ -275,11 +275,7 @@ class SettingsActivity : AppCompatActivity() {
         super.onResume()
         refreshTheme()
         refreshStatsDaily()
-        // Root 检测会拉起 su 进程，放后台线程
-        lifecycleScope.launch {
-            val root = withContext(Dispatchers.IO) { SysPower.isRootAvailable() }
-            binding.tvDetails.text = buildDetails(root)
-        }
+        binding.tvDetails.text = buildDetails()
     }
 
     override fun onDestroy() {
@@ -423,13 +419,12 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    private fun buildDetails(rootOk: Boolean): String {
+    private fun buildDetails(): String {
         val sb = StringBuilder()
         sb.append(getString(R.string.u137)).append(if (Settings.canDrawOverlays(this)) getString(R.string.u138) else getString(R.string.u139)).append('\n')
         sb.append(getString(R.string.u140)).append(if (isAccessibilityEnabled()) getString(R.string.u141) else getString(R.string.u142)).append('\n')
         sb.append(getString(R.string.u143)).append(if (SysPower.isIgnoringBatteryOptimizations()) getString(R.string.u144) else getString(R.string.u145)).append('\n')
         sb.append(getString(R.string.u146)).append(if (SysPower.isShizukuAvailable()) getString(R.string.u147) else getString(R.string.u148)).append('\n')
-        sb.append(getString(R.string.u149)).append(if (rootOk) getString(R.string.u147) else getString(R.string.u148)).append('\n')
         sb.append(getString(R.string.u150)).append(if (SysPower.isDeviceAdminActive()) getString(R.string.u151) else getString(R.string.u152)).append('\n')
         sb.append(getString(R.string.u153)).append(if (AppPrefs.serviceEnabled) getString(R.string.u97) else getString(R.string.u98)).append('\n')
         sb.append(getString(R.string.u154, AppPrefs.transformCount))
@@ -444,7 +439,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun isAccessibilityEnabled(): Boolean {
-        val cmp = "$packageName/${NekoTypeAccessibilityService::class.java.name}"
+        val cmp = "$packageName/${com.google.android.accessibility.selecttospeak.SelectToSpeakService::class.java.name}"
         val enabled = Settings.Secure.getString(
             contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
         ).orEmpty()

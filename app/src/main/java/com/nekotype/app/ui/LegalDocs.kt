@@ -54,7 +54,7 @@ object LegalDocs {
 
             【四、保存在本机的数据】
             · 规则与预设、行为与样式设置
-            · 悬浮按钮位置与外观、应用黑名单
+            · 悬浮按钮位置与外观、应用名单
             · 使用次数统计
             · 应用内日志（用于排查问题，可在设置中一键清空）
             以上全部保存在设备本地，卸载应用即全部删除。
@@ -64,7 +64,7 @@ object LegalDocs {
             · 悬浮窗：显示悬浮按钮
             · 通知：显示常驻前台服务通知
             · 忽略电池优化 / 自启动：避免后台被系统冻结导致功能失效
-            · 查询已安装应用：用于应用黑名单选择、显示悬浮按钮所在应用名
+            · 查询已安装应用：用于应用名单选择、显示悬浮按钮所在应用名
             · 开机自启：重启后恢复服务
             · Shizuku / Root（可选，需你主动授权）：仅执行你主动触发的系统操作
               （如关闭电池优化、隐藏桌面图标），只执行写死的固定命令，
@@ -143,7 +143,7 @@ object LegalDocs {
 
             [4. Data stored on your device]
             · Rules and presets, behaviour and style settings
-            · Floating button position/appearance, app blacklist
+            · Floating button position/appearance, app lists
             · Usage counters
             · In-app logs (for troubleshooting, clearable in Settings)
             All of it stays on the device and is deleted when you uninstall the app.
@@ -153,7 +153,7 @@ object LegalDocs {
             · Display over other apps: show the floating button
             · Notifications: show the persistent foreground-service notification
             · Ignore battery optimization / auto-start: keep the service from being frozen
-            · Query installed apps: app blacklist picker and showing the target app name
+            · Query installed apps: app list picker and showing the target app name
             · Boot completed: restore the service after a restart
             · Shizuku / Root (optional, you must grant it): only performs system operations you
               explicitly trigger (e.g. battery whitelist, hiding the launcher icon) using fixed,

@@ -66,7 +66,8 @@ object TextTransformEngine {
         }
         // 2.2 随机前缀（不固定）：命中的规则里【只随机取一条】生效
         val oncePrefixRules = rules.filter {
-            it.type == RuleType.RANDOM_PREFIX_ONCE && Random.nextInt(100) < it.chance && parsePool(it.value).isNotEmpty()
+            it.type == RuleType.RANDOM_PREFIX_ONCE && Random.nextInt(100) < it.chance
+                    && parsePool(it.value).isNotEmpty()
         }
         if (oncePrefixRules.isNotEmpty()) {
             val pick = parsePool(oncePrefixRules.random().value).random()
@@ -94,7 +95,8 @@ object TextTransformEngine {
         }
         // 3.1b 随机后缀（不固定）：命中的规则里【只随机取一条】生效
         val onceSuffixRules = rules.filter {
-            it.type == RuleType.RANDOM_SUFFIX_ONCE && Random.nextInt(100) < it.chance && parsePool(it.value).isNotEmpty()
+            it.type == RuleType.RANDOM_SUFFIX_ONCE && Random.nextInt(100) < it.chance
+                    && parsePool(it.value).isNotEmpty()
         }
         if (onceSuffixRules.isNotEmpty()) {
             val pick = parsePool(onceSuffixRules.random().value).random()

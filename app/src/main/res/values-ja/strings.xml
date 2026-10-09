@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 日本語 (Japanese) — 主要 UI + 開発者モード -->
 <resources>
-    <string name="splash_version">v2.7.9</string>
+    <string name="splash_version">v2.8.0</string>
     <string name="bl_loading">アプリ一覧を読み込み中…</string>
     <string name="home_language">言語</string>
     <string name="log_label">動作ログ</string>
@@ -51,12 +51,14 @@
     <string name="t55">キーボード改変を強制</string>
     <string name="t57">句読点トリガー</string>
     <string name="t59">ランダム顔文字</string>
-    <string name="t100">アプリのブラックリスト</string>
+    <string name="t100">アプリリスト</string>
     <string name="t1000">全権限を一括許可（Shizuku）</string>
+    <string name="st_wechat_exp">WeChat実験的対応</string>
+    <string name="st_wechat_exp_desc">SET_TEXT直接書き込み＋クリップボード貼り付けフォールバックで高速化。問題がある場合はオフにすると旧ロジックに戻ります</string>
     <string name="t1001">削除の最適化</string>
     <string name="t1003">音声入力の最適化</string>
     <string name="t1004">音声入力時は長めの間（既定 1 秒）で書き換えます</string>
-    <string name="t102">ブラックリストを管理</string>
+    <string name="t102">アプリリストを管理</string>
     <string name="t103">詳細情報</string>
     <string name="t104">バージョン情報</string>
     <string name="t105">このアプリについて</string>
@@ -255,7 +257,7 @@
     <string name="t97">設定をエクスポート</string>
     <string name="t98">設定をインポート</string>
     <string name="t99">すべてのルールと設定をエクスポートします（共有・機種変更用）。インポート後はすぐに反映されます</string>
-    <string name="t101">ブラックリスト内のアプリでは自動書き換えを行いません（キーボード改変の強制／サイレント書き換えの自動注入は無効）。フローティングボタンからの手動操作は制限されません</string>
+    <string name="t101">ブラックリストモード：リスト内のアプリは自動改変しません。ホワイトリストモード：リスト内のアプリのみ自動改変します。フローティングボタンの手動操作は制限されません</string>
     <string name="t106">QQ チャンネル：4ldb0biz5\nメール：TR114512@qq.com</string>
     <string name="t110">QQ チャンネル：4ldb0biz5</string>
     <string name="t113">本アプリ（NekoType）はあなたのプライバシーを重視し、以下のとおり説明します：\n\n1. 端末内処理：メッセージテキストの読み取り・変換・送信はすべて端末内で行われ、本アプリは通信を行わず、入力内容を送信・保存しません。\n\n2. 権限の用途：\n· アクセシビリティ：現在の入力欄のテキストを読み取り、テキスト置換と送信の実行にのみ使用します。パスワード欄は読み取りません（システムはパスワード欄の内容をアクセシビリティサービスに公開しません）。\n· オーバーレイ：フローティングボタンの表示に使用します。\n· バッテリー最適化：サービスのバックグラウンド常駐を維持するために使用します。\n· デバイス管理者／Shizuku／Root：任意の項目で、あなたが許可した場合にのみシステムコマンド（バッテリー最適化のホワイトリスト登録など）の実行に使用します。\n\n3. 第三者：本アプリには第三者の統計・広告・トラッキング SDK は一切含まれません。\n\n4. 権限の取り消し：付与した権限はシステム設定からいつでも取り消せます。\n\n5. 連絡先：TR114512@qq.com</string>
@@ -290,7 +292,7 @@
     <string name="u13">サービスを開始しました。フローティングボタンが画面の端に常駐します</string>
     <string name="u14">言語の切り替えに失敗しました</string>
     <string name="u15">コピーしました：%1$s</string>
-    <string name="u16">すべて選択：%1$d 件のアプリをブラックリストに追加しました</string>
+    <string name="u16">%1$d 件のアプリを選択しました</string>
     <string name="u17">サービスを停止しました</string>
     <string name="u18">パスワードを設定</string>
     <string name="u19">ランダムプールを空にはできません</string>
@@ -322,7 +324,7 @@
     <string name="u45">NekoType が改変されていることを検出しました（署名の不一致、または Hook フレームワーク上での実行）。\n\nあなたの安全とパスワードロックの有効性を守るため、本アプリは動作を停止しました。\n公式チャネルから再インストールしてください。</string>
     <string name="u46">先にパスワードロックを有効にしてください</string>
     <string name="u47">ログをコピーしました</string>
-    <string name="u48">ブラックリストを空にしました</string>
+    <string name="u48">リストを空にしました</string>
     <string name="u49">バッテリー最適化のホワイトリストに登録しました（%1$s）✅</string>
     <string name="u50">非表示モードを有効にしました：アイコンを非表示にしました\nハートビート常駐も自動で有効になりました。通知の「サービスを停止」とパスワードで復帰できます</string>
     <string name="u51">非表示モードをオフにし、ランチャーのアイコンを復元しました</string>
@@ -461,6 +463,9 @@
     <string name="u174">有効な NekoType 設定ファイルではありません</string>
     <string name="u175">インポートに失敗：%1$s</string>
     <string name="u176">設定の内容を認識できません</string>
+    <string name="al_mode_black">ブラックリストモード</string>
+    <string name="al_mode_white">ホワイトリストモード</string>
+    <string name="u160w">有効：ホワイトリスト内の %1$d 個のアプリのみ自動改変します（フローティングボタンは制限されません）</string>
     <string name="u160">有効：ブラックリスト内の %1$d 件のアプリでは自動書き換えを行いません（フローティングボタンからの手動操作は制限されません）</string>
     <string name="u161">無効：すべてのアプリで自動書き換えを行います（先にスイッチをオンにしてください）</string>
     <string name="u162">NekoType は、より強力なシステム機能のためにデバイス管理者権限を必要とします（任意）。</string>
@@ -624,17 +629,17 @@
     <string name="fm_back">戻る</string>
     <string name="fm_edit">編集</string>
     <string name="fm_no_rules">現在のプリセットにルールはありません</string>
-    <string name="st_auto_service">起動時にサービスを自動開始</string>
-    <string name="st_auto_service_desc">アプリを開くたびにフローティングサービスを自動起動（前回有効だった場合のみ。自分で停止した場合は停止のまま）</string>
     <string name="st_auto_shizuku">起動時に Shizuku で自動許可</string>
     <string name="st_auto_shizuku_desc">アプリを開くたびに Shizuku で全権限を自動許可（アクセシビリティ / デバイス管理者 / バッテリー最適化除外 / オーバーレイ）。Shizuku の起動が必要。既定はオフ</string>
     <string name="st_auto_shizuku_hint">有効化しました：次回起動時に自動で許可します（Shizuku の起動が必要）</string>
     <string name="bm_blind_no_suffix">このアプリは入力欄の内容を公開しないため、追加できるのはサフィックス系ルールのみです。利用可能なサフィックスルールがありません（プレフィックス/置換は使えません）</string>
 
     <!-- i18n: ルールプリセットの詳細管理（リネーム / 結合 / 結合取消） -->
-    <string name="pm_manage">管理</string>
+    <string name="pm_manage">プリセットを管理</string>
+    <string name="pm_manage_preset">プリセットを管理</string>
     <string name="pm_btn_select">プリセット選択</string>
-    <string name="pm_btn_delete">削除</string>
+    <string name="pm_btn_delete">プリセットを削除</string>
+    <string name="pm_btn_delete_preset">プリセットを削除</string>
     <string name="pm_manage_title">ルールプリセット管理</string>
     <string name="pm_manage_empty">管理できるプリセットがありません</string>
     <string name="pm_rename">リネーム</string>
@@ -651,4 +656,19 @@
     <string name="pm_close">閉じる</string>
     <string name="pm_current_row">%1$s（%2$d 件・現在）</string>
     <string name="pm_count">%1$s（%2$d 件のルール）</string>
+    <string name="st_mention_guard">@メンション入力保護</string>
+    <string name="st_mention_guard_desc">既定でオン。入力途中の「@名前」が未確定の間は書き換えを一時停止し、@選択ポップアップを邪魔しません。送信時は通常どおり書き換えます。</string>
+    <string name="u206">「設定 → セキュリティ → その他のセキュリティ設定 → デバイス管理アプリ」で NekoType を手動で有効にしてください</string>    <string name="u209">一部の権限が拒否されました。アプリ詳細で「SMS」と「アプリ一覧」の権限を手動で有効にしてください。</string>
+
+    <string name="ap_title">アプリプレビセット対応</string>
+    <string name="ap_switch">自動切替</string>
+    <string name="ap_hint">指定アプリでプレビセットを自動切替。未設定のアプリは現在のプリセットをそのまま使用</string>
+    <string name="ap_add">アプリマッピングを追加</string>
+    <string name="ap_pick_app">アプリを選択</string>
+    <string name="ap_pick_preset">プリセットを選択</string>
+    <string name="ap_removed">マッピングを削除しました</string>
+    <string name="ap_empty">マッピングなし。上から追加してください</string>
+    <string name="hc_applist_loading">アプリリストを読み込み中…</string>
+    <string name="st_log_settings_desc">スイッチでログ記録を切り替え。この行をタップすると実行ログを表示します</string>
+    <string name="st_admin_search_tip">一部の機種では設定で「Activate」を検索し、デバイス管理者欄で有効にしてください</string>
 </resources>

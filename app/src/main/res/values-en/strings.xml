@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">NekoType</string>
     <string name="splash_subtitle">Welcome to Mist Unveils Infinite Tomorrows</string>
-    <string name="splash_version">v2.7.9</string>
+    <string name="splash_version">v2.8.0</string>
     <string name="accessibility_label">NekoType Message Transform</string>
     <string name="accessibility_description">NekoType needs accessibility permission to detect keyboard input, read the message being typed, automatically add prefix/suffix/text replacement, and send after rewriting via the floating button. All text processing is done locally.</string>
     <string name="admin_label">NekoType Device Admin</string>
@@ -57,7 +57,7 @@
     <string name="t43">Each preset has its own rule list</string>
     <string name="t44">Added Rules</string>
     <string name="t45">Add Rule</string>
-    <string name="t46">No rules yet, tap "Add Rule" to start</string>
+    <string name="t46">No rules yet, tap Add Rule to start</string>
     <string name="t47">Behavior &amp; Style</string>
     <string name="t48">Space between characters</string>
     <string name="t49">Uppercase</string>
@@ -72,6 +72,8 @@
     <string name="t58">Only tampers when input ends with punctuation (。！？,); manual send is not limited</string>
     <string name="t59">Random Kaomoji</string>
     <string name="t60">Automatically append a random kaomoji to every message (includes NekoType original cat kaomoji)</string>
+    <string name="st_wechat_exp">Experimental WeChat adaptation</string>
+    <string name="st_wechat_exp_desc">Direct SET_TEXT with clipboard-paste fallback for faster write-back; turn off to restore the old verification logic</string>
     <string name="t1001">Delete Optimization</string>
     <string name="t1002">Skip rewriting while you are deleting text; resume about 0.5s after you stop (avoids the suffix coming back)</string>
     <string name="t1003">Voice Input Optimization</string>
@@ -115,9 +117,9 @@
     <string name="t97">Export Config</string>
     <string name="t98">Import Config</string>
     <string name="t99">Export all rules &amp; settings (share/migrate), import takes effect immediately</string>
-    <string name="t100">App Blacklist</string>
-    <string name="t101">Apps in the blacklist are not auto-tampered; manual floating button still works</string>
-    <string name="t102">Manage App Blacklist</string>
+    <string name="t100">App Lists</string>
+    <string name="t101">Blacklist mode: apps in the list are not auto-tampered; whitelist mode: only apps in the list are auto-tampered. Manual floating button is not restricted</string>
+    <string name="t102">Manage app lists</string>
     <string name="t103">Details</string>
     <string name="t104">Version Info</string>
     <string name="t105">About</string>
@@ -153,13 +155,13 @@
     <string name="notif_stop">Stop Service</string>
     <string name="u0">Config imported</string>
     <string name="u1">Custom background applied</string>
-    <string name="u2">Please tap \"Start Service\" first to keep the service running, then enable Hidden Mode\n(notification \"Stop Service\" + password is the only recovery entry)</string>
+    <string name="u2">Please tap Start Service first to keep the service running, then enable Hidden Mode\n(notification Stop Service + password is the only recovery entry)</string>
     <string name="u3">Shizuku granted ✅</string>
     <string name="u4">App log cleared</string>
-    <string name="u5">Please grant \"Display over other apps\" permission first</string>
-    <string name="u6">Switched to \"%1$s\"</string>
+    <string name="u5">Please grant Display over other apps permission first</string>
+    <string name="u6">Switched to %1$s</string>
     <string name="u7">Password cannot be empty</string>
-    <string name="u8">Delete current preset \"%1$s\"? This cannot be undone.</string>
+    <string name="u8">Delete current preset %1$s? This cannot be undone.</string>
     <string name="u9">Content is empty</string>
     <string name="u10">Hidden Mode</string>
     <string name="u11">Passwords do not match</string>
@@ -167,7 +169,7 @@
     <string name="u13">Service started, floating button stays on screen edge</string>
     <string name="u14">Language switch failed</string>
     <string name="u15">Copied: %1$s</string>
-    <string name="u16">Added %1$d apps to blacklist</string>
+    <string name="u16">Selected %1$d apps</string>
     <string name="u17">Service stopped</string>
     <string name="u18">Set Password</string>
     <string name="u19">Random pool cannot be empty</string>
@@ -183,7 +185,7 @@
     <string name="u29">Keep at least one preset</string>
     <string name="u30">Select Rule Preset</string>
     <string name="u31">If you like NekoType, consider sponsoring the developer!</string>
-    <string name="u32">With \"Force Tamper Keyboard\" enabled, text you type on the native keyboard will be automatically tampered by your rules and may be auto-sent.\n\n</string>
+    <string name="u32">With Force Tamper Keyboard enabled, text you type on the native keyboard will be automatically tampered by your rules and may be auto-sent.\n\n</string>
     <string name="u33">Cannot open image picker</string>
     <string name="u34">Password Lock disabled</string>
     <string name="u35">Please enter the text to detect</string>
@@ -193,18 +195,18 @@
     <string name="u39">Import Config</string>
     <string name="u40">Export failed</string>
     <string name="u41">Default background restored</string>
-    <string name="u42">Paste the text exported from \"Export Config\"</string>
+    <string name="u42">Paste the text exported from Export Config</string>
     <string name="u43">Content cannot be empty</string>
     <string name="u44">Sponsor</string>
     <string name="u45">NekoType has been tampered with (signature mismatch or running under a Hook framework).\n\nTo protect your safety and the password lock, the app has stopped. Please reinstall from the official source.</string>
     <string name="u46">Please enable Password Lock first</string>
     <string name="u47">Log copied</string>
-    <string name="u48">Blacklist cleared</string>
+    <string name="u48">List cleared</string>
     <string name="u49">Battery whitelist written (%1$s) ✅</string>
     <string name="u50">Hidden Mode enabled: icon hidden\nHeartbeat keep-alive auto-enabled, recover via notification + password</string>
     <string name="u51">Hidden Mode disabled, icon restored</string>
     <string name="u52">Language</string>
-    <string name="u53">Deleted, switched to \"%1$s\"</string>
+    <string name="u53">Deleted, switched to %1$s</string>
     <string name="u54">Please activate Device Admin (step 2 of permission guide) first, then enable Hidden Mode</string>
     <string name="u55">Nothing to copy</string>
     <string name="u56">Whitelist failed: %1$s</string>
@@ -265,8 +267,8 @@
     <string name="u111">🎉 Core permissions ready, you can start now!</string>
     <string name="u112">Enable</string>
     <string name="u113">Not now</string>
-    <string name="u114">Enable Hidden Mode?\n\nAfter enabling:\n· Desktop icon disappears, invisible in background, can not be found or killed\n· App name stays the same (not encrypted)\n· Heartbeat keep-alive turns on automatically, notification \"Stop Service\" is the only recovery entry\n\n⚠️ Strongly recommended (backup entry):\n1. Pull down the notification shade, add the \"NekoType\" tile to Quick Settings - even if the service is killed, the tile can still restore it\n2. Huawei: Settings - Apps - App launch - NekoType - set to \"Manual management\" and allow auto-start/background activity, otherwise the system will block revival\n\nCan be turned off anytime in Behavior &amp; Style (password required).</string>
-    <string name="u115">With \"Force Tamper Keyboard\" enabled, text you type on the native keyboard will be automatically tampered by your rules and may be auto-sent.\n\nPlease confirm:\n1. This feature is only for personal use on your own device, legal and compliant;\n2. Once enabled, input in all apps may be rewritten automatically (chat, search, comments, etc.), use it with care;\n3. It is forbidden for harassment, fraud, forgery, impersonation or other illegal purposes; all consequences are borne by the user;\n4. Keep the accessibility service enabled; you can turn this switch off anytime to restore normal input.\n\nTapping \"I understand and agree\" means you have read and accepted the above.</string>
+    <string name="u114">Enable Hidden Mode?\n\nAfter enabling:\n· Desktop icon disappears, invisible in background, can not be found or killed\n· App name stays the same (not encrypted)\n· Heartbeat keep-alive turns on automatically, notification Stop Service is the only recovery entry\n\n⚠️ Strongly recommended (backup entry):\n1. Pull down the notification shade, add the NekoType tile to Quick Settings - even if the service is killed, the tile can still restore it\n2. Huawei: Settings - Apps - App launch - NekoType - set to Manual management and allow auto-start/background activity, otherwise the system will block revival\n\nCan be turned off anytime in Behavior &amp; Style (password required).</string>
+    <string name="u115">With Force Tamper Keyboard enabled, text you type on the native keyboard will be automatically tampered by your rules and may be auto-sent.\n\nPlease confirm:\n1. This feature is only for personal use on your own device, legal and compliant;\n2. Once enabled, input in all apps may be rewritten automatically (chat, search, comments, etc.), use it with care;\n3. It is forbidden for harassment, fraud, forgery, impersonation or other illegal purposes; all consequences are borne by the user;\n4. Keep the accessibility service enabled; you can turn this switch off anytime to restore normal input.\n\nTapping I understand and agree means you have read and accepted the above.</string>
     <string name="u116">Log recording enabled</string>
     <string name="u117">Log recording disabled</string>
     <string name="u118">Log recording disabled, enable it above</string>
@@ -338,6 +340,9 @@
     <string name="u174">Not a valid NekoType config file</string>
     <string name="u175">Import failed: %1$s</string>
     <string name="u176">Cannot recognize config content</string>
+    <string name="al_mode_black">Blacklist mode</string>
+    <string name="al_mode_white">Whitelist mode</string>
+    <string name="u160w">Enabled: auto-tamper only in %1$d whitelisted apps (manual floating button not restricted)</string>
     <string name="u160">Enabled: %1$d apps in blacklist will not auto-tamper (floating button manual not limited)</string>
     <string name="u161">Disabled: all apps auto-tamper (enable the switch first)</string>
     <string name="u162">NekoType needs Device Admin permission for stronger system-level capabilities (optional).</string>
@@ -364,9 +369,9 @@
     <string name="mode_punct_append">Punctuation Append Mode</string>
     <string name="mode_punct_append_desc">Transform only when input ends with punctuation, more natural</string>
     <string name="mode_current">Current Mode</string>
-    <string name="mode_applied">Switched to "%1$s"</string>
+    <string name="mode_applied">Switched to %1$s</string>
     <string name="mode_force_disclaimer_title">Disclaimer</string>
-    <string name="mode_force_disclaimer">When "Keyboard Tamper Mode" is enabled, input box content will be automatically transformed according to your rules while typing with native keyboard, and may be auto-sent.</string>
+    <string name="mode_force_disclaimer">When Keyboard Tamper Mode is enabled, input box content will be automatically transformed according to your rules while typing with native keyboard, and may be auto-sent.</string>
     <string name="mode_agree">I understand and agree</string>
     <string name="mode_force_enabled">Keyboard Tamper Mode enabled</string>
     <string name="mode_force_pending">Keyboard Tamper Mode enabled, effective after starting service</string>
@@ -531,7 +536,7 @@
     <string name="fm_no_preset">No presets yet. Create one in the app.</string>
     <string name="fm_preset_rules_count">%1$d rules</string>
     <string name="fm_preset_manage">Manage presets…</string>
-    <string name="fm_preset_switched">Switched to preset \"%1$s\"</string>
+    <string name="fm_preset_switched">Switched to preset %1$s</string>
     <string name="fm_action_transform">Transform &amp; send now</string>
     <string name="fm_action_autosend">Auto send</string>
     <string name="fm_action_silent">Silent modify (Shizuku)</string>
@@ -554,17 +559,17 @@
     <string name="fm_back">Back</string>
     <string name="fm_edit">Edit</string>
     <string name="fm_no_rules">No rules in the current preset</string>
-    <string name="st_auto_service">Auto-start service on launch</string>
-    <string name="st_auto_service_desc">Start the floating service automatically each time you reopen the app (only if it was enabled last time; stays stopped if you stopped it on purpose)</string>
     <string name="st_auto_shizuku">Auto Shizuku grant on launch</string>
     <string name="st_auto_shizuku_desc">Grant all permissions via Shizuku every time the app opens (accessibility / device admin / battery whitelist / overlay). Requires Shizuku running. Off by default</string>
     <string name="st_auto_shizuku_hint">Enabled: permissions will be granted automatically on next launch (Shizuku must be running)</string>
     <string name="bm_blind_no_suffix">This app hides its input box content, so only suffix-type rules can be appended. No usable suffix rule found (prefix/replace rules can\'t work here).</string>
 
     <!-- i18n: rule preset advanced management (rename / merge / undo merge) -->
-    <string name="pm_manage">Manage</string>
+    <string name="pm_manage">Manage presets</string>
+    <string name="pm_manage_preset">Manage presets</string>
     <string name="pm_btn_select">Select preset</string>
-    <string name="pm_btn_delete">Delete</string>
+    <string name="pm_btn_delete">Delete preset</string>
+    <string name="pm_btn_delete_preset">Delete preset</string>
     <string name="pm_manage_title">Manage rule presets</string>
     <string name="pm_manage_empty">No presets to manage</string>
     <string name="pm_rename">Rename</string>
@@ -572,13 +577,28 @@
     <string name="pm_rename_hint">New name</string>
     <string name="pm_name_empty">Name cannot be empty</string>
     <string name="pm_name_dup">A preset with this name already exists</string>
-    <string name="pm_renamed">Renamed to \"%1$s\"</string>
+    <string name="pm_renamed">Renamed to %1$s</string>
     <string name="pm_merge_hint">Tick presets to merge — their rules are appended to the current preset (source presets are unchanged).</string>
     <string name="pm_merge_btn">Merge selected</string>
-    <string name="pm_merged">Merged %1$d rules into \"%2$s\"</string>
+    <string name="pm_merged">Merged %1$d rules into %2$s</string>
     <string name="pm_merge_none_sel">No mergeable preset selected (the current preset can\'t merge into itself)</string>
     <string name="pm_confirm">Confirm</string>
     <string name="pm_close">Close</string>
     <string name="pm_current_row">%1$s (%2$d rules · current)</string>
     <string name="pm_count">%1$s (%2$d rules)</string>
+    <string name="st_mention_guard">@mention input guard</string>
+    <string name="st_mention_guard_desc">On by default. Rewriting pauses while an unfinished @name is being typed, so the mention picker is not interrupted. Sending still transforms normally.</string>
+    <string name="u206">Enable NekoType manually in Settings → Security → More security settings → Device admin apps</string>    <string name="u209">Some permissions were denied. Please enable SMS and app-list permissions manually in app details.</string>
+
+    <string name="ap_title">App preset mapping</string>
+    <string name="ap_switch">Auto switch</string>
+    <string name="ap_hint">Auto-switch presets for mapped apps; unmapped apps keep the current preset</string>
+    <string name="ap_add">Add app mapping</string>
+    <string name="ap_pick_app">Pick an app</string>
+    <string name="ap_pick_preset">Pick a preset</string>
+    <string name="ap_removed">Mapping removed</string>
+    <string name="ap_empty">No mappings yet, add one above</string>
+    <string name="hc_applist_loading">Loading app list…</string>
+    <string name="st_log_settings_desc">Switch controls logging; tap this row to view the run log</string>
+    <string name="st_admin_search_tip">On some devices, search "Activate" in Settings and enable it under Device administration</string>
 </resources>

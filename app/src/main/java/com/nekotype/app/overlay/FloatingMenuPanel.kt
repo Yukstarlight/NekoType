@@ -83,6 +83,10 @@ class FloatingMenuPanel(private val service: FloatingButtonService) {
     private var footerHost: LinearLayout? = null
     private var titleView: TextView? = null
     private var scrollView: ScrollView? = null
+    private var cardLp: FrameLayout.LayoutParams? = null
+    private var panelWpx = 0
+    private var maxScrollHpx = 0
+    private var screenHpx = 0
     var isShowing = false
         private set
 
@@ -126,6 +130,9 @@ class FloatingMenuPanel(private val service: FloatingButtonService) {
 
             val panelW = dp(276)
             val maxScrollH = (screenH * 0.5f).toInt()
+            panelWpx = panelW
+            maxScrollHpx = maxScrollH
+            screenHpx = screenH
             val built = buildPanel(panelW, maxScrollH)
             card = built.card
             contentHost = built.host
@@ -171,6 +178,7 @@ class FloatingMenuPanel(private val service: FloatingButtonService) {
                 leftMargin = x
                 topMargin = y
             }
+            this.cardLp = cardLp
             fr.addView(built.card, cardLp)
             // 面板可拖动：按住标题栏可拖到任意位置，松手记忆
             built.card.setOnTouchListener(dragListener(cardLp, screenW, screenH))
@@ -208,8 +216,42 @@ class FloatingMenuPanel(private val service: FloatingButtonService) {
         titleView?.text = titleFor(newMode)
         contentHost?.let { buildBody(it) }
         footerHost?.let { buildFooter(it) }
+        relayoutPanel()
         scrollView?.scrollTo(0, 0)
         Log.d(TAG, "switched to $newMode")
+    }
+
+    /**
+     * 切页后按新内容重算高度：滚动区高度 = min(内容高, maxScrollH)，面板高度随之更新。
+     * 不做这步的话，面板高度还是按「主菜单」页算的，内容更长的页面（行为与样式）会被裁掉。
+     */
+    private fun relayoutPanel() {
+        val host = contentHost ?: return
+        val scroll = scrollView ?: return
+        val card = card ?: return
+        val lp = cardLp ?: return
+        try {
+            host.measure(
+                View.MeasureSpec.makeMeasureSpec(panelWpx - dp(28), View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            )
+            val contentH = host.measuredHeight
+            val scrollH = if (contentH in 1 until maxScrollHpx) contentH else maxScrollHpx
+            scroll.layoutParams = scroll.layoutParams.apply { height = scrollH }
+            card.measure(
+                View.MeasureSpec.makeMeasureSpec(panelWpx, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            )
+            val panelH = card.measuredHeight.coerceAtLeast(dp(120))
+            val gap = dp(8)
+            lp.height = panelH
+            val maxY = (screenHpx - panelH - gap).coerceAtLeast(gap)
+            lp.topMargin = lp.topMargin.coerceIn(gap, maxY)
+            card.layoutParams = lp
+            card.requestLayout()
+        } catch (t: Throwable) {
+            Log.w(TAG, "relayout failed", t)
+        }
     }
 
     fun dismiss() {
@@ -225,6 +267,7 @@ class FloatingMenuPanel(private val service: FloatingButtonService) {
         footerHost = null
         titleView = null
         scrollView = null
+        cardLp = null
         isShowing = false
         if (current === this) current = null
         Log.d(TAG, "menu dismissed")
@@ -438,6 +481,8 @@ class FloatingMenuPanel(private val service: FloatingButtonService) {
         host.addView(toggleRow(str(R.string.t1001), AppPrefs.deleteOptimizeEnabled) { AppPrefs.deleteOptimizeEnabled = it })
         host.addView(toggleRow(str(R.string.t1003), AppPrefs.voiceInputOptimizeEnabled) { AppPrefs.voiceInputOptimizeEnabled = it })
         host.addView(toggleRow(str(R.string.i43), AppPrefs.priorityGlobalEnabled) { AppPrefs.priorityGlobalEnabled = it })
+        host.addView(toggleRow(str(R.string.st_mention_guard), AppPrefs.mentionGuardEnabled) { AppPrefs.mentionGuardEnabled = it })
+        host.addView(toggleRow(str(R.string.st_wechat_exp), AppPrefs.wechatExperimentalEnabled) { AppPrefs.wechatExperimentalEnabled = it })
     }
 
     // ---------- 行组件 ----------
@@ -567,7 +612,9 @@ class FloatingMenuPanel(private val service: FloatingButtonService) {
             isClickable = true
             setOnClickListener {
                 haptic()
-                RuleEditOverlay(service).show(rule) {
+                // 面板快照可能已过期：编辑前按 id 取最新规则，避免把旧的锚点/禁用值写回去覆盖掉新编辑
+                val fresh = AppPrefs.rules().firstOrNull { it.id == rule.id } ?: rule
+                RuleEditOverlay(service).show(fresh) {
                     contentHost?.let { buildBody(it) }
                 }
             }

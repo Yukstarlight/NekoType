@@ -178,7 +178,7 @@ class RuleEditOverlay(private val service: FloatingButtonService) {
             setPadding(0, dp(4), 0, dp(4))
         }
 
-        val inValue = input(str(R.string.u83), rule.type == RuleType.PREFIX || rule.type == RuleType.SUFFIX)
+        val inValue = input(str(R.string.u83))
         inValue.setText(rule.value)
         val inFrom = input(str(R.string.u84))
         inFrom.setText(rule.value)
@@ -192,9 +192,14 @@ class RuleEditOverlay(private val service: FloatingButtonService) {
         fun refreshFields(type: RuleType) {
             fields.removeAllViews()
             when (type) {
-                RuleType.PREFIX, RuleType.SUFFIX -> fields.addView(inValue)
-                RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX,
-                RuleType.RANDOM_PREFIX_ONCE, RuleType.RANDOM_SUFFIX_ONCE -> {
+                RuleType.PREFIX, RuleType.SUFFIX -> {
+                    fields.addView(inValue)
+                }
+                RuleType.RANDOM_PREFIX, RuleType.RANDOM_PREFIX_ONCE -> {
+                    fields.addView(inValue)
+                    fields.addView(inChance)
+                }
+                RuleType.RANDOM_SUFFIX, RuleType.RANDOM_SUFFIX_ONCE -> {
                     fields.addView(inValue)
                     fields.addView(inChance)
                 }
@@ -253,13 +258,23 @@ class RuleEditOverlay(private val service: FloatingButtonService) {
                 val type = rule.type
                 val pri = textOf(inPriority).toIntOrNull()?.coerceIn(1, 100) ?: 50
                 val base: NekoRule? = when (type) {
-                    RuleType.PREFIX, RuleType.SUFFIX -> {
+                    RuleType.PREFIX -> {
                         val v = textOf(inValue).trim()
                         if (v.isEmpty()) { toast(str(R.string.u43)); return@setOnClickListener }
                         rule.copy(value = v, priority = pri)
                     }
-                    RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX,
-                    RuleType.RANDOM_PREFIX_ONCE, RuleType.RANDOM_SUFFIX_ONCE -> {
+                    RuleType.SUFFIX -> {
+                        val v = textOf(inValue).trim()
+                        if (v.isEmpty()) { toast(str(R.string.u43)); return@setOnClickListener }
+                        rule.copy(value = v, priority = pri)
+                    }
+                    RuleType.RANDOM_PREFIX, RuleType.RANDOM_PREFIX_ONCE -> {
+                        val v = textOf(inValue).trim()
+                        if (v.isEmpty()) { toast(str(R.string.u19)); return@setOnClickListener }
+                        val chance = textOf(inChance).toIntOrNull()?.coerceIn(1, 100) ?: 50
+                        rule.copy(value = v, chance = chance, priority = pri)
+                    }
+                    RuleType.RANDOM_SUFFIX, RuleType.RANDOM_SUFFIX_ONCE -> {
                         val v = textOf(inValue).trim()
                         if (v.isEmpty()) { toast(str(R.string.u19)); return@setOnClickListener }
                         val chance = textOf(inChance).toIntOrNull()?.coerceIn(1, 100) ?: 50

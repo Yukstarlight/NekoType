@@ -136,25 +136,12 @@ class HomeActivity : AppCompatActivity() {
     }
 
     /**
-     * 打开应用自动化：
-     * 1. 自动启动悬浮服务：仅当上次服务处于「已启用」状态才拉起，用户主动停止过则保持停止；
-     * 2. 自动 Shizuku 授权所有权限：后台跑一遍 无障碍→设备管理员→免电→悬浮窗，
-     *    需 Shizuku 已运行；尚未授权时先请求一次权限（下次打开再自动授权）。
+     * 打开应用自动化（Shizuku 授权）：
+     * 自动 Shizuku 授权所有权限：后台跑一遍 无障碍→设备管理员→免电→悬浮窗，
+     * 需 Shizuku 已运行；尚未授权时先请求一次权限（下次打开再自动授权）。
      */
     private fun applyLaunchAutomation() {
-        // 1. 自动启动悬浮服务
-        try {
-            if (AppPrefs.autoStartServiceOnLaunch && AppPrefs.serviceEnabled &&
-                !FloatingButtonService.isRunning()
-            ) {
-                FloatingButtonService.start(this)
-                NekoLog.info("打开应用：自动启动悬浮服务")
-            }
-        } catch (t: Throwable) {
-            NekoLog.warn("自动启动悬浮服务失败：${t.javaClass.simpleName}")
-        }
-
-        // 2. 自动 Shizuku 授权所有权限
+        // 自动 Shizuku 授权所有权限
         if (!AppPrefs.autoShizukuGrantOnLaunch) return
         try {
             if (!SysPower.isShizukuAvailable()) {
@@ -180,7 +167,6 @@ class HomeActivity : AppCompatActivity() {
             NekoLog.warn("自动 Shizuku 授权异常：${t.javaClass.simpleName}: ${t.message}")
         }
     }
-
     /** 根据外部 Intent 的 EXTRA_TAB 切换到对应底部导航 tab */
     private fun applyTabFromIntent(intent: Intent?) {
         val tab = intent?.getStringExtra(EXTRA_TAB) ?: return

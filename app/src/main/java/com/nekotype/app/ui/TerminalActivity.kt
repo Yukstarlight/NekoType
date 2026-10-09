@@ -350,7 +350,7 @@ class TerminalActivity : AppCompatActivity(), TerminalSessionClient, TerminalVie
                     "__CAT_BOMB_RUN=0",
                     // ===== 欢迎横幅 =====
                     "echo '========================================'",
-                    if (isNeko) "echo '   Welcome to MUIT 终端喵~  BEAT 3'" else "echo '     Welcome to Mist Unveils Infinite Tomorrows \u96c6\u6210\u7ec8\u7aef  BEAT 3'",
+                    if (isNeko) "echo '   Welcome to MUIT 终端喵~  GA 1'" else "echo '     Welcome to Mist Unveils Infinite Tomorrows \u96c6\u6210\u7ec8\u7aef  GA 1'",
                     if (isNeko) "echo '   Android Linux - sh + toybox 喵~'" else "echo '     Android Linux - sh + toybox'",
                     "echo '========================================'",
                     "echo ''",

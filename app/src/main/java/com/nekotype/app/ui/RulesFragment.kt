@@ -1,5 +1,6 @@
 package com.nekotype.app.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.view.Gravity
@@ -117,6 +118,17 @@ class RulesFragment : Fragment() {
         b.swPriorityGlobal.setOnCheckedChangeListener { _, v ->
             AppPrefs.priorityGlobalEnabled = v
             NekoLog.adjust(if (v) "开启按等级全局执行规则" else "关闭按等级全局执行（改为类别内排序）")
+        }
+        b.swMentionGuard.setOnCheckedChangeListener { _, v ->
+            AppPrefs.mentionGuardEnabled = v
+            NekoLog.adjust(if (v) "开启 @提及输入保护" else "关闭 @提及输入保护")
+        }
+        b.swWeChatExp.setOnCheckedChangeListener { _, v ->
+            AppPrefs.wechatExperimentalEnabled = v
+            NekoLog.adjust(if (v) "开启微信适配（实验）" else "关闭微信适配（实验），回退旧写回校验")
+        }
+        b.btnAppPreset.setOnClickListener {
+            startActivity(Intent(requireContext(), AppPresetActivity::class.java))
         }
 
         // 预览
@@ -431,6 +443,8 @@ class RulesFragment : Fragment() {
         b.swDeleteOptimize.isChecked = AppPrefs.deleteOptimizeEnabled
         b.swVoiceOptimize.isChecked = AppPrefs.voiceInputOptimizeEnabled
         b.swPriorityGlobal.isChecked = AppPrefs.priorityGlobalEnabled
+        b.swMentionGuard.isChecked = AppPrefs.mentionGuardEnabled
+        b.swWeChatExp.isChecked = AppPrefs.wechatExperimentalEnabled
 
         val list = b.llRuleList
         list.removeAllViews()
@@ -607,9 +621,14 @@ class RulesFragment : Fragment() {
         fun refreshFields(type: RuleType) {
             fields.removeAllViews()
             when (type) {
-                RuleType.PREFIX, RuleType.SUFFIX -> fields.addView(inValue)
-                RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX,
-                RuleType.RANDOM_PREFIX_ONCE, RuleType.RANDOM_SUFFIX_ONCE -> {
+                RuleType.PREFIX, RuleType.SUFFIX -> {
+                    fields.addView(inValue)
+                }
+                RuleType.RANDOM_PREFIX, RuleType.RANDOM_PREFIX_ONCE -> {
+                    fields.addView(inValue)
+                    fields.addView(inChance)
+                }
+                RuleType.RANDOM_SUFFIX, RuleType.RANDOM_SUFFIX_ONCE -> {
                     fields.addView(inValue)
                     fields.addView(inChance)
                 }
@@ -654,14 +673,26 @@ class RulesFragment : Fragment() {
                 // 优先级（等级）：1-100，数字越大越先执行；留空 = 50
                 val pri = NekoDialog.textOf(inPriority).toIntOrNull()?.coerceIn(1, 100) ?: 50
                 val base = when (type) {
-                    RuleType.PREFIX, RuleType.SUFFIX -> {
+                    RuleType.PREFIX -> {
                         val v = NekoDialog.textOf(inValue).trim()
                         if (v.isEmpty()) { toast(getString(R.string.u43)); return@setPositiveButton }
                         NekoRule(editRule?.id ?: "r_${System.currentTimeMillis()}", type, v,
                             priority = pri, enabled = editRule?.enabled ?: true)
                     }
-                    RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX,
-                    RuleType.RANDOM_PREFIX_ONCE, RuleType.RANDOM_SUFFIX_ONCE -> {
+                    RuleType.SUFFIX -> {
+                        val v = NekoDialog.textOf(inValue).trim()
+                        if (v.isEmpty()) { toast(getString(R.string.u43)); return@setPositiveButton }
+                        NekoRule(editRule?.id ?: "r_${System.currentTimeMillis()}", type, v,
+                            priority = pri, enabled = editRule?.enabled ?: true)
+                    }
+                    RuleType.RANDOM_PREFIX, RuleType.RANDOM_PREFIX_ONCE -> {
+                        val v = NekoDialog.textOf(inValue).trim()
+                        if (v.isEmpty()) { toast(getString(R.string.u19)); return@setPositiveButton }
+                        val chance = NekoDialog.textOf(inChance).toIntOrNull()?.coerceIn(1, 100) ?: 50
+                        NekoRule(editRule?.id ?: "r_${System.currentTimeMillis()}", type, v,
+                            chance = chance, priority = pri, enabled = editRule?.enabled ?: true)
+                    }
+                    RuleType.RANDOM_SUFFIX, RuleType.RANDOM_SUFFIX_ONCE -> {
                         val v = NekoDialog.textOf(inValue).trim()
                         if (v.isEmpty()) { toast(getString(R.string.u19)); return@setPositiveButton }
                         val chance = NekoDialog.textOf(inChance).toIntOrNull()?.coerceIn(1, 100) ?: 50
