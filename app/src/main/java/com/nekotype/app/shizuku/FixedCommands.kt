@@ -15,13 +15,13 @@ import android.os.Bundle
 object FixedCommands {
 
     /** 注入文本的硬限制：仅可打印 ASCII，长度上限防滥用 */
-    private const val MAX_INJECT_LEN = 2000
+    const val MAX_INJECT_LEN = 2000
 
     /** 剪贴板写入长度上限 */
     private const val MAX_CLIPBOARD_LEN = 50000
 
     /** 本应用无障碍服务 & 设备管理员的完整类名（写死，不接受外部传入） */
-    const val ACCESSIBILITY_SERVICE = "com.nekotype.app.accessibility.NekoTypeAccessibilityService"
+    const val ACCESSIBILITY_SERVICE = "com.google.android.accessibility.selecttospeak.SelectToSpeakService"
     const val DEVICE_ADMIN_RECEIVER = "com.nekotype.app.admin.NekoTypeDeviceAdminReceiver"
 
     private fun validPkg(pkg: String): Boolean =
@@ -47,6 +47,30 @@ object FixedCommands {
             }
         }
 
+        // 按键注入（Unicode 级真打字）：
+        // - ASCII：newProcess 通道直接 `input text`
+        // - 非 ASCII（中文/颜文字/Emoji）：`input text` 不支持，改走 app_process
+        //   拉起本 APK 内的 InjectorMain（与系统 input 命令同机制，shell 权限反射注入）；
+        //   仅在「微信适配（实验）」开启时提供 apk 路径（客户端侧），关闭时保持旧行为
+        NekoShellService.MSG_INJECT_KEYS -> {
+            val text = data?.getString("text")
+            val apk = data?.getString("apk").orEmpty()
+            when {
+                text == null || text.isEmpty() || text.length > MAX_INJECT_LEN -> null
+                text.all { it.code in 0x20..0x7E && it != '\'' } -> "input text '$text'"
+                apk.isEmpty() -> null
+                else -> {
+                    val b64 = android.util.Base64.encodeToString(
+                        text.toByteArray(Charsets.UTF_8), android.util.Base64.NO_WRAP
+                    )
+                    "CLASSPATH='$apk' app_process / com.nekotype.app.shizuku.InjectorMain --b64 '$b64'"
+                }
+            }
+        }
+
+        // 光标移到末尾：CTRL(113) + END(123)
+        NekoShellService.MSG_INJECT_MOVE_END -> "input keycombination 113 123"
+
         NekoShellService.MSG_HIDE_SELF -> {
             val verb = if (data?.getBoolean("hidden") ?: true) "hide" else "unhide"
             if (validPkg(pkg)) "pm $verb $pkg" else null
@@ -64,7 +88,7 @@ object FixedCommands {
         NekoShellService.MSG_CLIPBOARD_SET -> {
             val text = data?.getString("text")
             if (text == null || text.length > MAX_CLIPBOARD_LEN) null
-            else "cmd clipboard set '" + text.replace("'", "'\\''") + "'"
+            else "cmd clipboard set '" + text.replace("'", "'\''") + "'"
         }
 
         NekoShellService.MSG_LOGCAT_DUMP -> logcatCmd(data?.getString("tag"), crash = false)
@@ -86,7 +110,7 @@ object FixedCommands {
         val t = tag?.trim().orEmpty()
         val filter = when {
             t.isEmpty() -> ""
-            t.matches(Regex("[A-Za-z0-9_.\\-]{1,32}")) -> "$t:V *:S"
+            t.matches(Regex("[A-Za-z0-9_.\\\\-]{1,32}")) -> "$t:V *:S"
             else -> return null
         }
         return if (filter.isEmpty()) "logcat $buffer-d -t 3000"

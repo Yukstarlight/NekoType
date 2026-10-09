@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">NekoType</string>
     <string name="splash_subtitle">Welcome to Mist Unveils Infinite Tomorrows</string>
-    <string name="splash_version">v2.7.8</string>
+    <string name="splash_version">v2.8.0</string>
     <string name="accessibility_label">NekoType 消息变换</string>
     <string name="accessibility_description">NekoType 需要无障碍权限来检测输入法弹出、读取正在输入的消息、自动添加前缀/后缀/文本替换，并通过悬浮按钮触发改写后发送。所有文本处理均在本地完成。</string>
     <string name="admin_label">NekoType 设备管理员</string>
@@ -71,8 +71,10 @@
     <string name="t58">强制篡改时：输入以标点（。！？,）结尾才篡改，打完一句才改（手动点发送不受限）</string>
     <string name="t59">随机颜文字</string>
     <string name="t60">每条消息自动追加随机颜文字（含 NekoType 原创猫系颜文字；也可用「随机颜文字」规则自定义池）</string>
+    <string name="st_wechat_exp">微信实验性适配</string>
+    <string name="st_wechat_exp_desc">SET_TEXT 直写 + 剪贴板粘贴兜底，写回更快；写回异常时关闭此开关回退旧逻辑</string>
     <string name="t1001">删除优化</string>
-    <string name="t1002">删除文字时暂不改写，停手约 0.5 秒后恢复（避免"后缀删不掉／越删越多"）</string>
+    <string name="t1002">删除文字时暂不改写，停手约 0.5 秒后恢复（避免后缀删不掉／越删越多）</string>
     <string name="t1003">语音输入优化</string>
     <string name="t1004">语音输入时用更长的停顿判定（默认 1 秒）再改写，避免说到一半被打断</string>
     <string name="t61">密码锁定</string>
@@ -114,9 +116,9 @@
     <string name="t97">导出配置</string>
     <string name="t98">导入配置</string>
     <string name="t99">导出全部规则与设置（分享/换机），导入后立即生效</string>
-    <string name="t100">应用黑名单</string>
-    <string name="t101">黑名单内的应用不自动篡改（强制篡改键盘 / 静默修改自动注入不生效），悬浮球手动不受限</string>
-    <string name="t102">管理应用黑名单</string>
+    <string name="t100">应用名单</string>
+    <string name="t101">黑名单模式：名单内应用不自动篡改；白名单模式：仅名单内应用自动篡改。悬浮球手动不受限</string>
+    <string name="t102">管理应用名单</string>
     <string name="t103">详细信息</string>
     <string name="t104">版本信息</string>
     <string name="t105">关于</string>
@@ -166,7 +168,7 @@
     <string name="u13">服务已启动，悬浮按钮常驻屏幕边缘</string>
     <string name="u14">语言切换失败</string>
     <string name="u15">已复制：%1$s</string>
-    <string name="u16">已全选：%1$d 个应用加入黑名单</string>
+    <string name="u16">已全选 %1$d 个应用</string>
     <string name="u17">服务已停止</string>
     <string name="u18">设置密码</string>
     <string name="u19">随机池不能为空</string>
@@ -198,7 +200,7 @@
     <string name="u45">检测到 NekoType 已被篡改（签名不匹配或运行在 Hook 框架下）。\n\n为保护你的安全与密码锁有效性，本应用已停止运行。\n请从官方渠道重新安装。</string>
     <string name="u46">请先开启密码锁定</string>
     <string name="u47">日志已复制</string>
-    <string name="u48">已清空黑名单</string>
+    <string name="u48">已清空名单</string>
     <string name="u49">电池优化白名单已写入（%1$s）✅</string>
     <string name="u50">隐藏模式已开启：图标已隐藏\n心跳保活已自动开启，通知栏「停止服务」+ 密码可恢复</string>
     <string name="u51">隐藏模式已关闭，桌面图标已恢复</string>
@@ -337,6 +339,9 @@
     <string name="u174">不是有效的 NekoType 配置文件</string>
     <string name="u175">导入失败：%1$s</string>
     <string name="u176">无法识别配置内容</string>
+    <string name="al_mode_black">黑名单模式</string>
+    <string name="al_mode_white">白名单模式</string>
+    <string name="u160w">已启用：仅白名单内 %1$d 个应用自动篡改（悬浮球手动不受限）</string>
     <string name="u160">已启用：黑名单内 %1$d 个应用不自动篡改（悬浮球手动不受限）</string>
     <string name="u161">未启用：所有应用都自动篡改（可先开启开关）</string>
     <string name="u162">NekoType 需要设备管理员权限以获得更强的系统级能力（可选）。</string>
@@ -425,7 +430,7 @@
     <string name="i41">优先级</string>
     <string name="i42">1-100，数字越大越先执行（同级按列表顺序；默认 50）</string>
     <string name="i43">按等级全局执行</string>
-    <string name="i44">开启后所有规则打散，严格按等级从大到小逐条执行（例：让"替换"在后缀之后生效）</string>
+    <string name="i44">开启后所有规则打散，严格按等级从大到小逐条执行（例：让替换在后缀之后生效）</string>
     <string name="i45">等级</string>
     <string name="i46">免责声明</string>
     <string name="i47">本软件通过安卓无障碍服务在打字时改写文本，仅供个人学习、娱乐与输入辅助使用。\n\n1. 请勿用于诈骗、骚扰、造谣、辱骂、冒充他人或任何违法违规活动；由此产生的一切后果由使用者本人承担。\n2. 改写可能因系统限制、应用版本或输入法差异而失败或不生效，请勿用于重要、敏感或不可撤回的沟通场景。\n3. 本软件仅在本机处理文本、不联网、不上传、不存储聊天内容（本应用未申请联网权限，系统层面无法联网）。\n4. 本软件与微信、QQ、腾讯及其他第三方应用无任何关联，非其官方产品，相关商标归各自权利人所有。\n5. 因使用本软件造成的任何直接或间接损失，开发者不承担赔偿责任。\n6. 未成年人请在监护人指导下使用。\n\n点击「同意」即表示你已阅读并接受以上条款，以及下方的《隐私政策》《第三方信息共享清单》与《开源许可》。</string>
@@ -517,4 +522,79 @@
     <string name="sp_hint">赞助码见下方，点击可放大，长按识别或截图保存\n你的支持会让小猫继续更新</string>
     <string name="sp_later">下次一定</string>
     <string name="sp_sponsored">已赞助</string>
+
+    <!-- i18n: 悬浮球长按快捷菜单 -->
+    <string name="fm_title">悬浮球快捷菜单</string>
+    <string name="fm_current_preset">当前预设：%1$s</string>
+    <string name="fm_open_app">回到应用</string>
+    <string name="fm_section_presets">规则预设</string>
+    <string name="fm_section_other">其他功能</string>
+    <string name="fm_no_preset">还没有任何预设，去应用里新建一个吧</string>
+    <string name="fm_preset_rules_count">%1$d 条规则</string>
+    <string name="fm_preset_manage">管理预设…</string>
+    <string name="fm_preset_switched">已切换到预设「%1$s」</string>
+    <string name="fm_action_transform">立即变换并发送</string>
+    <string name="fm_action_autosend">自动发送</string>
+    <string name="fm_action_silent">静默修改（Shizuku）</string>
+    <string name="fm_action_haptic">触感反馈</string>
+    <string name="fm_action_snap">拖动后边缘吸附</string>
+    <string name="fm_action_rules">编辑规则</string>
+    <string name="fm_action_settings">设置</string>
+    <string name="fm_action_log">运行日志</string>
+    <string name="fm_action_terminal">打开终端</string>
+    <string name="fm_action_stop">停止服务</string>
+    <string name="fm_on">开</string>
+    <string name="fm_off">关</string>
+    <string name="fm_close">关闭菜单</string>
+    <string name="fm_hint_long_press">已打开快捷菜单，以后长按悬浮球可随时再次打开</string>
+    <string name="fm_open_fail">无法打开应用界面，请从桌面图标进入</string>
+    <string name="fm_setting_long_press">长按弹出快捷菜单</string>
+    <string name="fm_setting_long_press_desc">长按悬浮球打开菜单：一键回到应用、切换规则预设、开关常用功能</string>
+    <string name="fm_open_rules_panel">规则开关</string>
+    <string name="fm_open_behavior_panel">行为与样式</string>
+    <string name="fm_back">返回</string>
+    <string name="fm_edit">编辑</string>
+    <string name="fm_no_rules">当前预设还没有规则</string>
+    <string name="st_auto_shizuku">打开应用时自动 Shizuku 授权</string>
+    <string name="st_auto_shizuku_desc">每次打开应用自动用 Shizuku 授权所有权限（无障碍 / 设备管理员 / 免电白名单 / 悬浮窗），需 Shizuku 已运行。默认关闭</string>
+    <string name="st_auto_shizuku_hint">已开启：下次打开应用会自动授权（需 Shizuku 已运行）</string>
+    <string name="bm_blind_no_suffix">该应用不暴露输入框内容，只能追加后缀类规则；当前没有可用的后缀规则（前缀/替换在此应用不可用）</string>
+
+    <!-- i18n: 规则预设高级管理（重命名 / 合并） -->
+    <string name="pm_manage">管理预设</string>
+    <string name="pm_manage_preset">管理预设</string>
+    <string name="pm_btn_select">选择预设</string>
+    <string name="pm_btn_delete">删除预设</string>
+    <string name="pm_btn_delete_preset">删除预设</string>
+    <string name="pm_manage_title">管理规则预设</string>
+    <string name="pm_manage_empty">暂无预设可管理</string>
+    <string name="pm_rename">重命名</string>
+    <string name="pm_rename_title">重命名预设</string>
+    <string name="pm_rename_hint">新名称</string>
+    <string name="pm_name_empty">名称不能为空</string>
+    <string name="pm_name_dup">已存在同名预设</string>
+    <string name="pm_renamed">已重命名为「%1$s」</string>
+    <string name="pm_merge_hint">勾选要合并的预设，规则会追加到当前预设末尾（来源预设本身不变）</string>
+    <string name="pm_merge_btn">合并选中</string>
+    <string name="pm_merged">已合并 %1$d 条规则到「%2$s」</string>
+    <string name="pm_merge_none_sel">未选择可合并的预设（当前预设不能合并到自身）</string>
+    <string name="pm_confirm">确认</string>
+    <string name="pm_close">关闭</string>
+    <string name="pm_current_row">%1$s（%2$d 条·当前）</string>
+    <string name="pm_count">%1$s（%2$d 条规则）</string>
+    <string name="st_mention_guard">@提及输入保护</string>
+    <string name="st_mention_guard_desc">默认开启。打字到一半的「@昵称」还没选完时暂停改写，避免打断 @选人弹窗；点发送时仍会正常改写。</string>
+    <string name="u206">请到「设置 → 安全 → 更多安全设置 → 设备管理应用」中手动勾选 NekoType</string>    <string name="u209">部分权限未授予，请在应用详情页手动开启「短信」和「应用列表」权限</string>
+
+    <string name="ap_title">应用预设映射</string>
+    <string name="ap_switch">自动切换</string>
+    <string name="ap_hint">为指定应用自动切换预设；未映射的应用沿用当前预设</string>
+    <string name="ap_add">添加应用映射</string>
+    <string name="ap_pick_app">选择应用</string>
+    <string name="ap_pick_preset">选择预设</string>
+    <string name="ap_removed">已移除映射</string>
+    <string name="ap_empty">还没有映射，点上面添加</string>
+    <string name="hc_applist_loading">正在加载应用列表…</string>
+    <string name="st_log_settings_desc">开关控制日志记录；点这行文字查看运行日志</string>
+    <string name="st_admin_search_tip">部分机型需在系统设置搜索「激活」，在设备管理器一栏开启</string>
 </resources>

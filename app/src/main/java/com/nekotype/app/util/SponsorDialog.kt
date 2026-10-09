@@ -53,13 +53,13 @@ object SponsorDialog {
         }
         root.addView(TextView(ctx).apply {
             text = ctx.getString(R.string.sp_title, count)
-            textSize = 17f
+            setTextSizeDimen(R.dimen.ts_17)
             gravity = Gravity.CENTER_HORIZONTAL
             setTypeface(typeface, Typeface.BOLD)
         })
         root.addView(TextView(ctx).apply {
             text = ctx.getString(R.string.sp_hint)
-            textSize = 13f
+            setTextSizeDimen(R.dimen.ts_13)
             gravity = Gravity.CENTER_HORIZONTAL
             setPadding(0, dp(ctx, 8), 0, 0)
         })

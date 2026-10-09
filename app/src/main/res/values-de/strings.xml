@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Deutsch (German) — Kern-UI + Entwicklermodus -->
 <resources>
-    <string name="splash_version">v2.7.8</string>
+    <string name="splash_version">v2.8.0</string>
     <string name="bl_loading">App-Liste wird geladen…</string>
     <string name="home_language">Sprache</string>
     <string name="log_label">Betriebsprotokoll</string>
@@ -51,12 +51,14 @@
     <string name="t55">Tastatur-Umschreibung erzwingen</string>
     <string name="t57">Satzzeichen-Auslöser</string>
     <string name="t59">Zufällige Emoticons</string>
-    <string name="t100">App-Blockliste</string>
+    <string name="t100">App-Listen</string>
     <string name="t1000">Alle Berechtigungen mit einem Tipp (Shizuku)</string>
+    <string name="st_wechat_exp">Experimentelle WeChat-Adaption</string>
+    <string name="st_wechat_exp_desc">Direktes SET_TEXT mit Zwischenablage-Einfügen als Fallback für schnelleres Zurückschreiben; zum Zurücksetzen der alten Logik deaktivieren</string>
     <string name="t1001">Lösch-Optimierung</string>
     <string name="t1003">Spracheingabe-Optimierung</string>
     <string name="t1004">Bei Spracheingabe längere Pause (Standard 1 s) abwarten</string>
-    <string name="t102">Blockliste verwalten</string>
+    <string name="t102">App-Listen verwalten</string>
     <string name="t103">Detaillierte Informationen</string>
     <string name="t104">Versionsinfo</string>
     <string name="t105">Über die App</string>
@@ -267,7 +269,7 @@
     <string name="t97">Konfiguration exportieren</string>
     <string name="t98">Konfiguration importieren</string>
     <string name="t99">Alle Regeln und Einstellungen exportieren (zum Teilen oder für ein neues Gerät); nach dem Import sofort wirksam</string>
-    <string name="t101">Apps auf der Blockliste werden nicht automatisch umgeschrieben (erzwungene Tastatur-Umschreibung und stilles Einfügen wirken dort nicht); die schwebende Taste bleibt uneingeschränkt</string>
+    <string name="t101">Sperrlisten-Modus: Apps auf der Liste werden nicht automatisch umgeschrieben; Erlaubtlisten-Modus: nur Apps auf der Liste werden automatisch umgeschrieben. Die schwebende Taste bleibt uneingeschränkt</string>
     <string name="t106">QQ-Kanal: 4ldb0biz5\nE-Mail: TR114512@qq.com</string>
     <string name="t110">QQ-Kanal: 4ldb0biz5</string>
     <string name="t113">Diese App (NekoType) nimmt Ihren Datenschutz sehr ernst. Dazu folgende Hinweise:\n\n1. Lokale Verarbeitung: Das Lesen, Umwandeln und Senden aller Nachrichtentexte erfolgt vollständig lokal auf dem Gerät. Die App greift nicht auf das Netzwerk zu, lädt nichts hoch und speichert keine Eingaben.\n\n2. Zweck der Berechtigungen:\n· Bedienungshilfe: nur zum Lesen des aktuellen Textes im Eingabefeld, zum Ersetzen von Text und zum Auslösen des Sendens; Passwortfelder werden nicht gelesen (das System stellt deren Inhalt der Bedienungshilfe nicht bereit).\n· Overlay: zum Anzeigen der schwebenden Taste.\n· Akkuoptimierung: damit der Dienst dauerhaft im Hintergrund aktiv bleiben kann.\n· Geräteadministrator / Shizuku / Root: optional und nur nach Ihrer ausdrücklichen Freigabe für Systembefehle (z. B. für die Ausnahmeliste der Akkuoptimierung).\n\n3. Drittanbieter: Diese App enthält keinerlei Statistik-, Werbe- oder Tracking-SDKs von Drittanbietern.\n\n4. Berechtigungen widerrufen: Sie können jede erteilte Berechtigung jederzeit in den Systemeinstellungen widerrufen.\n\n5. Kontakt: TR114512@qq.com</string>
@@ -306,7 +308,7 @@
     <string name="u13">Dienst gestartet – die schwebende Taste bleibt am Bildschirmrand</string>
     <string name="u14">Sprachwechsel fehlgeschlagen</string>
     <string name="u15">Kopiert: %1$s</string>
-    <string name="u16">Alle ausgewählt: %1$d Apps zur Blockliste hinzugefügt</string>
+    <string name="u16">%1$d Apps ausgewählt</string>
     <string name="u17">Dienst gestoppt</string>
     <string name="u18">Passwort festlegen</string>
     <string name="u19">Der Zufallspool darf nicht leer sein</string>
@@ -338,7 +340,7 @@
     <string name="u45">NekoType wurde manipuliert (Signatur stimmt nicht überein oder die App läuft unter einem Hook-Framework).\n\nZum Schutz Ihrer Sicherheit und der Wirksamkeit der Passwortsperre wurde die App beendet.\nBitte neu aus einer offiziellen Quelle installieren.</string>
     <string name="u46">Bitte zuerst die Passwortsperre aktivieren</string>
     <string name="u47">Protokoll kopiert</string>
-    <string name="u48">Blockliste geleert</string>
+    <string name="u48">Liste geleert</string>
     <string name="u49">Ausnahmeliste der Akkuoptimierung gespeichert (%1$s) ✅</string>
     <string name="u50">Versteckter Modus aktiviert: Symbol ausgeblendet\nDie Heartbeat-Wachhaltung wurde automatisch eingeschaltet; „Dienst stoppen“ in der Benachrichtigung und das Passwort stellen den Zugang wieder her</string>
     <string name="u51">Versteckter Modus deaktiviert – das Symbol im Startbildschirm ist wieder sichtbar</string>
@@ -450,6 +452,9 @@
     <string name="u157">NekoType Feedback</string>
     <string name="u158">Version: %1$s\nGerät: %2$s %3$s · Android %4$s\nShizuku: %5$s\n\nVorschlag/Problem:\n</string>
     <string name="u159">Feedback senden</string>
+    <string name="al_mode_black">Sperrlisten-Modus</string>
+    <string name="al_mode_white">Erlaubtlisten-Modus</string>
+    <string name="u160w">Aktiviert: automatisches Umschreiben nur in %1$d Apps der Erlaubnisliste (schwebende Taste uneingeschränkt)</string>
     <string name="u160">Aktiviert: %1$d Apps auf der Blockliste werden nicht automatisch umgeschrieben (die schwebende Taste bleibt uneingeschränkt)</string>
     <string name="u161">Nicht aktiviert: alle Apps werden automatisch umgeschrieben (Schalter gegebenenfalls zuerst einschalten)</string>
     <string name="u162">NekoType benötigt die Berechtigung als Geräteadministrator für erweiterte Systemfunktionen (optional).</string>
@@ -620,4 +625,79 @@
     <string name="sp_hint">Kod unten antippen zum Vergrößern oder Screenshot machen.\nDeine Unterstützung hält das Projekt am Leben.</string>
     <string name="sp_later">Später</string>
     <string name="sp_sponsored">Gesponsert</string>
+
+    <!-- i18n: schwebendes Button-Menü bei langem Druck -->
+    <string name="fm_title">Schwebendes Button-Menü</string>
+    <string name="fm_current_preset">Aktuelles Profil: %1$s</string>
+    <string name="fm_open_app">App öffnen</string>
+    <string name="fm_section_presets">Regelprofile</string>
+    <string name="fm_section_other">Weitere</string>
+    <string name="fm_no_preset">Noch keine Profile. Erstelle eines in der App.</string>
+    <string name="fm_preset_rules_count">%1$d Regeln</string>
+    <string name="fm_preset_manage">Profile verwalten …</string>
+    <string name="fm_preset_switched">Auf Profil „%1$s“ gewechselt</string>
+    <string name="fm_action_transform">Jetzt umwandeln und senden</string>
+    <string name="fm_action_autosend">Auto-Senden</string>
+    <string name="fm_action_silent">Stille Änderung (Shizuku)</string>
+    <string name="fm_action_haptic">Vibration</string>
+    <string name="fm_action_snap">Nach Ziehen an Rand einrasten</string>
+    <string name="fm_action_rules">Regeln bearbeiten</string>
+    <string name="fm_action_settings">Einstellungen</string>
+    <string name="fm_action_log">Protokoll</string>
+    <string name="fm_action_terminal">Terminal öffnen</string>
+    <string name="fm_action_stop">Dienst stoppen</string>
+    <string name="fm_on">An</string>
+    <string name="fm_off">Aus</string>
+    <string name="fm_close">Schließen</string>
+    <string name="fm_hint_long_press">Schnellmenü geöffnet. Den schwebenden Button gedrückt halten, um es jederzeit wieder zu öffnen.</string>
+    <string name="fm_open_fail">App lässt sich nicht öffnen. Bitte über das Startbild-Symbol starten.</string>
+    <string name="fm_setting_long_press">Langer Druck für Schnellmenü</string>
+    <string name="fm_setting_long_press_desc">Den schwebenden Button lang gedrückt halten, um ein Menü zu öffnen: zurück zur App, Profile wechseln, Funktionen umschalten.</string>
+    <string name="fm_open_rules_panel">Regeln</string>
+    <string name="fm_open_behavior_panel">Verhalten &amp; Stil</string>
+    <string name="fm_back">Zurück</string>
+    <string name="fm_edit">Bearbeiten</string>
+    <string name="fm_no_rules">Keine Regeln im aktuellen Profil</string>
+    <string name="st_auto_shizuku">Automatische Shizuku-Freigabe beim Start</string>
+    <string name="st_auto_shizuku_desc">Bei jedem Öffnen der App alle Berechtigungen über Shizuku erteilen (Bedienungshilfe / Geräteadmin / Akku-Ausnahme / Overlay). Shizuku muss laufen. Standardmäßig aus</string>
+    <string name="st_auto_shizuku_hint">Aktiviert: Berechtigungen werden beim nächsten Start automatisch erteilt (Shizuku muss laufen)</string>
+    <string name="bm_blind_no_suffix">Diese App gibt den Inhalt des Eingabefelds nicht preis, daher können nur Suffix-Regeln angehängt werden. Keine nutzbare Suffix-Regel vorhanden (Präfix/Ersetzung funktionieren hier nicht).</string>
+
+    <!-- i18n: erweiterte Regelprofil-Verwaltung (umbenennen / zusammenführen / zurücknehmen) -->
+    <string name="pm_manage">Presets verwalten</string>
+    <string name="pm_manage_preset">Presets verwalten</string>
+    <string name="pm_btn_select">Profil wählen</string>
+    <string name="pm_btn_delete">Preset löschen</string>
+    <string name="pm_btn_delete_preset">Preset löschen</string>
+    <string name="pm_manage_title">Regelprofile verwalten</string>
+    <string name="pm_manage_empty">Keine Profile zu verwalten</string>
+    <string name="pm_rename">Umbenennen</string>
+    <string name="pm_rename_title">Profil umbenennen</string>
+    <string name="pm_rename_hint">Neuer Name</string>
+    <string name="pm_name_empty">Name darf nicht leer sein</string>
+    <string name="pm_name_dup">Ein Profil mit diesem Namen existiert bereits</string>
+    <string name="pm_renamed">Umbenannt in „%1$s“</string>
+    <string name="pm_merge_hint">Profile zum Zusammenführen anhaken — deren Regeln werden ans aktuelle Profil angehängt (Quellprofile bleiben unverändert).</string>
+    <string name="pm_merge_btn">Auswahl zusammenführen</string>
+    <string name="pm_merged">%1$d Regeln in „%2$s“ zusammengeführt</string>
+    <string name="pm_merge_none_sel">Kein Profil zum Zusammenführen ausgewählt (das aktuelle Profil kann nicht mit sich selbst zusammengeführt werden)</string>
+    <string name="pm_confirm">Bestätigen</string>
+    <string name="pm_close">Schließen</string>
+    <string name="pm_current_row">%1$s (%2$d Regeln · aktuell)</string>
+    <string name="pm_count">%1$s (%2$d Regeln)</string>
+    <string name="st_mention_guard">@-Erwähnung schützen</string>
+    <string name="st_mention_guard_desc">Standardmäßig an. Das Umschreiben pausiert, solange ein unfertiger @Name getippt wird, damit die Erwähnungs-Auswahl nicht unterbrochen wird. Beim Senden wird normal umgeschrieben.</string>
+    <string name="u206">Aktivieren Sie NekoType manuell unter Einstellungen → Sicherheit → Weitere Sicherheitseinstellungen → Geräteadministrator-Apps</string>    <string name="u209">Einige Berechtigungen wurden verweigert. Bitte SMS- und App-Liste-Berechtigung manuell aktivieren.</string>
+
+    <string name="ap_title">App-Preset-Zuordnung</string>
+    <string name="ap_switch">Auto-Wechsel</string>
+    <string name="ap_hint">Presets für zugeordnete Apps automatisch wechseln; nicht zugeordnete Apps behalten das aktuelle Preset</string>
+    <string name="ap_add">App-Zuordnung hinzufügen</string>
+    <string name="ap_pick_app">App auswählen</string>
+    <string name="ap_pick_preset">Preset auswählen</string>
+    <string name="ap_removed">Zuordnung entfernt</string>
+    <string name="ap_empty">Noch keine Zuordnungen, oben hinzufügen</string>
+    <string name="hc_applist_loading">App-Liste wird geladen…</string>
+    <string name="st_log_settings_desc">Schalter steuert die Protokollierung; Zeile antippen, um das Laufprotokoll zu sehen</string>
+    <string name="st_admin_search_tip">Auf einigen Geräten in den Einstellungen „Aktivieren" suchen und unter Geräteverwaltung aktivieren</string>
 </resources>

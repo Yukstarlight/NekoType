@@ -10,6 +10,8 @@ import android.widget.ScrollView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.nekotype.app.R
+import com.nekotype.app.util.setTextSizeDimen
 
 /**
  * 统一对话框样式（本次 UI 优化）：
@@ -96,7 +98,7 @@ object NekoDialog {
     fun row(ctx: Context, label: String, onClick: () -> Unit): android.widget.TextView {
         val tv = android.widget.TextView(ctx).apply {
             this.text = "$label    ›"
-            textSize = 14f
+            setTextSizeDimen(R.dimen.ts_14)
             setPadding(dp(ctx, 4), dp(ctx, 14), dp(ctx, 4), dp(ctx, 14))
             isClickable = true
             isFocusable = true
@@ -122,7 +124,7 @@ object NekoDialog {
     fun showDoc(ctx: Context, title: String, body: String) {
         val tv = android.widget.TextView(ctx).apply {
             text = body
-            textSize = 12.5f
+            setTextSizeDimen(R.dimen.ts_12_5)
             setLineSpacing(0f, 1.3f)
             setTextIsSelectable(true)
         }

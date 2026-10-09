@@ -15,7 +15,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/dev_title"
-            android:textSize="20sp"
+            android:textSize="@dimen/ts_20"
             android:textStyle="bold"
             android:textColor="?attr/colorOnSurface"/>
 
@@ -38,7 +38,7 @@
                     android:id="@+id/tvDevInfo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/ts_12"
                     android:fontFamily="monospace"
                     android:textIsSelectable="true"
                     android:textColor="?attr/colorOnSurface"
@@ -86,14 +86,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/log_label"
-                    android:textSize="15sp"
+                    android:textSize="@dimen/ts_15"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/dev_log_hint"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="2dp"/>
                 <com.google.android.material.textfield.TextInputLayout
@@ -121,7 +121,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:maxLines="2"
-                        android:textSize="12sp"
+                        android:textSize="@dimen/ts_12"
                         android:text="@string/dev_grab_sys"/>
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnDevCrash"
@@ -131,7 +131,7 @@
                         android:layout_weight="1"
                         android:layout_marginStart="8dp"
                         android:maxLines="2"
-                        android:textSize="12sp"
+                        android:textSize="@dimen/ts_12"
                         android:text="@string/dev_grab_crash"/>
                 </LinearLayout>
                 <com.google.android.material.button.MaterialButton
@@ -169,14 +169,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/dev_bl_title"
-                    android:textSize="15sp"
+                    android:textSize="@dimen/ts_15"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/dev_bl_hint"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="2dp"/>
                 <com.google.android.material.textfield.TextInputLayout
@@ -197,7 +197,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text=""
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="4dp"/>
                 <com.google.android.material.button.MaterialButton
@@ -235,7 +235,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/dev_tools_title"
-                    android:textSize="15sp"
+                    android:textSize="@dimen/ts_15"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
                 <com.google.android.material.button.MaterialButton
@@ -245,7 +245,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:maxLines="2"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/ts_13"
                     android:text="@string/dev_tree"/>
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDevPerf"
@@ -254,7 +254,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:maxLines="2"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/ts_13"
                     android:text="@string/dev_perf"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -279,7 +279,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/dev_maint_title"
-                    android:textSize="15sp"
+                    android:textSize="@dimen/ts_15"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
                 <com.google.android.material.button.MaterialButton
@@ -295,7 +295,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/ts_13"
                     android:text="@string/dev_trace"/>
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDevRebindShizuku"
@@ -332,7 +332,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:maxLines="2"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/ts_13"
                     android:text="@string/dev_reset_factory"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

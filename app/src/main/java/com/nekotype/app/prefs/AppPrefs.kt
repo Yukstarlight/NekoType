@@ -43,10 +43,15 @@ object AppPrefs {
         "(*´ω｀*)", "(っ´ω`)っ", "(´｡• ᵕ •｡`)", "ʕ•ᴥ•ʔ", "(￣▽￣)ゞ"
     )
 
-    /** 行为与样式：随机颜文字总开关（开启后每条消息自动加随机颜文字，喵喵同款） */
+    /** 行为与样式：随机颜文字总开关（开启后每条消息自动加随机颜文字） */
     var emoticonEnabled: Boolean
         get() = sp.getBoolean("emoticon", false)
         set(v) = sp.edit().putBoolean("emoticon", v).apply()
+
+    /** 行为与样式：@提及输入保护（默认开启，打字到一半的「@昵称」不被改写打断） */
+    var mentionGuardEnabled: Boolean
+        get() = sp.getBoolean("mention_guard", true)
+        set(v) = sp.edit().putBoolean("mention_guard", v).apply()
 
     enum class RuleType(val label: String, val resId: Int) {
         PREFIX("前缀", com.nekotype.app.R.string.rule_prefix),
@@ -282,6 +287,52 @@ object AppPrefs {
         if (activeId() == id) selectPreset(list.first().id)
     }
 
+    // ---------- 预设高级管理：重命名 / 合并 ----------
+
+    /**
+     * 重命名预设（保证不重名；仅改名，规则不变）。
+     * @return true 表示重命名成功；false 表示预设不存在或新名称为空/重名。
+     */
+    fun renamePreset(id: String, newName: String): Boolean {
+        val name = newName.trim()
+        if (name.isEmpty()) return false
+        val list = rulesList().toMutableList()
+        val idx = list.indexOfFirst { it.id == id }
+        if (idx < 0) return false
+        // 重名检测（排除自身）
+        if (list.any { it.id != id && it.name == name }) return false
+        list[idx] = list[idx].copy(name = name)
+        saveRules(list)
+        return true
+    }
+
+    /**
+     * 把多个预设的规则合并到**当前预设**（按来源顺序追加到末尾）。
+     * 来源预设本身不被修改，当前预设不会被列为来源。
+     * @param sourceIds 要合并的来源预设 id 列表
+     * @return 实际合并进来的规则条数（0 表示无可合并来源或当前预设不存在）
+     */
+    fun mergePresetsIntoCurrent(sourceIds: List<String>): Int {
+        if (sourceIds.isEmpty()) return 0
+        val list = rulesList()
+        val curId = activeId()
+        val curIdx = list.indexOfFirst { it.id == curId }
+        if (curIdx < 0) return 0
+        val current = list[curIdx]
+        // 仅合并真实存在、且非当前预设的来源
+        val sources = sourceIds.mapNotNull { sid -> list.firstOrNull { it.id == sid && it.id != curId } }
+        if (sources.isEmpty()) return 0
+        // 合并：重新生成 id 后追加，避免与已有规则 id 冲突
+        val stamp = System.currentTimeMillis()
+        val merged = sources.flatMapIndexed { si, src ->
+            src.rules.mapIndexed { ri, r -> r.copy(id = "m_${stamp}_${si}_$ri") }
+        }
+        val newList = list.toMutableList()
+        newList[curIdx] = current.copy(rules = current.rules + merged)
+        saveRules(newList)
+        return merged.size
+    }
+
     /** 生成不与现有预设冲突的唯一 ID（导入时同一毫秒内连续建多个预设也不会撞 ID） */
     private fun newPresetId(existing: List<RuleConfig>): String {
         val base = System.currentTimeMillis()
@@ -388,7 +439,7 @@ object AppPrefs {
         get() = sp.getBoolean("force_keyboard", false)
         set(v) = sp.edit().putBoolean("force_keyboard", v).apply()
 
-    /** 标点触发模式：强制篡改时，输入以标点结尾才触发篡改（喵喵同款：打完一句才改） */
+    /** 标点触发模式：强制篡改时，输入以标点结尾才触发篡改（打完一句才改） */
     var punctTriggerEnabled: Boolean
         get() = sp.getBoolean("punct_trigger", false)
         set(v) = sp.edit().putBoolean("punct_trigger", v).apply()
@@ -452,10 +503,37 @@ object AppPrefs {
         get() = sp.getBoolean("fab_glass", true)
         set(v) = sp.edit().putBoolean("fab_glass", v).apply()
 
+    /** 长按悬浮球弹出快捷菜单（默认开）：一键回到应用 / 切换规则预设 / 开关功能 */
+    var fabLongPressMenu: Boolean
+        get() = sp.getBoolean("fab_long_menu", true)
+        set(v) = sp.edit().putBoolean("fab_long_menu", v).apply()
+
+    /** 长按菜单首次提示是否已展示（首次成功长按后置位，之后不再弹 Toast 提示） */
+    var fabLongPressHintShown: Boolean
+        get() = sp.getBoolean("fab_long_hint", false)
+        set(v) = sp.edit().putBoolean("fab_long_hint", v).apply()
+
+    /** 快捷菜单面板位置（用户拖动后跨会话记忆；-1 = 未拖动过，自动锚定在悬浮球旁） */
+    var fabMenuX: Int
+        get() = sp.getInt("fab_menu_x", -1)
+        set(v) = sp.edit().putInt("fab_menu_x", v).apply()
+    var fabMenuY: Int
+        get() = sp.getInt("fab_menu_y", -1)
+        set(v) = sp.edit().putInt("fab_menu_y", v).apply()
+
     /** 开机自启（可选开关） */
     var autoStartEnabled: Boolean
         get() = sp.getBoolean("auto_start", true)
         set(v) = sp.edit().putBoolean("auto_start", v).apply()
+
+    /**
+     * 每次打开应用自动用 Shizuku 授权所有权限（默认**关**）：
+     * 打开 App 时后台跑一遍「无障碍 → 设备管理员 → 电池白名单 → 悬浮窗」授权，
+     * 需 Shizuku 已运行且已授权；未授权时尝试请求一次权限。
+     */
+    var autoShizukuGrantOnLaunch: Boolean
+        get() = sp.getBoolean("auto_shizuku_grant_on_launch", false)
+        set(v) = sp.edit().putBoolean("auto_shizuku_grant_on_launch", v).apply()
 
     // ================= 每日统计 =================
 
@@ -505,13 +583,13 @@ object AppPrefs {
                 // 行首写入 [等级]，导入时按此还原优先级
                 val p = "[${r.priority}] "
                 when (r.type) {
-                    RuleType.PREFIX -> sb.append(p + "前缀：${r.value}\n")
-                    RuleType.SUFFIX -> sb.append(p + "后缀：${r.value}\n")
-                    RuleType.RANDOM_PREFIX -> sb.append(p + "随机前缀（固定）：${r.value.split("|").joinToString(" ")}  ${r.chance}%\n")
-                    RuleType.RANDOM_PREFIX_ONCE -> sb.append(p + "随机前缀（不固定）：${r.value.split("|").joinToString(" ")}  ${r.chance}%\n")
-                    RuleType.RANDOM_SUFFIX -> sb.append(p + "随机后缀（固定）：${r.value.split("|").joinToString(" ")}  ${r.chance}%\n")
-                    RuleType.RANDOM_SUFFIX_ONCE -> sb.append(p + "随机后缀（不固定）：${r.value.split("|").joinToString(" ")}  ${r.chance}%\n")
-                    RuleType.REPLACE -> sb.append(p + "文本替换：${r.value}  ${r.replaceTo}\n")
+                    RuleType.PREFIX -> sb.append(p + "前缀：${r.value}" + "\n")
+                    RuleType.SUFFIX -> sb.append(p + "后缀：${r.value}" + "\n")
+                    RuleType.RANDOM_PREFIX -> sb.append(p + "随机前缀（固定）：${r.value.split("|").joinToString(" ")}  ${r.chance}%" + "\n")
+                    RuleType.RANDOM_PREFIX_ONCE -> sb.append(p + "随机前缀（不固定）：${r.value.split("|").joinToString(" ")}  ${r.chance}%" + "\n")
+                    RuleType.RANDOM_SUFFIX -> sb.append(p + "随机后缀（固定）：${r.value.split("|").joinToString(" ")}  ${r.chance}%" + "\n")
+                    RuleType.RANDOM_SUFFIX_ONCE -> sb.append(p + "随机后缀（不固定）：${r.value.split("|").joinToString(" ")}  ${r.chance}%" + "\n")
+                    RuleType.REPLACE -> sb.append(p + "文本替换：${r.value}  ${r.replaceTo}" + "\n")
                 }
             }
         }
@@ -528,9 +606,12 @@ object AppPrefs {
         sb.append("语音输入优化：${onOff(voiceInputOptimizeEnabled)}\n")
         sb.append("语音停顿判定：$voiceDebounceMs\n")
         sb.append("按等级全局执行：${onOff(priorityGlobalEnabled)}\n")
+        sb.append("提及输入保护：${onOff(mentionGuardEnabled)}\n")
         sb.append("随机颜文字：${onOff(emoticonEnabled)}\n")
         sb.append("应用黑名单：${onOff(blacklistEnabled)}\n")
         sb.append("黑名单应用：").append(blacklist().joinToString(",")).append("\n")
+        sb.append("应用名单模式：${if (isWhiteListMode()) "白名单" else "黑名单"}\n")
+        sb.append("应用白名单：").append(whitelist().joinToString(",")).append("\n")
         sb.append("心跳保活：${onOff(heartbeatEnabled)}\n")
         sb.append("崩溃自启：${onOff(crashRestartEnabled)}\n")
         sb.append("猫娘用语：${onOff(nekoMode)}\n")
@@ -707,6 +788,14 @@ object AppPrefs {
                             sp.edit().putStringSet("blacklist_packages", pkgs.toSet()).apply()
                         }
                     }
+                    inBehaviors && line.startsWith("应用名单模式：") ->
+                        appListMode = if (line.removePrefix("应用名单模式：").trim() == "白名单") "whitelist" else "blacklist"
+                    inBehaviors && line.startsWith("应用白名单：") -> {
+                        val pkgs = line.removePrefix("应用白名单：").split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                        if (pkgs.isNotEmpty()) {
+                            sp.edit().putStringSet("whitelist_packages", pkgs.toSet()).apply()
+                        }
+                    }
                     inBehaviors && line.startsWith("心跳保活：") -> heartbeatEnabled = onOffValue(line.removePrefix("心跳保活："))
                     inBehaviors && line.startsWith("崩溃自启：") -> crashRestartEnabled = onOffValue(line.removePrefix("崩溃自启："))
                     // 密码锁定 / 隐藏模式：安全状态，导入配置不触碰（防止导入配置被用来解锁）
@@ -777,18 +866,45 @@ object AppPrefs {
                     line.startsWith("规则") -> { sec = "rules" }
                     line.startsWith("行为与样式") -> { sec = "behaviors" }
                     line.startsWith("----") -> { /* 分隔线 */ }
-                    line.startsWith("前缀：") -> { val v = line.removePrefix("前缀：").trim(); if (v.isNotEmpty()) addRule(NekoRule(uid(), RuleType.PREFIX, v, priority = curPri)) }
-                    line.startsWith("后缀：") -> { val v = line.removePrefix("后缀：").trim(); if (v.isNotEmpty()) addRule(NekoRule(uid(), RuleType.SUFFIX, v, priority = curPri)) }
-                    line.startsWith("每句后缀：") -> { val v = line.removePrefix("每句后缀：").trim(); if (v.isNotEmpty()) addRule(NekoRule(uid(), RuleType.SUFFIX, v, priority = curPri)) }
-                    line.startsWith("随机前缀（固定）：") -> parseRandomRule2(line.removePrefix("随机前缀（固定）："), RuleType.RANDOM_PREFIX) { addRule(it.copy(priority = curPri)) }
-                    line.startsWith("随机前缀（不固定）：") -> parseRandomRule2(line.removePrefix("随机前缀（不固定）："), RuleType.RANDOM_PREFIX_ONCE) { addRule(it.copy(priority = curPri)) }
-                    line.startsWith("随机前缀：") -> parseRandomRule2(line.removePrefix("随机前缀："), RuleType.RANDOM_PREFIX) { addRule(it.copy(priority = curPri)) }
-                    line.startsWith("随机后缀（固定）：") -> parseRandomRule2(line.removePrefix("随机后缀（固定）："), RuleType.RANDOM_SUFFIX) { addRule(it.copy(priority = curPri)) }
-                    line.startsWith("随机后缀（不固定）：") -> parseRandomRule2(line.removePrefix("随机后缀（不固定）："), RuleType.RANDOM_SUFFIX_ONCE) { addRule(it.copy(priority = curPri)) }
-                    line.startsWith("随机后缀：") -> parseRandomRule2(line.removePrefix("随机后缀："), RuleType.RANDOM_SUFFIX) { addRule(it.copy(priority = curPri)) }
+                    line.startsWith("前缀：") -> {
+                        val e = extractExtras(line.removePrefix("前缀："))
+                        if (e.isNotEmpty()) addRule(NekoRule(uid(), RuleType.PREFIX, e, priority = curPri))
+                    }
+                    line.startsWith("后缀：") -> {
+                        val e = extractExtras(line.removePrefix("后缀："))
+                        if (e.isNotEmpty()) addRule(NekoRule(uid(), RuleType.SUFFIX, e, priority = curPri))
+                    }
+                    line.startsWith("每句后缀：") -> {
+                        val e = extractExtras(line.removePrefix("每句后缀："))
+                        if (e.isNotEmpty()) addRule(NekoRule(uid(), RuleType.SUFFIX, e, priority = curPri))
+                    }
+                    line.startsWith("随机前缀（固定）：") -> {
+                        val e = extractExtras(line.removePrefix("随机前缀（固定）："))
+                        parseRandomRule2(e, RuleType.RANDOM_PREFIX) { addRule(it.copy(priority = curPri)) }
+                    }
+                    line.startsWith("随机前缀（不固定）：") -> {
+                        val e = extractExtras(line.removePrefix("随机前缀（不固定）："))
+                        parseRandomRule2(e, RuleType.RANDOM_PREFIX_ONCE) { addRule(it.copy(priority = curPri)) }
+                    }
+                    line.startsWith("随机前缀：") -> {
+                        val e = extractExtras(line.removePrefix("随机前缀："))
+                        parseRandomRule2(e, RuleType.RANDOM_PREFIX) { addRule(it.copy(priority = curPri)) }
+                    }
+                    line.startsWith("随机后缀（固定）：") -> {
+                        val e = extractExtras(line.removePrefix("随机后缀（固定）："))
+                        parseRandomRule2(e, RuleType.RANDOM_SUFFIX) { addRule(it.copy(priority = curPri)) }
+                    }
+                    line.startsWith("随机后缀（不固定）：") -> {
+                        val e = extractExtras(line.removePrefix("随机后缀（不固定）："))
+                        parseRandomRule2(e, RuleType.RANDOM_SUFFIX_ONCE) { addRule(it.copy(priority = curPri)) }
+                    }
+                    line.startsWith("随机后缀：") -> {
+                        val e = extractExtras(line.removePrefix("随机后缀："))
+                        parseRandomRule2(e, RuleType.RANDOM_SUFFIX) { addRule(it.copy(priority = curPri)) }
+                    }
                     line.startsWith("文本替换：") -> {
-                        val rest = line.removePrefix("文本替换：").trim()
-                        val parts = rest.split(Regex("\\s{2,}"))
+                        val e = extractExtras(line.removePrefix("文本替换："))
+                        val parts = e.split(Regex("\\s{2,}"))
                         val from = if (parts.isNotEmpty()) parts[0].trim() else ""
                         val to = if (parts.size >= 2) parts[1].trim() else ""
                         if (from.isNotEmpty()) addRule(NekoRule(uid(), RuleType.REPLACE, from, replaceTo = to, priority = curPri))
@@ -808,11 +924,20 @@ object AppPrefs {
                         line.removePrefix("语音停顿判定：").trim().toIntOrNull()?.let { voiceDebounceMs = it }
                     }
                     line.startsWith("按等级全局执行：") -> { anyData = true; priorityGlobalEnabled = onOffValue(line.removePrefix("按等级全局执行：")) }
+                    sec == "behaviors" && line.startsWith("提及输入保护：") -> { anyData = true; mentionGuardEnabled = onOffValue(line.removePrefix("提及输入保护：")) }
                     sec == "behaviors" && line.startsWith("随机颜文字：") -> { anyData = true; emoticonEnabled = onOffValue(line.removePrefix("随机颜文字：")) }
                     line.startsWith("应用黑名单：") -> { anyData = true; blacklistEnabled = onOffValue(line.removePrefix("应用黑名单：")) }
                     line.startsWith("黑名单应用：") -> {
                         val pkgs = line.removePrefix("黑名单应用：").split(",").map { it.trim() }.filter { it.isNotEmpty() }
                         if (pkgs.isNotEmpty()) { anyData = true; sp.edit().putStringSet("blacklist_packages", pkgs.toSet()).apply() }
+                    }
+                    line.startsWith("应用名单模式：") -> {
+                        anyData = true
+                        appListMode = if (line.removePrefix("应用名单模式：").trim() == "白名单") "whitelist" else "blacklist"
+                    }
+                    line.startsWith("应用白名单：") -> {
+                        val pkgs = line.removePrefix("应用白名单：").split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                        if (pkgs.isNotEmpty()) { anyData = true; sp.edit().putStringSet("whitelist_packages", pkgs.toSet()).apply() }
                     }
                     line.startsWith("心跳保活：") -> { anyData = true; heartbeatEnabled = onOffValue(line.removePrefix("心跳保活：")) }
                     line.startsWith("崩溃自启：") -> { anyData = true; crashRestartEnabled = onOffValue(line.removePrefix("崩溃自启：")) }
@@ -872,6 +997,10 @@ object AppPrefs {
             return NekoTypeApp.instance.getString(R.string.u175, t.message)
         }
     }
+
+    /** 导入：从旧版导出行的规则内容里剥掉「后追加/前追加/禁用」遗留标记（功能已移除，标记丢弃） */
+    private fun extractExtras(raw: String): String =
+        raw.replace(Regex("【(后追加|前追加|禁用)：(.*?)】"), "").trim()
 
     /** 解析"内容池  概率%"行（概率可选） */
     private fun parseRandomRule(rest: String, type: RuleType, out: MutableList<NekoRule>) {
@@ -964,9 +1093,6 @@ object AppPrefs {
     /** 黑名单包名集合 */
     fun blacklist(): Set<String> = sp.getStringSet("blacklist_packages", emptySet())!!
 
-    fun isBlacklisted(pkg: String): Boolean =
-        blacklistEnabled && sp.getStringSet("blacklist_packages", emptySet())!!.contains(pkg)
-
     fun addBlacklist(pkg: String) {
         val s = sp.getStringSet("blacklist_packages", emptySet())!!.toMutableSet()
         s.add(pkg)
@@ -979,7 +1105,88 @@ object AppPrefs {
         sp.edit().putStringSet("blacklist_packages", s).apply()
     }
 
-    /** Shizuku 隐藏：隐藏模式用 Shizuku pm hide（图标即时消失，Hail同款）；关闭则用普通方式（alias） */
+    // ================= 应用预设映射（前台应用变化时自动切换预设） =================
+
+    /** 映射 JSON：{"com.tencent.mm":"presetId", ...} */
+    private fun appPresetMapRaw(): MutableMap<String, String> {
+        return try {
+            val o = JSONObject(sp.getString("app_preset_map", "{}") ?: "{}")
+            val m = LinkedHashMap<String, String>()
+            val it = o.keys()
+            while (it.hasNext()) { val k = it.next(); m[k] = o.optString(k) }
+            m
+        } catch (_: Throwable) { LinkedHashMap() }
+    }
+
+    fun appPresetMap(): Map<String, String> = appPresetMapRaw()
+
+    fun setAppPreset(pkg: String, presetId: String) {
+        val m = appPresetMapRaw()
+        m[pkg] = presetId
+        val o = JSONObject()
+        m.forEach { (k, v) -> o.put(k, v) }
+        sp.edit().putString("app_preset_map", o.toString()).apply()
+    }
+
+    fun removeAppPreset(pkg: String) {
+        val m = appPresetMapRaw()
+        m.remove(pkg)
+        val o = JSONObject()
+        m.forEach { (k, v) -> o.put(k, v) }
+        sp.edit().putString("app_preset_map", o.toString()).apply()
+    }
+
+    /** 应用预设映射总开关（默认关） */
+    var appPresetAutoSwitch: Boolean
+        get() = sp.getBoolean("app_preset_auto_switch", false)
+        set(v) = sp.edit().putBoolean("app_preset_auto_switch", v).apply()
+
+    /** 前台应用对应的映射预设（开关关或无映射 = null，沿用当前预设） */
+    fun mappedPresetFor(pkg: String): String? {
+        if (!appPresetAutoSwitch) return null
+        return appPresetMapRaw()[pkg]
+    }
+
+    /** 应用名单模式：blacklist=黑名单（名单内不篡改）；whitelist=白名单（仅名单内篡改）。两模式互斥，同一时间只有一个生效 */
+    var appListMode: String
+        get() = sp.getString("app_list_mode", "blacklist") ?: "blacklist"
+        set(v) = sp.edit().putString("app_list_mode", if (v == "whitelist") "whitelist" else "blacklist").apply()
+
+    fun isWhiteListMode(): Boolean = appListMode == "whitelist"
+
+    /** 白名单包名集合 */
+    fun whitelist(): Set<String> = sp.getStringSet("whitelist_packages", emptySet())!!
+
+    fun addWhitelist(pkg: String) {
+        val s = sp.getStringSet("whitelist_packages", emptySet())!!.toMutableSet()
+        s.add(pkg)
+        sp.edit().putStringSet("whitelist_packages", s).apply()
+    }
+
+    fun removeWhitelist(pkg: String) {
+        val s = sp.getStringSet("whitelist_packages", emptySet())!!.toMutableSet()
+        s.remove(pkg)
+        sp.edit().putStringSet("whitelist_packages", s).apply()
+    }
+
+    /** 名单统一判定：名单功能关 = 不拦；包名空 = 不拦（悬浮球手动操作不走此判定，不受限）。
+     *  白名单模式下名单为空 = 还没配置过，不拦任何应用（否则会拦掉全部，变成"什么都不改写"） */
+    fun isBlockedApp(pkg: String): Boolean {
+        if (!blacklistEnabled || pkg.isEmpty()) return false
+        return if (isWhiteListMode()) {
+            val w = whitelist()
+            w.isNotEmpty() && !w.contains(pkg)
+        } else {
+            blacklist().contains(pkg)
+        }
+    }
+
+    /** 微信实验性适配：事件文本兜底 + 窗口根直查 + SET_TEXT 直写/剪贴板兜底（NyaNote 同款），默认关；开启后生效 */
+    var wechatExperimentalEnabled: Boolean
+        get() = sp.getBoolean("wechat_experimental", false)
+        set(v) = sp.edit().putBoolean("wechat_experimental", v).apply()
+
+    /** Shizuku 隐藏：隐藏模式用 Shizuku pm hide（图标即时消失）；关闭则用普通方式（alias） */
     var shizukuHideEnabled: Boolean
         get() = sp.getBoolean("shizuku_hide", false)
         set(v) = sp.edit().putBoolean("shizuku_hide", v).apply()

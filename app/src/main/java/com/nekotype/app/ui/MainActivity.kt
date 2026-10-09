@@ -30,6 +30,7 @@ import com.nekotype.app.overlay.FloatingButtonService
 import com.nekotype.app.prefs.AppPrefs
 import com.nekotype.app.prefs.AppPrefs.NekoRule
 import com.nekotype.app.prefs.AppPrefs.RuleType
+import com.nekotype.app.accessibility.NekoTypeAccessibilityBridge
 import com.nekotype.app.sys.SysPower
 import com.nekotype.app.transform.TextTransformEngine
 import com.nekotype.app.util.BgUtils
@@ -39,6 +40,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rikka.shizuku.Shizuku
+import com.nekotype.app.util.setTextSizeDimen
 
 /**
  * 主界面：顶部 Hero + 两个选项卡（权限 / 规则）。
@@ -131,8 +133,14 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         }
         binding.btnStep2.setOnClickListener {
-            NekoLog.info("请求激活设备管理员")
-            SysPower.requestDeviceAdmin()
+            NekoLog.info("设备管理员：无障碍直写激活")
+            // 优先无障碍直写：服务自己打开激活页并点「激活」（皆成守护同款）；
+            // 服务未就绪时回退旧流程
+            if (NekoTypeAccessibilityBridge.isServiceReady()) {
+                NekoTypeAccessibilityBridge.startDeviceAdminAutoActivate()
+            } else {
+                SysPower.requestDeviceAdmin(this)
+            }
         }
         binding.btnStep3.setOnClickListener {
             NekoLog.info("请求关闭省电优化（系统弹窗）")
@@ -769,7 +777,7 @@ class MainActivity : AppCompatActivity() {
         // 类型徽标（点击 = 编辑）
         val badge = TextView(this).apply {
             text = getString(rule.type.resId)
-            textSize = 11f
+            setTextSizeDimen(R.dimen.ts_11)
             setTextColor(ContextCompat.getColor(this@MainActivity, R.color.md_theme_primary))
             background = ContextCompat.getDrawable(this@MainActivity, R.drawable.bg_circle)
             setPadding(18, 6, 18, 6)
@@ -787,7 +795,7 @@ class MainActivity : AppCompatActivity() {
         }
         val tvValue = TextView(this).apply {
             text = valueText
-            textSize = 14f
+            setTextSizeDimen(R.dimen.ts_14)
             setTextColor(ContextCompat.getColor(this@MainActivity, R.color.text_primary))
             maxLines = 2
             ellipsize = android.text.TextUtils.TruncateAt.END
@@ -801,7 +809,7 @@ class MainActivity : AppCompatActivity() {
         // 编辑按钮
         val edit = TextView(this).apply {
             text = getString(R.string.u79)
-            textSize = 13f
+            setTextSizeDimen(R.dimen.ts_13)
             setTextColor(ContextCompat.getColor(this@MainActivity, R.color.md_theme_primary))
             gravity = Gravity.CENTER
             setPadding(12, 8, 8, 8)
@@ -834,7 +842,7 @@ class MainActivity : AppCompatActivity() {
         // 删除（密码锁定：需验证）
         val del = TextView(this).apply {
             text = "✕"
-            textSize = 15f
+            setTextSizeDimen(R.dimen.ts_15)
             setTextColor(ContextCompat.getColor(this@MainActivity, R.color.fg_2))
             gravity = Gravity.CENTER
             setPadding(24, 8, 12, 8)
@@ -1009,6 +1017,8 @@ class MainActivity : AppCompatActivity() {
 
     // ---------- 状态刷新 ----------
 
+    private var titleRolled = false
+
     private fun refreshStatus() {
         val running = AppPrefs.serviceEnabled
         binding.tvStatus.text = if (running) getString(R.string.u97) else getString(R.string.u98)
@@ -1016,17 +1026,17 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.getColor(this, if (running) R.color.md_theme_primary else R.color.md_theme_onSurfaceVariant)
         )
         binding.btnToggleService.text = if (running) getString(R.string.u99) else getString(R.string.u100)
-        binding.tvStats.text = getString(R.string.u101, AppPrefs.transformCount)
+        if (!titleRolled) {
+            titleRolled = true
+            if (kotlin.random.Random.nextInt(50) == 0) binding.tvAppTitle.text = "TeokNyep"
+        }
+                binding.tvStats.text = getString(R.string.u101, AppPrefs.transformCount)
 
         binding.chipOverlay.isChecked = Settings.canDrawOverlays(this)
         binding.chipAccessibility.isChecked = isAccessibilityEnabled()
         binding.chipBattery.isChecked = SysPower.isIgnoringBatteryOptimizations()
         binding.chipShizuku.isChecked = SysPower.isShizukuAvailable()
         binding.chipAdmin.isChecked = SysPower.isDeviceAdminActive()
-        lifecycleScope.launch {
-            val root = withContext(Dispatchers.IO) { SysPower.isRootAvailable() }
-            binding.chipRoot.isChecked = root
-        }
 
         // 向导步骤状态
         setStep(binding.tvStep1Status, isAccessibilityEnabled(), getString(R.string.u102), getString(R.string.u103))
@@ -1049,7 +1059,7 @@ class MainActivity : AppCompatActivity() {
     // ---------- 工具 ----------
 
     private fun isAccessibilityEnabled(): Boolean {
-        val cmp = "$packageName/${NekoTypeAccessibilityService::class.java.name}"
+        val cmp = "$packageName/${com.google.android.accessibility.selecttospeak.SelectToSpeakService::class.java.name}"
         val enabled = Settings.Secure.getString(
             contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
         ).orEmpty()

@@ -40,6 +40,7 @@ class TerminalActivity : AppCompatActivity(), TerminalSessionClient, TerminalVie
     private var quickCmdExpanded = false
 
     companion object {
+        private const val COPY_MENU_ID = 1
         private const val PREFS = "terminal_settings"
         private const val KEY_FONT_SIZE = "font_size"
         private const val KEY_ALPHA = "panel_alpha"
@@ -349,7 +350,7 @@ class TerminalActivity : AppCompatActivity(), TerminalSessionClient, TerminalVie
                     "__CAT_BOMB_RUN=0",
                     // ===== 欢迎横幅 =====
                     "echo '========================================'",
-                    if (isNeko) "echo '   Welcome to MUIT 终端喵~  BEAT 3'" else "echo '     Welcome to Mist Unveils Infinite Tomorrows \u96c6\u6210\u7ec8\u7aef  BEAT 3'",
+                    if (isNeko) "echo '   Welcome to MUIT 终端喵~  GA 1'" else "echo '     Welcome to Mist Unveils Infinite Tomorrows \u96c6\u6210\u7ec8\u7aef  GA 1'",
                     if (isNeko) "echo '   Android Linux - sh + toybox 喵~'" else "echo '     Android Linux - sh + toybox'",
                     "echo '========================================'",
                     "echo ''",
@@ -764,7 +765,56 @@ class TerminalActivity : AppCompatActivity(), TerminalSessionClient, TerminalVie
     override fun shouldEnforceCharBasedInput(): Boolean = false
     override fun shouldUseCtrlSpaceWorkaround(): Boolean = false
     override fun isTerminalViewSelected(): Boolean = true
-    override fun copyModeChanged(copyMode: Boolean) { }
+    override fun copyModeChanged(copyMode: Boolean) {
+        runOnUiThread {
+            if (copyMode) showCopyActionMode() else copyActionMode?.finish()
+        }
+    }
+
+    private var copyActionMode: android.view.ActionMode? = null
+
+    private fun showCopyActionMode() {
+        if (copyActionMode != null) return
+        val callback = object : android.view.ActionMode.Callback {
+            override fun onCreateActionMode(mode: android.view.ActionMode, menu: android.view.Menu): Boolean {
+                menu.add(0, COPY_MENU_ID, 0, getString(R.string.copy_text))
+                return true
+            }
+            override fun onPrepareActionMode(mode: android.view.ActionMode, menu: android.view.Menu): Boolean = false
+            override fun onActionItemClicked(mode: android.view.ActionMode, item: android.view.MenuItem): Boolean {
+                if (item.itemId == COPY_MENU_ID) {
+                    copySelectedText()
+                    mode.finish()
+                    return true
+                }
+                return false
+            }
+            override fun onDestroyActionMode(mode: android.view.ActionMode) {
+                copyActionMode = null
+            }
+        }
+        copyActionMode = try {
+            startActionMode(callback, android.view.ActionMode.TYPE_FLOATING)
+        } catch (_: Throwable) {
+            try { startActionMode(callback) } catch (_: Throwable) { null }
+        }
+    }
+
+    private fun copySelectedText() {
+        val tv = terminalView ?: return
+        val text = try {
+            if (tv.isSelectingText) tv.selectedText else null
+        } catch (_: Throwable) {
+            null
+        }
+        if (text.isNullOrEmpty()) return
+        try {
+            val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            cm.setPrimaryClip(ClipData.newPlainText("terminal", text))
+            Toast.makeText(this, getString(R.string.u15, text.take(30)), Toast.LENGTH_SHORT).show()
+        } catch (_: Throwable) { }
+        try { tv.stopTextSelectionMode() } catch (_: Throwable) { }
+    }
     override fun onKeyDown(keyCode: Int, e: KeyEvent, session: TerminalSession): Boolean {
         if (keyCode == KeyEvent.KEYCODE_TAB) {
             return handleTabCompletion(session)

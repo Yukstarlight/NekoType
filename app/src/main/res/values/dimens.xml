@@ -2,4 +2,29 @@
 <resources>
     <dimen name="fab_size">56dp</dimen>
     <dimen name="fab_padding">14dp</dimen>
+
+    <!--
+      字号统一走 @dimen 间接引用（布局 + 代码都走这一套）：
+      - 本文件（默认）保持原有字号，简中 / 繁中 / English / 日本語 / 한국어 / Türkçe / Deutsch 完全不变；
+      - values-ru/dimens.xml 单独把俄语整体调小（西里尔文更长，容易塞不下）。
+      布局：android:textSize="@dimen/ts_14"
+      代码：setTextSizeDimen(R.dimen.ts_14)   （见 util/NekoTextSize.kt）
+    -->
+    <dimen name="ts_10">10sp</dimen>
+    <dimen name="ts_11">11sp</dimen>
+    <dimen name="ts_11_5">11.5sp</dimen>
+    <dimen name="ts_12">12sp</dimen>
+    <dimen name="ts_12_5">12.5sp</dimen>
+    <dimen name="ts_13">13sp</dimen>
+    <dimen name="ts_13_5">13.5sp</dimen>
+    <dimen name="ts_14">14sp</dimen>
+    <dimen name="ts_14_5">14.5sp</dimen>
+    <dimen name="ts_15">15sp</dimen>
+    <dimen name="ts_15_5">15.5sp</dimen>
+    <dimen name="ts_16">16sp</dimen>
+    <dimen name="ts_17">17sp</dimen>
+    <dimen name="ts_18">18sp</dimen>
+    <dimen name="ts_20">20sp</dimen>
+    <dimen name="ts_22">22sp</dimen>
+    <dimen name="ts_24">24sp</dimen>
 </resources>

@@ -16,14 +16,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/mode_title"
-            android:textSize="22sp"
+            android:textSize="@dimen/ts_22"
             android:textStyle="bold"
             android:textColor="?attr/colorOnSurface"/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/mode_subtitle"
-            android:textSize="13sp"
+            android:textSize="@dimen/ts_13"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="16dp"/>
@@ -48,7 +48,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/mode_current"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/ts_13"
                     android:textColor="?attr/colorOnPrimaryContainer"/>
                 <TextView
                     android:id="@+id/tvCurrentMode"
@@ -56,7 +56,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
-                    android:textSize="15sp"
+                    android:textSize="@dimen/ts_15"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnPrimaryContainer"/>
             </LinearLayout>
@@ -90,7 +90,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:text="●"
-                        android:textSize="20sp"
+                        android:textSize="@dimen/ts_20"
                         android:gravity="center"
                         android:textColor="@color/md_theme_primary"
                         android:background="@drawable/bg_circle"/>
@@ -104,14 +104,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/mode_fab"
-                            android:textSize="16sp"
+                            android:textSize="@dimen/ts_16"
                             android:textStyle="bold"
                             android:textColor="?attr/colorOnSurface"/>
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/mode_fab_desc"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/ts_12"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:layout_marginTop="2dp"/>
                     </LinearLayout>
@@ -121,7 +121,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:minHeight="36dp"
-                        android:textSize="12sp"
+                        android:textSize="@dimen/ts_12"
                         android:text="@string/u71"/>
                 </LinearLayout>
             </LinearLayout>
@@ -155,7 +155,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:text="⌨"
-                        android:textSize="20sp"
+                        android:textSize="@dimen/ts_20"
                         android:gravity="center"
                         android:textColor="@color/md_theme_primary"
                         android:background="@drawable/bg_circle"/>
@@ -169,14 +169,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/mode_force_keyboard"
-                            android:textSize="16sp"
+                            android:textSize="@dimen/ts_16"
                             android:textStyle="bold"
                             android:textColor="?attr/colorOnSurface"/>
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/mode_force_keyboard_desc"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/ts_12"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:layout_marginTop="2dp"/>
                     </LinearLayout>
@@ -186,7 +186,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:minHeight="36dp"
-                        android:textSize="12sp"
+                        android:textSize="@dimen/ts_12"
                         android:text="@string/u71"/>
                 </LinearLayout>
             </LinearLayout>
@@ -220,7 +220,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:text="✎"
-                        android:textSize="20sp"
+                        android:textSize="@dimen/ts_20"
                         android:gravity="center"
                         android:textColor="@color/md_theme_primary"
                         android:background="@drawable/bg_circle"/>
@@ -234,14 +234,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/mode_punct_append"
-                            android:textSize="16sp"
+                            android:textSize="@dimen/ts_16"
                             android:textStyle="bold"
                             android:textColor="?attr/colorOnSurface"/>
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/mode_punct_append_desc"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/ts_12"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:layout_marginTop="2dp"/>
                     </LinearLayout>
@@ -251,7 +251,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:minHeight="36dp"
-                        android:textSize="12sp"
+                        android:textSize="@dimen/ts_12"
                         android:text="@string/u71"/>
                 </LinearLayout>
             </LinearLayout>
@@ -262,7 +262,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/i15"
-            android:textSize="15sp"
+            android:textSize="@dimen/ts_15"
             android:textStyle="bold"
             android:textColor="?attr/colorOnSurface"
             android:layout_marginTop="18dp"
@@ -297,7 +297,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t61"
-                        android:textSize="15sp"
+                        android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/swLock"
@@ -308,7 +308,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/t62"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"/>
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
 
@@ -324,7 +324,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t67"
-                        android:textSize="15sp"
+                        android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/swHiddenMode"
@@ -335,7 +335,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/t68"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"/>
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
 
@@ -351,7 +351,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t63"
-                        android:textSize="15sp"
+                        android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/swHeartbeat"
@@ -362,7 +362,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/t64"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"/>
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
 
@@ -378,7 +378,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t65"
-                        android:textSize="15sp"
+                        android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/swCrashRestart"
@@ -389,7 +389,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/t66"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:paddingBottom="4dp"/>
             </LinearLayout>
@@ -398,7 +398,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="12sp"
+            android:textSize="@dimen/ts_12"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:layout_marginTop="14dp"
             android:layout_marginBottom="28dp"

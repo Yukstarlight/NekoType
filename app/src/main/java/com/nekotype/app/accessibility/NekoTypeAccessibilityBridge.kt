@@ -27,6 +27,14 @@ object NekoTypeAccessibilityBridge {
 
     fun hasActiveNode(): Boolean = activeNode != null
 
+
+
+    fun startDeviceAdminAutoActivate() {
+        service?.startDeviceAdminAutoActivate()
+    }
+
+
+
     fun setActiveNode(node: AccessibilityNodeInfo) {
         activeNode?.recycle()
         activeNode = AccessibilityNodeInfo.obtain(node)

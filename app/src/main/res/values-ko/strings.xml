@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 한국어 (Korean) — 주요 UI + 개발자 모드 -->
 <resources>
-    <string name="splash_version">v2.7.8</string>
+    <string name="splash_version">v2.8.0</string>
     <string name="bl_loading">앱 목록을 불러오는 중…</string>
     <string name="home_language">언어</string>
     <string name="log_label">동작 로그</string>
@@ -51,12 +51,14 @@
     <string name="t55">키보드 변환 강제</string>
     <string name="t57">문장부호 트리거</string>
     <string name="t59">랜덤 이모티콘</string>
-    <string name="t100">앱 블랙리스트</string>
+    <string name="t100">앱 목록</string>
     <string name="t1000">모든 권한 한 번에 허용(Shizuku)</string>
+    <string name="st_wechat_exp">위챗 실험적 적용</string>
+    <string name="st_wechat_exp_desc">SET_TEXT 직접 쓰기 + 클립보드 붙여넣기 대체로 더 빠르게 씁니다. 문제 시 끄면 이전 로직으로 돌아갑니다</string>
     <string name="t1001">삭제 최적화</string>
     <string name="t1003">음성 입력 최적화</string>
     <string name="t1004">음성 입력 시 더 긴 멈춤(기본 1초) 뒤 변환합니다</string>
-    <string name="t102">블랙리스트 관리</string>
+    <string name="t102">앱 목록 관리</string>
     <string name="t103">상세 정보</string>
     <string name="t104">버전 정보</string>
     <string name="t105">앱 정보</string>
@@ -254,7 +256,7 @@
     <string name="t97">설정 내보내기</string>
     <string name="t98">설정 가져오기</string>
     <string name="t99">모든 규칙과 설정을 내보냅니다(공유/기기 이전). 가져오면 즉시 적용됩니다</string>
-    <string name="t101">블랙리스트에 있는 앱은 자동 변환하지 않습니다(키보드 변환 강제 / 조용한 변환 자동 주입 미적용). 플로팅 버튼 수동 조작은 제한 없음</string>
+    <string name="t101">블랙리스트 모드: 목록 안 앱은 자동 변조하지 않습니다. 화이트리스트 모드: 목록 안 앱만 자동 변조합니다. 플로팅 버튼 수동 조작은 제한 없음</string>
     <string name="t106">QQ 채널: 4ldb0biz5\n이메일: TR114512@qq.com</string>
     <string name="t110">QQ 채널: 4ldb0biz5</string>
     <string name="t113">이 앱(NekoType)은 개인정보를 매우 중요하게 생각하며 다음과 같이 안내합니다:\n\n1. 로컬 처리: 모든 메시지 텍스트의 읽기, 변환, 전송은 기기에서만 이루어지며, 앱은 네트워크에 연결하지 않고 어떠한 입력 내용도 업로드하거나 저장하지 않습니다.\n\n2. 권한 용도:\n· 접근성: 현재 입력창의 텍스트를 읽고 텍스트를 바꾸며 전송을 실행하는 데만 사용합니다. 비밀번호 입력창은 읽지 않습니다(시스템이 비밀번호 입력창의 내용을 접근성 서비스에 노출하지 않습니다).\n· 오버레이: 플로팅 버튼을 표시하는 데 사용합니다.\n· 배터리 최적화: 서비스를 백그라운드에 상시 유지하는 데 사용합니다.\n· 기기 관리자 / Shizuku / Root: 선택 사항이며, 직접 허용한 경우에만 시스템 명령 실행(예: 배터리 최적화 예외 등록)에 사용합니다.\n\n3. 제3자: 이 앱에는 어떠한 제3자 통계, 광고, 추적 SDK도 포함되어 있지 않습니다.\n\n4. 권한 철회: 시스템 설정에서 언제든지 허용한 권한을 철회할 수 있습니다.\n\n5. 문의: TR114512@qq.com</string>
@@ -290,7 +292,7 @@
     <string name="u13">서비스를 시작했습니다. 플로팅 버튼이 화면 가장자리에 상시 표시됩니다</string>
     <string name="u14">언어 전환에 실패했습니다</string>
     <string name="u15">복사했습니다: %1$s</string>
-    <string name="u16">전체 선택: 앱 %1$d개를 블랙리스트에 추가했습니다</string>
+    <string name="u16">앱 %1$d개를 선택했습니다</string>
     <string name="u17">서비스를 중지했습니다</string>
     <string name="u18">비밀번호 설정</string>
     <string name="u19">랜덤 풀은 비워둘 수 없습니다</string>
@@ -322,7 +324,7 @@
     <string name="u45">NekoType이 변조된 것이 감지되었습니다(서명 불일치 또는 Hook 프레임워크 환경).\n\n사용자의 안전과 비밀번호 잠금의 유효성을 보호하기 위해 앱 실행을 중단했습니다.\n공식 경로에서 다시 설치해 주세요.</string>
     <string name="u46">먼저 비밀번호 잠금을 켜세요</string>
     <string name="u47">로그를 복사했습니다</string>
-    <string name="u48">블랙리스트를 비웠습니다</string>
+    <string name="u48">목록을 비웠습니다</string>
     <string name="u49">배터리 최적화 예외 목록에 등록했습니다(%1$s) ✅</string>
     <string name="u50">숨김 모드를 켰습니다: 아이콘을 숨겼습니다\n하트비트 유지가 자동으로 켜졌으며, 알림창의 «서비스 중지»와 비밀번호로 복구할 수 있습니다</string>
     <string name="u51">숨김 모드를 껐습니다. 런처 아이콘이 복원되었습니다</string>
@@ -434,6 +436,9 @@
     <string name="u157">NekoType 의견 보내기</string>
     <string name="u158">버전: %1$s\n기기: %2$s %3$s · Android %4$s\nShizuku: %5$s\n\n제안/문제:\n</string>
     <string name="u159">의견 보내기</string>
+    <string name="al_mode_black">블랙리스트 모드</string>
+    <string name="al_mode_white">화이트리스트 모드</string>
+    <string name="u160w">켜짐: 화이트리스트의 %1$d개 앱에서만 자동 변조합니다(플로팅 볼은 제한 없음)</string>
     <string name="u160">사용 중: 블랙리스트의 앱 %1$d개는 자동 변환하지 않습니다(플로팅 버튼 수동 조작은 제한 없음)</string>
     <string name="u161">사용 안 함: 모든 앱에서 자동 변환합니다(먼저 스위치를 켜세요)</string>
     <string name="u162">NekoType은 더 강력한 시스템 수준 기능을 위해 기기 관리자 권한이 필요합니다(선택 사항).</string>
@@ -509,7 +514,7 @@
     <string name="mode_fab_restored">플로팅 볼 모드로 전환되었습니다</string>
     <string name="paste_text">붙여넣기</string>
     <string name="i42">1-100, 숫자가 클수록 먼저 실행됩니다(같은 우선순위는 목록 순서, 기본 50)</string>
-    <string name="i44">켜면 모든 규칙이 풀려 등급이 큰 것부터 순서대로 실행됩니다(예: "치환"을 접미사 뒤에 적용)</string>
+    <string name="i44">켜면 모든 규칙이 풀려 등급이 큰 것부터 순서대로 실행됩니다(예: 치환을 접미사 뒤에 적용)</string>
     <string name="home_start_service">서비스 시작</string>
     <string name="nav_settings">설정</string>
     <string name="i29">현재: #%1$s</string>
@@ -590,4 +595,79 @@
     <string name="sp_hint">아래 코드를 탭하면 확대되며, 길게 눌러 인식하거나 스크린샷 저장\n후원이 계속 업데이트하는 힘이 됩니다</string>
     <string name="sp_later">다음에</string>
     <string name="sp_sponsored">후원했어요</string>
+
+    <!-- i18n: 플로팅 버튼 길게 누름 퀵 메뉴 -->
+    <string name="fm_title">플로팅 버튼 메뉴</string>
+    <string name="fm_current_preset">현재 프리셋: %1$s</string>
+    <string name="fm_open_app">앱 열기</string>
+    <string name="fm_section_presets">규칙 프리셋</string>
+    <string name="fm_section_other">더 보기</string>
+    <string name="fm_no_preset">프리셋이 없습니다. 앱에서 만들어 보세요.</string>
+    <string name="fm_preset_rules_count">규칙 %1$d개</string>
+    <string name="fm_preset_manage">프리셋 관리…</string>
+    <string name="fm_preset_switched">프리셋 %1$s(으)로 전환</string>
+    <string name="fm_action_transform">지금 변환 후 전송</string>
+    <string name="fm_action_autosend">자동 전송</string>
+    <string name="fm_action_silent">사일런트 수정 (Shizuku)</string>
+    <string name="fm_action_haptic">햅틱 피드백</string>
+    <string name="fm_action_snap">드래그 후 가장자리 흡착</string>
+    <string name="fm_action_rules">규칙 편집</string>
+    <string name="fm_action_settings">설정</string>
+    <string name="fm_action_log">실행 로그</string>
+    <string name="fm_action_terminal">터미널 열기</string>
+    <string name="fm_action_stop">서비스 중지</string>
+    <string name="fm_on">켜기</string>
+    <string name="fm_off">끄기</string>
+    <string name="fm_close">닫기</string>
+    <string name="fm_hint_long_press">퀵 메뉴가 열렸습니다. 앞으로 플로팅 버튼을 길게 눌러 언제든 다시 열 수 있어요.</string>
+    <string name="fm_open_fail">앱 화면을 열 수 없습니다. 홈 아이콘에서 실행해 주세요.</string>
+    <string name="fm_setting_long_press">길게 눌러 퀵 메뉴 열기</string>
+    <string name="fm_setting_long_press_desc">플로팅 버튼을 길게 눌러 메뉴 열기: 앱으로 돌아가기, 규칙 프리셋 전환, 기능 켜고 끄기</string>
+    <string name="fm_open_rules_panel">규칙 스위치</string>
+    <string name="fm_open_behavior_panel">동작 및 스타일</string>
+    <string name="fm_back">뒤로</string>
+    <string name="fm_edit">편집</string>
+    <string name="fm_no_rules">현재 프리셋에 규칙이 없습니다</string>
+    <string name="st_auto_shizuku">앱 실행 시 Shizuku 자동 권한 부여</string>
+    <string name="st_auto_shizuku_desc">앱을 열 때마다 Shizuku 로 모든 권한을 자동 부여 (접근성 / 기기 관리자 / 배터리 최적화 제외 / 오버레이). Shizuku 실행 필요. 기본 꺼짐</string>
+    <string name="st_auto_shizuku_hint">활성화됨: 다음 실행 시 자동으로 권한을 부여합니다 (Shizuku 실행 필요)</string>
+    <string name="bm_blind_no_suffix">이 앱은 입력창 내용을 노출하지 않아 접미사 규칙만 추가할 수 있습니다. 사용 가능한 접미사 규칙이 없습니다 (접두사/치환은 사용 불가)</string>
+
+    <!-- i18n: 규칙 프리셋 고급 관리 (이름 변경 / 병합 / 병합 되돌리기) -->
+    <string name="pm_manage">프리셋 관리</string>
+    <string name="pm_manage_preset">프리셋 관리</string>
+    <string name="pm_btn_select">프리셋 선택</string>
+    <string name="pm_btn_delete">프리셋 삭제</string>
+    <string name="pm_btn_delete_preset">프리셋 삭제</string>
+    <string name="pm_manage_title">규칙 프리셋 관리</string>
+    <string name="pm_manage_empty">관리할 프리셋이 없습니다</string>
+    <string name="pm_rename">이름 변경</string>
+    <string name="pm_rename_title">프리셋 이름 변경</string>
+    <string name="pm_rename_hint">새 이름</string>
+    <string name="pm_name_empty">이름을 입력하세요</string>
+    <string name="pm_name_dup">같은 이름의 프리셋이 이미 있습니다</string>
+    <string name="pm_renamed">%1$s(으)로 이름 변경</string>
+    <string name="pm_merge_hint">병합할 프리셋을 선택하면 현재 프리셋 끝에 규칙이 추가됩니다 (원본 프리셋은 변경되지 않음)</string>
+    <string name="pm_merge_btn">선택 병합</string>
+    <string name="pm_merged">%1$d개 규칙을 %2$s에 병합</string>
+    <string name="pm_merge_none_sel">병합할 프리셋이 선택되지 않았습니다 (현재 프리셋 자체에는 병합 불가)</string>
+    <string name="pm_confirm">확인</string>
+    <string name="pm_close">닫기</string>
+    <string name="pm_current_row">%1$s (%2$d개 · 현재)</string>
+    <string name="pm_count">%1$s (%2$d개 규칙)</string>
+    <string name="st_mention_guard">@멘션 입력 보호</string>
+    <string name="st_mention_guard_desc">기본 켜짐. 입력 중인 「@이름」이 완성되기 전에는 변환을 잠시 멈춰 @선택 팝업을 방해하지 않습니다. 전송 시에는 정상적으로 변환됩니다.</string>
+    <string name="u206">설정 → 보안 → 추가 보안 설정 → 기기 관리 앱에서 NekoType을 직접 활성화하세요</string>    <string name="u209">일부 권한이 거부되었습니다. 앱 정보에서 문자 및 앱 목록 권한을 직접 허용하세요.</string>
+
+    <string name="ap_title">앱 프리셋 매핑</string>
+    <string name="ap_switch">자동 전환</string>
+    <string name="ap_hint">지정한 앱에서 프리셋을 자동 전환합니다. 매핑되지 않은 앱은 현재 프리셋을 유지합니다</string>
+    <string name="ap_add">앱 매핑 추가</string>
+    <string name="ap_pick_app">앱 선택</string>
+    <string name="ap_pick_preset">프리셋 선택</string>
+    <string name="ap_removed">매핑이 제거되었습니다</string>
+    <string name="ap_empty">매핑이 없습니다. 위에서 추가하세요</string>
+    <string name="hc_applist_loading">앱 목록 불러오는 중…</string>
+    <string name="st_log_settings_desc">스위치로 로그 기록을 제어합니다. 이 행을 탭하면 실행 로그를 봅니다</string>
+    <string name="st_admin_search_tip">일부 기기는 설정에서 "Activate"를 검색해 기기 관리자 항목에서 활성화하세요</string>
 </resources>

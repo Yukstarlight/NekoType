@@ -8,6 +8,8 @@ import android.os.IBinder
 import android.os.Looper
 import android.os.Message
 import android.os.Messenger
+import android.os.SystemClock
+import android.view.KeyEvent
 import kotlin.concurrent.thread
 
 /**
@@ -18,7 +20,6 @@ import kotlin.concurrent.thread
  * 本服务【不接受任意 shell 命令】。对外只暴露一组【固定动作】消息类型，
  * 命令模板集中在 [FixedCommands]（两条特权通道共用同一份），参数（文本/包名/tag）
  * 只作为受限插值，绝不拼接任意 shell 字符串。
- * → 不存在 "onBind 返回 Messenger + handleMessage sh -c 任意命令" 的通道。
  *
  * 动作清单见 [FixedCommands.build]：
  * - MSG_BATTERY_WHITELIST / MSG_INJECT_SELECT_ALL / MSG_INJECT_TEXT / MSG_HIDE_SELF
@@ -40,6 +41,11 @@ class NekoShellService : Service() {
         // 开发者模式：抓取系统日志（logcat 主缓冲 / 崩溃缓冲；tag 为受限参数）
         const val MSG_LOGCAT_DUMP = 9
         const val MSG_LOGCAT_CRASH = 10
+        // 按键注入（Unicode 级真打字）：经 InputManager 注入 KeyEvent，
+        // 对微信/Termux 等非原生输入框同样有效（它们必须接受键盘通道）
+        const val MSG_INJECT_KEYS = 11
+        // 光标移到末尾（CTRL+END 组合键，盲操作追加后缀前用）
+        const val MSG_INJECT_MOVE_END = 12
 
         // 结果
         const val MSG_RESULT = 100
@@ -64,6 +70,9 @@ class NekoShellService : Service() {
                 try {
                     val cmd = FixedCommands.build(action, msg.data, packageName)
                     val r: Pair<Boolean, String> = when {
+                        action == MSG_INJECT_KEYS -> injectKeys(
+                            msg.data?.getString("text").orEmpty()
+                        )
                         cmd != null -> runShell(cmd)
                         // 悬浮窗授权：部分 ROM 只认数字 op（24），名称 op 失败时兜底一次
                         action == MSG_GRANT_OVERLAY ->
@@ -78,7 +87,6 @@ class NekoShellService : Service() {
                         } else r.second
                     } else r.second
                 } catch (t: Throwable) {
-                    // 【关键】任何异常都必须回给调用方，否则调用方只能干等超时（旧版就是这样静默失败的）
                     ok = false
                     out = t.javaClass.simpleName + ": " + (t.message ?: "")
                     android.util.Log.e(TAG, "action $action 执行异常", t)
@@ -120,6 +128,50 @@ class NekoShellService : Service() {
             (p.exitValue() == 0) to combined
         } catch (t: Throwable) {
             false to (t.message ?: "unknown error")
+        }
+    }
+
+    /**
+     * 按键注入（Unicode 级真打字）：把任意文本（中文/颜文字/Emoji）拆成
+     * ACTION_MULTIPLE KeyEvent 逐块注入当前焦点窗口的 InputConnection。
+     * 为什么不用 `input text`：那条命令只收可打印 ASCII，中文会直接报错。
+     * 为什么反射：`InputManager.injectInputEvent` 是 @hide API，公开 SDK 编译不过；
+     * 本进程由 Shizuku 以 shell(2000) 权限拉起，运行时不受 hidden API 限制 → 反射调用。
+     * 注入按每 16 个码点一块（含代理对，Emoji 不拆坏），块间留 20ms 防丢。
+     */
+    private fun injectKeys(text: String): Pair<Boolean, String> {
+        return try {
+            if (text.isEmpty()) return false to "empty text"
+            if (text.length > FixedCommands.MAX_INJECT_LEN) return false to "text too long"
+            val imClass = Class.forName("android.hardware.input.InputManager")
+            val im = imClass.getMethod("getInstance").invoke(null)
+            val inject = imClass.getMethod(
+                "injectInputEvent",
+                android.view.InputEvent::class.java,
+                Int::class.javaPrimitiveType
+            )
+            val cps = text.codePoints().toArray()
+            var i = 0
+            var sent = 0
+            while (i < cps.size) {
+                val end = minOf(i + 16, cps.size)
+                val sb = StringBuilder()
+                for (j in i until end) sb.appendCodePoint(cps[j])
+                val ev = KeyEvent(
+                    SystemClock.uptimeMillis(),
+                    sb.toString(),
+                    -1,
+                    KeyEvent.FLAG_SOFT_KEYBOARD or KeyEvent.FLAG_KEEP_TOUCH_MODE
+                )
+                val ok = inject.invoke(im, ev, 2) as Boolean
+                if (!ok) break
+                sent += end - i
+                i = end
+                if (i < cps.size) Thread.sleep(20)
+            }
+            (sent >= cps.size) to "injected=$sent/${cps.size}"
+        } catch (t: Throwable) {
+            false to (t.javaClass.simpleName + ": " + (t.message ?: ""))
         }
     }
 }

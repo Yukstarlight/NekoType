@@ -1,5 +1,6 @@
 package com.nekotype.app.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.view.Gravity
@@ -8,8 +9,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.CheckBox
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -25,6 +28,7 @@ import com.nekotype.app.transform.TextTransformEngine
 import com.nekotype.app.util.BgUtils
 import com.nekotype.app.util.NekoLang
 import com.nekotype.app.util.NekoLog
+import com.nekotype.app.util.setTextSizeDimen
 
 /**
  * 规则页：规则预设（加号选择）+ 规则列表 + 行为样式 + 效果预览。
@@ -69,6 +73,7 @@ class RulesFragment : Fragment() {
         b.btnAddPreset.setOnClickListener { showNewPresetDialog() }
         b.btnSelectRule.setOnClickListener { selectPresetDialog() }
         b.btnDeleteRule.setOnClickListener { deletePresetDialog() }
+        b.btnManagePreset.setOnClickListener { managePresetDialog() }
 
         // 添加规则
         b.btnAddRule.setOnClickListener { showAddRuleDialog() }
@@ -113,6 +118,17 @@ class RulesFragment : Fragment() {
         b.swPriorityGlobal.setOnCheckedChangeListener { _, v ->
             AppPrefs.priorityGlobalEnabled = v
             NekoLog.adjust(if (v) "开启按等级全局执行规则" else "关闭按等级全局执行（改为类别内排序）")
+        }
+        b.swMentionGuard.setOnCheckedChangeListener { _, v ->
+            AppPrefs.mentionGuardEnabled = v
+            NekoLog.adjust(if (v) "开启 @提及输入保护" else "关闭 @提及输入保护")
+        }
+        b.swWeChatExp.setOnCheckedChangeListener { _, v ->
+            AppPrefs.wechatExperimentalEnabled = v
+            NekoLog.adjust(if (v) "开启微信适配（实验）" else "关闭微信适配（实验），回退旧写回校验")
+        }
+        b.btnAppPreset.setOnClickListener {
+            startActivity(Intent(requireContext(), AppPresetActivity::class.java))
         }
 
         // 预览
@@ -194,6 +210,196 @@ class RulesFragment : Fragment() {
             .show()
     }
 
+    // ---------- 预设高级管理：重命名 / 合并 ----------
+
+    /**
+     * 管理规则预设弹窗：
+     * - 每个预设可勾选（用于合并到当前预设，当前预设自身不可勾选）；
+     * - 每行「✎ 重命名」直接改名；
+     * - 底部**固定**操作栏「⇩ 合并选中 / ✕ 关闭」始终可见，不需要往下滑；
+     * - 弹窗宽度 94%、高度自适应，列表区最高 55% 屏高，保证按钮不被挤出屏幕。
+     */
+    private fun managePresetDialog() {
+        val presets = AppPrefs.presetList()
+        if (presets.isEmpty()) {
+            toast(getString(R.string.pm_manage_empty))
+            return
+        }
+        val curId = AppPrefs.activePresetId()
+        val selected = mutableSetOf<String>()
+        val ctx = requireContext()
+        val dm = resources.displayMetrics
+        val density = dm.density
+        fun dp(v: Int) = (v * density).toInt()
+        // 提前声明：行内「重命名」回调与底部按钮都要引用它
+        var pending: AlertDialog? = null
+
+        val hint = TextView(ctx).apply {
+            text = getString(R.string.pm_merge_hint)
+            setTextSizeDimen(R.dimen.ts_12)
+            setLineSpacing(0f, 1.3f)
+            setTextColor(ContextCompat.getColor(ctx, R.color.fg_1))
+        }
+        val list = LinearLayout(ctx).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(0, dp(4), 0, 0)
+        }
+        presets.forEachIndexed { i, (id, name) ->
+            val isCur = id == curId
+            val row = LinearLayout(ctx).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                setPadding(0, dp(12), 0, dp(12))
+            }
+            // 勾选框（当前预设不可勾选：不能合并到自身）
+            row.addView(CheckBox(ctx).apply {
+                isEnabled = !isCur
+                setOnCheckedChangeListener { _, c ->
+                    if (c) selected.add(id) else selected.remove(id)
+                }
+            })
+            // 名称（带条数 / 当前标记）
+            row.addView(TextView(ctx).apply {
+                text = if (isCur)
+                    getString(R.string.pm_current_row, name, AppPrefs.ruleCountOf(id))
+                else
+                    getString(R.string.pm_count, name, AppPrefs.ruleCountOf(id))
+                setTextSizeDimen(R.dimen.ts_14_5)
+                setTextColor(ContextCompat.getColor(ctx, R.color.text_primary))
+                maxLines = 1
+                ellipsize = android.text.TextUtils.TruncateAt.END
+                if (isCur) setTypeface(typeface, android.graphics.Typeface.BOLD)
+                layoutParams = LinearLayout.LayoutParams(
+                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f
+                ).apply { marginStart = dp(4) }
+            })
+            // 重命名
+            row.addView(TextView(ctx).apply {
+                text = getString(R.string.pm_rename)
+                setTextSizeDimen(R.dimen.ts_13)
+                setTextColor(ContextCompat.getColor(ctx, R.color.md_theme_primary))
+                setPadding(dp(12), dp(6), dp(4), dp(6))
+                setOnClickListener {
+                    showRenamePresetDialog(id, name) {
+                        // 重命名成功后关闭并重开管理弹窗以刷新名称
+                        pending?.dismiss()
+                        managePresetDialog()
+                    }
+                }
+            })
+            list.addView(row)
+            if (i != presets.lastIndex) {
+                list.addView(View(ctx).apply {
+                    setBackgroundColor(ContextCompat.getColor(ctx, R.color.divider))
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT, 1
+                    )
+                })
+            }
+        }
+
+        // 滚动区：按条目数自适应并设上限，避免按钮被挤出屏幕
+        val rowH = dp(52)
+        val scrollH = minOf(presets.size * rowH + dp(8), (dm.heightPixels * 0.55f).toInt())
+        val scroll = ScrollView(ctx).apply {
+            isFillViewport = false
+            isVerticalScrollBarEnabled = true
+            addView(list, LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ))
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, scrollH
+            )
+        }
+
+        // 底部固定操作栏
+        val bar = LinearLayout(ctx).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.END
+            setPadding(0, dp(12), 0, 0)
+        }
+        bar.addView(View(ctx).apply {
+            layoutParams = LinearLayout.LayoutParams(0, 1, 1f)
+        })
+        bar.addView(com.google.android.material.button.MaterialButton(ctx).apply {
+            text = "⇩ " + getString(R.string.pm_merge_btn)
+            setTextSizeDimen(R.dimen.ts_13)
+            isAllCaps = false
+            setOnClickListener {
+                if (selected.isEmpty()) {
+                    toast(getString(R.string.pm_merge_none_sel))
+                    return@setOnClickListener
+                }
+                val n = AppPrefs.mergePresetsIntoCurrent(selected.toList())
+                if (n > 0) {
+                    toast(getString(R.string.pm_merged, n, AppPrefs.activePresetName()))
+                    NekoLog.rule("合并 ${selected.size} 个预设到当前：新增 $n 条规则")
+                    renderRules()
+                    pending?.dismiss()
+                    managePresetDialog()
+                } else {
+                    toast(getString(R.string.pm_merge_none_sel))
+                }
+            }
+        })
+        bar.addView(com.google.android.material.button.MaterialButton(ctx).apply {
+            text = "✕ " + getString(R.string.pm_close)
+            setTextSizeDimen(R.dimen.ts_13)
+            isAllCaps = false
+            setOnClickListener { pending?.dismiss() }
+        }, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply { marginStart = dp(8) })
+
+        val column = NekoDialog.column(ctx, hint, scroll, bar)
+        val dialog = NekoDialog.builder(ctx)
+            .setTitle(getString(R.string.pm_manage_title))
+            .setView(column)
+            .create()
+        pending = dialog
+        dialog.show()
+        // 界面放大：宽度 94%，高度自适应（不再强制 80% 把按钮挤到屏幕外）
+        try {
+            val lp = dialog.window?.attributes
+            if (lp != null) {
+                lp.width = (dm.widthPixels * 0.94f).toInt()
+                lp.height = android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+                dialog.window?.attributes = lp
+            }
+        } catch (_: Throwable) { }
+    }
+
+    /** 重命名预设弹窗；成功后回调 [onDone]（用于刷新管理弹窗） */
+    private fun showRenamePresetDialog(id: String, oldName: String, onDone: () -> Unit) {
+        val inName = NekoDialog.input(requireContext(), getString(R.string.pm_rename_hint), value = oldName)
+        val box = NekoDialog.column(requireContext(), inName)
+        val dialog = NekoDialog.builder(requireContext())
+            .setTitle(getString(R.string.pm_rename_title))
+            .setView(box)
+            .setPositiveButton(getString(R.string.pm_confirm), null)
+            .setNegativeButton(getString(R.string.pm_close), null)
+            .create()
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val name = NekoDialog.textOf(inName).trim()
+                if (name.isEmpty()) { toast(getString(R.string.pm_name_empty)); return@setOnClickListener }
+                if (name == oldName) { dialog.dismiss(); return@setOnClickListener }
+                if (AppPrefs.hasPresetName(name)) { toast(getString(R.string.pm_name_dup)); return@setOnClickListener }
+                if (AppPrefs.renamePreset(id, name)) {
+                    toast(getString(R.string.pm_renamed, name))
+                    NekoLog.rule("重命名预设：$oldName → $name")
+                    dialog.dismiss()
+                    onDone()
+                } else {
+                    toast(getString(R.string.pm_name_dup))
+                }
+            }
+        }
+        dialog.show()
+    }
+
     /** 新建预设：把当前规则保存为新预设 */
     private fun showNewPresetDialog() {
         val inName = NekoDialog.input(requireContext(), getString(R.string.hc_preset_name_hint))
@@ -237,6 +443,8 @@ class RulesFragment : Fragment() {
         b.swDeleteOptimize.isChecked = AppPrefs.deleteOptimizeEnabled
         b.swVoiceOptimize.isChecked = AppPrefs.voiceInputOptimizeEnabled
         b.swPriorityGlobal.isChecked = AppPrefs.priorityGlobalEnabled
+        b.swMentionGuard.isChecked = AppPrefs.mentionGuardEnabled
+        b.swWeChatExp.isChecked = AppPrefs.wechatExperimentalEnabled
 
         val list = b.llRuleList
         list.removeAllViews()
@@ -268,7 +476,7 @@ class RulesFragment : Fragment() {
         // 类型徽标（点击 = 编辑）
         val badge = TextView(requireContext()).apply {
             text = getString(rule.type.resId)
-            textSize = 11f
+            setTextSizeDimen(R.dimen.ts_11)
             setTextColor(ContextCompat.getColor(requireContext(), R.color.md_theme_primary))
             background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_circle)
             setPadding(18, 6, 18, 6)
@@ -279,7 +487,7 @@ class RulesFragment : Fragment() {
         // 等级徽标（数字越大越先执行；点击也进编辑）
         val priBadge = TextView(requireContext()).apply {
             text = "P${rule.priority}"
-            textSize = 10f
+            setTextSizeDimen(R.dimen.ts_10)
             setTextColor(ContextCompat.getColor(requireContext(), R.color.md_theme_primary))
             background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_circle)
             setPadding(14, 5, 14, 5)
@@ -298,7 +506,7 @@ class RulesFragment : Fragment() {
         }
         val tvValue = TextView(requireContext()).apply {
             text = valueText
-            textSize = 14f
+            setTextSizeDimen(R.dimen.ts_14)
             setTextColor(ContextCompat.getColor(requireContext(), R.color.text_primary))
             maxLines = 2
             ellipsize = android.text.TextUtils.TruncateAt.END
@@ -312,7 +520,7 @@ class RulesFragment : Fragment() {
         // 编辑按钮
         val edit = TextView(requireContext()).apply {
             text = getString(R.string.u79)
-            textSize = 13f
+            setTextSizeDimen(R.dimen.ts_13)
             setTextColor(ContextCompat.getColor(requireContext(), R.color.md_theme_primary))
             gravity = Gravity.CENTER
             setPadding(12, 8, 8, 8)
@@ -345,7 +553,7 @@ class RulesFragment : Fragment() {
         // 删除（密码锁定：需验证）
         val del = TextView(requireContext()).apply {
             text = "✕"
-            textSize = 15f
+            setTextSizeDimen(R.dimen.ts_15)
             setTextColor(ContextCompat.getColor(requireContext(), R.color.fg_2))
             gravity = Gravity.CENTER
             setPadding(24, 8, 12, 8)
@@ -413,9 +621,14 @@ class RulesFragment : Fragment() {
         fun refreshFields(type: RuleType) {
             fields.removeAllViews()
             when (type) {
-                RuleType.PREFIX, RuleType.SUFFIX -> fields.addView(inValue)
-                RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX,
-                RuleType.RANDOM_PREFIX_ONCE, RuleType.RANDOM_SUFFIX_ONCE -> {
+                RuleType.PREFIX, RuleType.SUFFIX -> {
+                    fields.addView(inValue)
+                }
+                RuleType.RANDOM_PREFIX, RuleType.RANDOM_PREFIX_ONCE -> {
+                    fields.addView(inValue)
+                    fields.addView(inChance)
+                }
+                RuleType.RANDOM_SUFFIX, RuleType.RANDOM_SUFFIX_ONCE -> {
                     fields.addView(inValue)
                     fields.addView(inChance)
                 }
@@ -460,14 +673,26 @@ class RulesFragment : Fragment() {
                 // 优先级（等级）：1-100，数字越大越先执行；留空 = 50
                 val pri = NekoDialog.textOf(inPriority).toIntOrNull()?.coerceIn(1, 100) ?: 50
                 val base = when (type) {
-                    RuleType.PREFIX, RuleType.SUFFIX -> {
+                    RuleType.PREFIX -> {
                         val v = NekoDialog.textOf(inValue).trim()
                         if (v.isEmpty()) { toast(getString(R.string.u43)); return@setPositiveButton }
                         NekoRule(editRule?.id ?: "r_${System.currentTimeMillis()}", type, v,
                             priority = pri, enabled = editRule?.enabled ?: true)
                     }
-                    RuleType.RANDOM_PREFIX, RuleType.RANDOM_SUFFIX,
-                    RuleType.RANDOM_PREFIX_ONCE, RuleType.RANDOM_SUFFIX_ONCE -> {
+                    RuleType.SUFFIX -> {
+                        val v = NekoDialog.textOf(inValue).trim()
+                        if (v.isEmpty()) { toast(getString(R.string.u43)); return@setPositiveButton }
+                        NekoRule(editRule?.id ?: "r_${System.currentTimeMillis()}", type, v,
+                            priority = pri, enabled = editRule?.enabled ?: true)
+                    }
+                    RuleType.RANDOM_PREFIX, RuleType.RANDOM_PREFIX_ONCE -> {
+                        val v = NekoDialog.textOf(inValue).trim()
+                        if (v.isEmpty()) { toast(getString(R.string.u19)); return@setPositiveButton }
+                        val chance = NekoDialog.textOf(inChance).toIntOrNull()?.coerceIn(1, 100) ?: 50
+                        NekoRule(editRule?.id ?: "r_${System.currentTimeMillis()}", type, v,
+                            chance = chance, priority = pri, enabled = editRule?.enabled ?: true)
+                    }
+                    RuleType.RANDOM_SUFFIX, RuleType.RANDOM_SUFFIX_ONCE -> {
                         val v = NekoDialog.textOf(inValue).trim()
                         if (v.isEmpty()) { toast(getString(R.string.u19)); return@setPositiveButton }
                         val chance = NekoDialog.textOf(inChance).toIntOrNull()?.coerceIn(1, 100) ?: 50

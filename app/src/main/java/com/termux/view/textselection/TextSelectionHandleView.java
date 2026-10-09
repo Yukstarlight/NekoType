@@ -136,6 +136,8 @@ public class TextSelectionHandleView extends View {
 
     public void hide() {
         mIsDragging = false;
+        hideMagnifier();
+        stopAutoScroll();
 
         if (mHandle != null) {
             mHandle.dismiss();
@@ -299,6 +301,7 @@ public class TextSelectionHandleView extends View {
                 mLastParentX = coords[0];
                 mLastParentY = coords[1];
                 mIsDragging = true;
+                showMagnifier();
                 break;
             }
 
@@ -310,15 +313,97 @@ public class TextSelectionHandleView extends View {
                 final float newPosY = rawY - mTouchToWindowOffsetY + mHotspotY + mTouchOffsetY;
 
                 mCursorController.updatePosition(this, Math.round(newPosX), Math.round(newPosY));
+                showMagnifier();
+                updateAutoScroll(rawY);
                 break;
             }
 
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 mIsDragging = false;
+                hideMagnifier();
+                stopAutoScroll();
         }
         return true;
     }
+
+    private android.widget.Magnifier mMagnifier;
+    private int mAutoScrollDirection;
+    private boolean mAutoScrollRunning;
+
+    private int dp(float value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
+    private void showMagnifier() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return;
+        try {
+            if (mMagnifier == null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    mMagnifier = new android.widget.Magnifier.Builder(terminalView)
+                        .setSize(dp(150), dp(64))
+                        .setCornerRadius(dp(14))
+                        .setElevation(dp(10))
+                        .setDefaultSourceToMagnifierOffset(0, -dp(getHandleHeight() + 46))
+                        .build();
+                } else {
+                    mMagnifier = new android.widget.Magnifier(terminalView);
+                }
+            }
+            int x = Math.max(1, Math.min(terminalView.getWidth() - 1, mPointX + (int) mHotspotX));
+            int y = Math.max(1, Math.min(terminalView.getHeight() - 1, mPointY));
+            mMagnifier.show(x, y);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private void hideMagnifier() {
+        if (mMagnifier != null) {
+            try { mMagnifier.dismiss(); } catch (Throwable ignored) { }
+        }
+    }
+
+    private void updateAutoScroll(float rawY) {
+        int[] loc = mTempCoords;
+        terminalView.getLocationInWindow(loc);
+        float yInView = rawY - loc[1];
+        int edge = dp(48);
+        int direction = 0;
+        if (yInView < edge) {
+            direction = -1;
+        } else if (yInView > terminalView.getHeight() - edge) {
+            direction = 1;
+        }
+        if (direction == 0) {
+            stopAutoScroll();
+            return;
+        }
+        mAutoScrollDirection = direction;
+        if (!mAutoScrollRunning) {
+            mAutoScrollRunning = true;
+            terminalView.postDelayed(mAutoScrollRunnable, 60);
+        }
+    }
+
+    private void stopAutoScroll() {
+        mAutoScrollRunning = false;
+        mAutoScrollDirection = 0;
+        terminalView.removeCallbacks(mAutoScrollRunnable);
+    }
+
+    private final Runnable mAutoScrollRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (!mIsDragging || mAutoScrollDirection == 0) {
+                mAutoScrollRunning = false;
+                return;
+            }
+            terminalView.selectionAutoScroll(mAutoScrollDirection);
+            mCursorController.updatePosition(TextSelectionHandleView.this, mPointX, mPointY);
+            showMagnifier();
+            terminalView.postDelayed(this, 60);
+        }
+    };
 
     @Override
     public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {

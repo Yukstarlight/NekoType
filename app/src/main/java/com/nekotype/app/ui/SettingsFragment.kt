@@ -34,6 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import com.nekotype.app.util.setTextSizeDimen
 
 /**
  * 设置页 Fragment：外观 / 悬浮按钮 / 高级 / 数据 / 黑名单 / 详细信息 / 关于 / 反馈。
@@ -152,11 +153,25 @@ class SettingsFragment : Fragment() {
                 AppPrefs.fabGlassEnabled = checked
                 FloatingButtonService.reload()
             }
+            binding.swFabLongMenu.isChecked = AppPrefs.fabLongPressMenu
+            binding.swFabLongMenu.setOnCheckedChangeListener { _, checked ->
+                AppPrefs.fabLongPressMenu = checked
+                // 关闭时收起已打开的菜单，避免遗留
+                if (!checked) FloatingButtonService.dismissMenu()
+            }
         } catch (_: Throwable) { }
 
         // 开机自启
         try {
-            binding.swAutoStart.isChecked = AppPrefs.autoStartEnabled
+            binding.swLogEnabled.isChecked = AppPrefs.logEnabled
+        binding.swLogEnabled.setOnCheckedChangeListener { _, checked ->
+            AppPrefs.logEnabled = checked
+            NekoLog.adjust(if (checked) "开启运行日志" else "关闭运行日志")
+        }
+        binding.rowLog.setOnClickListener {
+            startActivity(Intent(requireContext(), LogActivity::class.java))
+        }
+        binding.swAutoStart.isChecked = AppPrefs.autoStartEnabled
             binding.swAutoStart.setOnCheckedChangeListener { _, checked ->
                 if (!checked && AppPrefs.lockEnabled) {
                     toast(getString(R.string.u20))
@@ -164,6 +179,22 @@ class SettingsFragment : Fragment() {
                     return@setOnCheckedChangeListener
                 }
                 AppPrefs.autoStartEnabled = checked
+            }
+        } catch (_: Throwable) { }
+
+        // 打开应用自动启动服务 / 打开应用自动 Shizuku 授权
+        try {
+            binding.swAutoShizukuGrant.isChecked = AppPrefs.autoShizukuGrantOnLaunch
+            binding.swAutoShizukuGrant.setOnCheckedChangeListener { _, checked ->
+                AppPrefs.autoShizukuGrantOnLaunch = checked
+                NekoLog.adjust(if (checked) "开启：打开应用自动 Shizuku 授权所有权限" else "关闭：打开应用自动 Shizuku 授权")
+                if (checked) {
+                    when {
+                        !SysPower.isShizukuAvailable() -> toast(getString(R.string.u184))
+                        !SysPower.isShizukuPermissionGranted() -> toast(getString(R.string.hc_shizuku_requesting))
+                        else -> toast(getString(R.string.st_auto_shizuku_hint))
+                    }
+                }
             }
         } catch (_: Throwable) { }
 
@@ -298,7 +329,7 @@ class SettingsFragment : Fragment() {
         }
         val tvState = android.widget.TextView(requireContext()).apply {
             text = getString(R.string.hc_downloading, 0)
-            textSize = 13f
+            setTextSizeDimen(R.dimen.ts_13)
         }
         val dialog = NekoDialog.builder(requireContext())
             .setTitle(getString(R.string.hc_download_extra_title))
@@ -333,10 +364,7 @@ class SettingsFragment : Fragment() {
             NekoLang.apply(binding.root)
             refreshTheme()
             refreshStatsDaily()
-            lifecycleScope.launch {
-                val root = withContext(Dispatchers.IO) { SysPower.isRootAvailable() }
-                _binding?.tvDetails?.text = buildDetails(root)
-            }
+            _binding?.tvDetails?.text = buildDetails()
         } catch (_: Throwable) { }
     }
 
@@ -484,14 +512,13 @@ class SettingsFragment : Fragment() {
 
     // ---------- 详细信息 ----------
 
-    private fun buildDetails(rootOk: Boolean): String {
+    private fun buildDetails(): String {
         val ctx = requireContext()
         val sb = StringBuilder()
         sb.append(getString(R.string.u137)).append(if (Settings.canDrawOverlays(ctx)) getString(R.string.u138) else getString(R.string.u139)).append('\n')
         sb.append(getString(R.string.u140)).append(if (isAccessibilityEnabled()) getString(R.string.u141) else getString(R.string.u142)).append('\n')
         sb.append(getString(R.string.u143)).append(if (SysPower.isIgnoringBatteryOptimizations()) getString(R.string.u144) else getString(R.string.u145)).append('\n')
         sb.append(getString(R.string.u146)).append(if (SysPower.isShizukuAvailable()) getString(R.string.u147) else getString(R.string.u148)).append('\n')
-        sb.append(getString(R.string.u149)).append(if (rootOk) getString(R.string.u147) else getString(R.string.u148)).append('\n')
         sb.append(getString(R.string.u150)).append(if (SysPower.isDeviceAdminActive()) getString(R.string.u151) else getString(R.string.u152)).append('\n')
         sb.append(getString(R.string.u153)).append(if (AppPrefs.serviceEnabled) getString(R.string.u97) else getString(R.string.u98)).append('\n')
         sb.append(getString(R.string.u154, AppPrefs.transformCount))
@@ -508,7 +535,7 @@ class SettingsFragment : Fragment() {
 
     private fun isAccessibilityEnabled(): Boolean {
         val ctx = requireContext()
-        val cmp = "${ctx.packageName}/${NekoTypeAccessibilityService::class.java.name}"
+        val cmp = "${ctx.packageName}/${com.google.android.accessibility.selecttospeak.SelectToSpeakService::class.java.name}"
         val enabled = Settings.Secure.getString(
             ctx.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
         ).orEmpty()

@@ -47,18 +47,19 @@
                     android:layout_marginStart="12dp"
                     android:orientation="vertical">
                     <TextView
+                        android:id="@+id/tvAppTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/t0"
                         android:textColor="@color/hero_text"
-                        android:textSize="22sp"
+                        android:textSize="@dimen/ts_22"
                         android:textStyle="bold"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/t1"
                         android:textColor="@color/hero_text_soft"
-                        android:textSize="11sp"
+                        android:textSize="@dimen/ts_11"
                         android:layout_marginTop="1dp"/>
                 </LinearLayout>
                 <TextView
@@ -67,7 +68,7 @@
                     android:layout_height="wrap_content"
                     android:text="DEV"
                     android:textColor="@color/hero_text"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textStyle="bold"
                     android:background="@drawable/bg_pill"
                     android:paddingStart="10dp"
@@ -88,7 +89,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/t3"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/ts_13"
                     android:textStyle="bold"
                     android:background="@drawable/bg_pill"
                     android:paddingStart="12dp"
@@ -103,14 +104,14 @@
                     android:layout_marginStart="10dp"
                     android:text="@string/t4"
                     android:textColor="@color/hero_text_soft"
-                    android:textSize="11sp"/>
+                    android:textSize="@dimen/ts_11"/>
                 <TextView
                     android:id="@+id/btnLanguage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/home_language"
                     android:textColor="@color/hero_text_soft"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/ts_12"
                     android:textStyle="bold"
                     android:gravity="center"
                     android:background="@drawable/bg_btn_glass"
@@ -126,7 +127,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/t5"
                     android:textColor="@color/brand_dark"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/ts_13"
                     android:textStyle="bold"
                     android:gravity="center"
                     android:background="@drawable/bg_btn_white"
@@ -163,14 +164,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/t8"
-                        android:textSize="16sp"
+                        android:textSize="@dimen/ts_16"
                         android:textStyle="bold"
                         android:textColor="?attr/colorOnSurface"/>
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/t9"
-                        android:textSize="12sp"
+                        android:textSize="@dimen/ts_12"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginTop="2dp"/>
 
@@ -185,7 +186,7 @@
                             android:layout_width="28dp"
                             android:layout_height="28dp"
                             android:text="@string/t10"
-                            android:textSize="14sp"
+                            android:textSize="@dimen/ts_14"
                             android:textStyle="bold"
                             android:textColor="?attr/colorPrimary"
                             android:gravity="center"
@@ -200,14 +201,14 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/t11"
-                                android:textSize="14sp"
+                                android:textSize="@dimen/ts_14"
                                 android:textColor="?attr/colorOnSurface"/>
                             <TextView
                                 android:id="@+id/tvStep1Status"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/t12"
-                                android:textSize="11sp"
+                                android:textSize="@dimen/ts_11"
                                 android:textColor="@color/warn_amber"/>
                         </LinearLayout>
                         <com.google.android.material.button.MaterialButton
@@ -216,7 +217,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:minHeight="36dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/ts_12"
                             android:text="@string/t13"/>
                     </LinearLayout>
 
@@ -231,7 +232,7 @@
                             android:layout_width="28dp"
                             android:layout_height="28dp"
                             android:text="@string/t14"
-                            android:textSize="14sp"
+                            android:textSize="@dimen/ts_14"
                             android:textStyle="bold"
                             android:textColor="?attr/colorPrimary"
                             android:gravity="center"
@@ -246,14 +247,14 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/t15"
-                                android:textSize="14sp"
+                                android:textSize="@dimen/ts_14"
                                 android:textColor="?attr/colorOnSurface"/>
                             <TextView
                                 android:id="@+id/tvStep2Status"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/t16"
-                                android:textSize="11sp"
+                                android:textSize="@dimen/ts_11"
                                 android:textColor="@color/warn_amber"/>
                         </LinearLayout>
                         <com.google.android.material.button.MaterialButton
@@ -262,9 +263,16 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:minHeight="36dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/ts_12"
                             android:text="@string/t17"/>
                     </LinearLayout>
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/st_admin_search_tip"
+                            android:textSize="@dimen/ts_11"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginTop="4dp"/>
 
                     <!-- 步骤 3 -->
                     <LinearLayout
@@ -277,7 +285,7 @@
                             android:layout_width="28dp"
                             android:layout_height="28dp"
                             android:text="@string/t18"
-                            android:textSize="14sp"
+                            android:textSize="@dimen/ts_14"
                             android:textStyle="bold"
                             android:textColor="?attr/colorPrimary"
                             android:gravity="center"
@@ -292,14 +300,14 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/t19"
-                                android:textSize="14sp"
+                                android:textSize="@dimen/ts_14"
                                 android:textColor="?attr/colorOnSurface"/>
                             <TextView
                                 android:id="@+id/tvStep3Status"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/t20"
-                                android:textSize="11sp"
+                                android:textSize="@dimen/ts_11"
                                 android:textColor="@color/warn_amber"/>
                         </LinearLayout>
                         <com.google.android.material.button.MaterialButton
@@ -308,7 +316,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:minHeight="36dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/ts_12"
                             android:text="@string/t21"/>
                     </LinearLayout>
 
@@ -323,7 +331,7 @@
                             android:layout_width="28dp"
                             android:layout_height="28dp"
                             android:text="@string/t22"
-                            android:textSize="14sp"
+                            android:textSize="@dimen/ts_14"
                             android:textStyle="bold"
                             android:textColor="?attr/colorPrimary"
                             android:gravity="center"
@@ -338,14 +346,14 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/t23"
-                                android:textSize="14sp"
+                                android:textSize="@dimen/ts_14"
                                 android:textColor="?attr/colorOnSurface"/>
                             <TextView
                                 android:id="@+id/tvStep4Status"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/t24"
-                                android:textSize="11sp"
+                                android:textSize="@dimen/ts_11"
                                 android:textColor="@color/warn_amber"/>
                         </LinearLayout>
                         <com.google.android.material.button.MaterialButton
@@ -354,7 +362,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:minHeight="36dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/ts_12"
                             android:text="@string/t25"/>
                     </LinearLayout>
 
@@ -369,7 +377,7 @@
                             android:layout_width="28dp"
                             android:layout_height="28dp"
                             android:text="@string/t26"
-                            android:textSize="14sp"
+                            android:textSize="@dimen/ts_14"
                             android:textStyle="bold"
                             android:textColor="?attr/colorPrimary"
                             android:gravity="center"
@@ -384,14 +392,14 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/t27"
-                                android:textSize="14sp"
+                                android:textSize="@dimen/ts_14"
                                 android:textColor="?attr/colorOnSurface"/>
                             <TextView
                                 android:id="@+id/tvStep5Status"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/t28"
-                                android:textSize="11sp"
+                                android:textSize="@dimen/ts_11"
                                 android:textColor="@color/warn_amber"/>
                         </LinearLayout>
                         <com.google.android.material.button.MaterialButton
@@ -400,7 +408,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:minHeight="36dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/ts_12"
                             android:text="@string/t29"/>
                     </LinearLayout>
 
@@ -415,7 +423,7 @@
                             android:layout_width="28dp"
                             android:layout_height="28dp"
                             android:text="@string/i51"
-                            android:textSize="14sp"
+                            android:textSize="@dimen/ts_14"
                             android:textStyle="bold"
                             android:textColor="?attr/colorPrimary"
                             android:gravity="center"
@@ -430,14 +438,14 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/i52"
-                                android:textSize="14sp"
+                                android:textSize="@dimen/ts_14"
                                 android:textColor="?attr/colorOnSurface"/>
                             <TextView
                                 android:id="@+id/tvStep6Status"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/i53"
-                                android:textSize="11sp"
+                                android:textSize="@dimen/ts_11"
                                 android:textColor="@color/warn_amber"/>
                         </LinearLayout>
                         <com.google.android.material.button.MaterialButton
@@ -446,7 +454,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:minHeight="36dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/ts_12"
                             android:text="@string/i54"/>
                     </LinearLayout>
 
@@ -455,7 +463,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text=""
-                        android:textSize="13sp"
+                        android:textSize="@dimen/ts_13"
                         android:textStyle="bold"
                         android:textColor="@color/ok_green"
                         android:layout_marginTop="12dp"/>
@@ -467,7 +475,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/t30"
-                android:textSize="15sp"
+                android:textSize="@dimen/ts_15"
                 android:textStyle="bold"
                 android:textColor="?attr/colorOnSurface"
                 android:layout_marginTop="18dp"
@@ -518,7 +526,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/t37"
-                android:textSize="15sp"
+                android:textSize="@dimen/ts_15"
                 android:textStyle="bold"
                 android:textColor="?attr/colorOnSurface"
                 android:layout_marginTop="18dp"
@@ -531,9 +539,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:minHeight="50dp"
-                android:textSize="14sp"
+                android:textSize="@dimen/ts_14"
                 android:textStyle="bold"
                 android:text="@string/t1000"/>
+
+
 
             <!-- 自定义悬浮球图标 -->
             <com.google.android.material.card.MaterialCardView
@@ -554,14 +564,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/i11"
-                        android:textSize="14sp"
+                        android:textSize="@dimen/ts_14"
                         android:textStyle="bold"
                         android:textColor="?attr/colorOnSurface"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/i12"
-                        android:textSize="11sp"
+                        android:textSize="@dimen/ts_11"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginTop="2dp"/>
                     <LinearLayout
@@ -585,7 +595,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:minHeight="40dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/ts_12"
                             android:text="@string/i13"
                             android:layout_marginStart="12dp"/>
                         <com.google.android.material.button.MaterialButton
@@ -594,7 +604,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:minHeight="40dp"
-                            android:textSize="12sp"
+                            android:textSize="@dimen/ts_12"
                             android:text="@string/i14"
                             android:layout_marginStart="4dp"/>
                     </LinearLayout>
@@ -613,7 +623,7 @@
                     android:id="@+id/tvPrivLog"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:fontFamily="monospace"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textIsSelectable="true"/>
@@ -622,7 +632,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="12sp"
+                android:textSize="@dimen/ts_12"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:layout_marginTop="14dp"
                 android:layout_marginBottom="28dp"

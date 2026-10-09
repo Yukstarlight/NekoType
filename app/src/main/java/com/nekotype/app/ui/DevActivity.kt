@@ -25,6 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
+import com.nekotype.app.util.setTextSizeDimen
 
 /**
  * 开发者模式（隐藏功能）：设置页「关于」标题连点 7 次，经"下载额外组件"确认进入，开启后常驻。
@@ -428,7 +429,7 @@ class DevActivity : AppCompatActivity() {
     private fun showLog(title: String, body: String) {
         val tv = android.widget.TextView(this).apply {
             text = body
-            textSize = 11.5f
+            setTextSizeDimen(R.dimen.ts_11_5)
             setTextIsSelectable(true)
             typeface = android.graphics.Typeface.MONOSPACE
             setLineSpacing(0f, 1.2f)

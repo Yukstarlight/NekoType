@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.nekotype.app.R
 import com.nekotype.app.databinding.ActivityHomeBinding
 import com.nekotype.app.overlay.FloatingButtonService
@@ -21,6 +22,10 @@ import com.nekotype.app.util.BgUtils
 import com.nekotype.app.util.NekoLang
 import com.nekotype.app.util.NekoLog
 import com.nekotype.app.util.ThemeHelper
+import com.nekotype.app.util.setTextSizeDimen
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * 主界面（重构版）：底部导航栏 + 四个 Fragment
@@ -36,6 +41,16 @@ class HomeActivity : AppCompatActivity() {
     companion object {
         /** 外部停止请求标记（通知栏/磁贴触发，密码锁定验证用） */
         const val EXTRA_STOP_REQUEST = "nekotype_stop_request"
+
+        /** 打开应用自动 Shizuku 授权时的权限请求码 */
+        private const val REQ_AUTO_SHIZUKU = 1002
+
+        /** 外部打开指定底部导航 tab（悬浮球快捷菜单「回到应用 / 规则 / 设置」用） */
+        const val EXTRA_TAB = "nekotype_tab"
+        const val TAB_HOME = "home"
+        const val TAB_RULES = "rules"
+        const val TAB_MODE = "mode"
+        const val TAB_SETTINGS = "settings"
     }
 
     private lateinit var binding: ActivityHomeBinding
@@ -110,8 +125,69 @@ class HomeActivity : AppCompatActivity() {
             }
         }
 
+        // 悬浮球快捷菜单「回到应用」可能带 EXTRA_TAB 指定目标 tab
+        if (savedInstanceState == null) applyTabFromIntent(intent)
+
+        // 打开应用自动执行（设置里两个开关，各自独立）
+        if (savedInstanceState == null) applyLaunchAutomation()
+
         // 免责声明：首次进入弹窗，同意后不再弹出；不同意直接退出
         showDisclaimerIfNeeded()
+    }
+
+    /**
+     * 打开应用自动化（Shizuku 授权）：
+     * 自动 Shizuku 授权所有权限：后台跑一遍 无障碍→设备管理员→免电→悬浮窗，
+     * 需 Shizuku 已运行；尚未授权时先请求一次权限（下次打开再自动授权）。
+     */
+    private fun applyLaunchAutomation() {
+        // 自动 Shizuku 授权所有权限
+        if (!AppPrefs.autoShizukuGrantOnLaunch) return
+        try {
+            if (!SysPower.isShizukuAvailable()) {
+                NekoLog.warn("自动 Shizuku 授权跳过：Shizuku 未运行")
+                return
+            }
+            if (!SysPower.isShizukuPermissionGranted()) {
+                NekoLog.warn("自动 Shizuku 授权：尚未授权，正在请求权限（请在弹窗点允许）")
+                try { SysPower.requestShizukuPermission(REQ_AUTO_SHIZUKU) } catch (_: Throwable) { }
+                return
+            }
+            lifecycleScope.launch {
+                val steps = withContext(Dispatchers.IO) {
+                    try { SysPower.grantAllPermissions() } catch (t: Throwable) { emptyList() }
+                }
+                val okCount = steps.count { it.success }
+                NekoLog.ok("自动 Shizuku 授权完成：成功 $okCount/${steps.size} 项")
+                for (s in steps) {
+                    if (!s.success) NekoLog.warn("自动授权失败：${s.name}（${s.output.take(60)}）")
+                }
+            }
+        } catch (t: Throwable) {
+            NekoLog.warn("自动 Shizuku 授权异常：${t.javaClass.simpleName}: ${t.message}")
+        }
+    }
+    /** 根据外部 Intent 的 EXTRA_TAB 切换到对应底部导航 tab */
+    private fun applyTabFromIntent(intent: Intent?) {
+        val tab = intent?.getStringExtra(EXTRA_TAB) ?: return
+        val target = when (tab) {
+            TAB_RULES -> R.id.nav_rules
+            TAB_MODE -> R.id.nav_mode
+            TAB_SETTINGS -> R.id.nav_settings
+            else -> R.id.nav_home
+        }
+        try {
+            if (binding.bottomNav.selectedItemId != target) {
+                binding.bottomNav.selectedItemId = target
+            } else {
+                switchFragment(when (tab) {
+                    TAB_RULES -> rulesFragment
+                    TAB_MODE -> modeFragment
+                    TAB_SETTINGS -> settingsFragment
+                    else -> homeFragment
+                })
+            }
+        } catch (_: Throwable) { }
     }
 
     /** 首次进入免责声明：同意按钮需等待 10 秒倒计时；不同意直接退出应用 */
@@ -120,7 +196,7 @@ class HomeActivity : AppCompatActivity() {
         // 正文较长 → 套滚动 + Material 副标题样式，避免在小屏上被截断
         val tvMsg = android.widget.TextView(this).apply {
             text = getString(R.string.i47)
-            textSize = 13f
+            setTextSizeDimen(R.dimen.ts_13)
             // 取主题的 colorOnSurfaceVariant（不依赖 ThemeHelper，避免主题差异导致取不到色）
             val tv = android.util.TypedValue()
             val ok = theme.resolveAttribute(
@@ -187,6 +263,8 @@ class HomeActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        // 快捷菜单「回到应用」可能带 EXTRA_TAB：复用同一实例时也要切 tab
+        applyTabFromIntent(intent)
     }
 
     override fun onResume() {

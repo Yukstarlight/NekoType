@@ -3,6 +3,7 @@ package com.nekotype.app.ui
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -22,8 +23,8 @@ import com.nekotype.app.util.ThemeHelper
 import java.util.Locale
 
 /**
- * 应用黑名单：勾选的应用内不自动篡改（强制篡改键盘 / 静默修改自动注入不生效）。
- * 悬浮球手动点击不受限制。
+ * 应用名单：黑名单模式=勾选的应用内不自动篡改；白名单模式=仅勾选的应用内自动篡改。
+ * 两模式互斥；悬浮球手动点击不受限制。
  */
 class BlacklistActivity : AppCompatActivity() {
 
@@ -42,20 +43,42 @@ class BlacklistActivity : AppCompatActivity() {
             isChecked = AppPrefs.blacklistEnabled
             setOnCheckedChangeListener { _, v ->
                 AppPrefs.blacklistEnabled = v
-                NekoLog.adjust(if (v) "启用应用黑名单" else "停用应用黑名单")
+                NekoLog.adjust(if (v) "启用应用名单" else "停用应用名单")
                 updateHint()
             }
         }
         updateHint()
 
-        // 全选 / 清空
+        // 模式切换（黑名单 / 白名单互斥，同一时间只有一个生效）
+        findViewById<TextView>(R.id.btnModeBlack).setOnClickListener {
+            if (AppPrefs.appListMode != "blacklist") {
+                AppPrefs.appListMode = "blacklist"
+                NekoLog.adjust("切换到黑名单模式：名单内应用不自动篡改")
+                refreshModeUi()
+            }
+        }
+        findViewById<TextView>(R.id.btnModeWhite).setOnClickListener {
+            if (AppPrefs.appListMode != "whitelist") {
+                AppPrefs.appListMode = "whitelist"
+                NekoLog.adjust("切换到白名单模式：仅名单内应用自动篡改")
+                refreshModeUi()
+            }
+        }
+
+        // 全选 / 清空（作用于当前模式的名单）
         findViewById<TextView>(R.id.btnSelectAll).setOnClickListener {
-            apps.forEach { AppPrefs.addBlacklist(it.first.packageName) }
+            val white = AppPrefs.isWhiteListMode()
+            apps.forEach {
+                if (white) AppPrefs.addWhitelist(it.first.packageName) else AppPrefs.addBlacklist(it.first.packageName)
+            }
             adapter.notifyDataSetChanged()
             toast(getString(R.string.u16, apps.size))
         }
         findViewById<TextView>(R.id.btnClearAll).setOnClickListener {
-            apps.forEach { AppPrefs.removeBlacklist(it.first.packageName) }
+            val white = AppPrefs.isWhiteListMode()
+            apps.forEach {
+                if (white) AppPrefs.removeWhitelist(it.first.packageName) else AppPrefs.removeBlacklist(it.first.packageName)
+            }
             adapter.notifyDataSetChanged()
             toast(getString(R.string.u48))
         }
@@ -74,14 +97,33 @@ class BlacklistActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
+        refreshModeUi()
+
         loadAppsAsync()
     }
 
     private fun updateHint() {
-        val cnt = AppPrefs.blacklist().size
-        findViewById<TextView>(R.id.tvBlacklistHint).text =
-            if (AppPrefs.blacklistEnabled) getString(R.string.u160, cnt)
-            else getString(R.string.u161)
+        val tv = findViewById<TextView>(R.id.tvBlacklistHint)
+        tv.text = when {
+            !AppPrefs.blacklistEnabled -> getString(R.string.u161)
+            AppPrefs.isWhiteListMode() -> getString(R.string.u160w, AppPrefs.whitelist().size)
+            else -> getString(R.string.u160, AppPrefs.blacklist().size)
+        }
+    }
+
+    /** 刷新模式切换按钮的高亮状态 + 提示 + 列表勾选（切模式后名单内容不同） */
+    private fun refreshModeUi() {
+        val white = AppPrefs.isWhiteListMode()
+        val active = androidx.core.content.ContextCompat.getColor(this, R.color.md_theme_primary)
+        val inactive = androidx.core.content.ContextCompat.getColor(this, R.color.fg_2)
+        val btnBlack = findViewById<TextView>(R.id.btnModeBlack)
+        val btnWhite = findViewById<TextView>(R.id.btnModeWhite)
+        btnBlack.setTextColor(if (white) inactive else active)
+        btnWhite.setTextColor(if (white) active else inactive)
+        btnBlack.setTypeface(btnBlack.typeface, if (white) Typeface.NORMAL else Typeface.BOLD)
+        btnWhite.setTypeface(btnWhite.typeface, if (white) Typeface.BOLD else Typeface.NORMAL)
+        updateHint()
+        adapter.notifyDataSetChanged()
     }
 
     /**
@@ -191,14 +233,18 @@ class BlacklistActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: VH, position: Int) {
             val (info, label) = display()[position]
-            val inBlacklist = AppPrefs.blacklist().contains(info.packageName)
+            val inList = if (AppPrefs.isWhiteListMode()) {
+                AppPrefs.whitelist().contains(info.packageName)
+            } else {
+                AppPrefs.blacklist().contains(info.packageName)
+            }
             holder.icon.setImageDrawable(info.loadIcon(packageManager))
             holder.name.text = label
             holder.pkg.text = info.packageName
-            holder.check.isChecked = inBlacklist
+            holder.check.isChecked = inList
             // 勾选行背景高亮（勾选状态一目了然，弥补勾选符号显示问题）
             holder.itemView.setBackgroundColor(
-                if (inBlacklist) {
+                if (inList) {
                     androidx.core.content.ContextCompat.getColor(this@BlacklistActivity, R.color.bubble_in)
                 } else {
                     android.graphics.Color.TRANSPARENT
@@ -209,8 +255,14 @@ class BlacklistActivity : AppCompatActivity() {
         }
 
         private fun toggle(holder: VH, pkg: String) {
-            val checked = !AppPrefs.blacklist().contains(pkg)
-            if (checked) AppPrefs.addBlacklist(pkg) else AppPrefs.removeBlacklist(pkg)
+            val white = AppPrefs.isWhiteListMode()
+            val checked = if (white) !AppPrefs.whitelist().contains(pkg)
+                          else !AppPrefs.blacklist().contains(pkg)
+            if (checked) {
+                if (white) AppPrefs.addWhitelist(pkg) else AppPrefs.addBlacklist(pkg)
+            } else {
+                if (white) AppPrefs.removeWhitelist(pkg) else AppPrefs.removeBlacklist(pkg)
+            }
             holder.check.isChecked = checked
             holder.itemView.setBackgroundColor(
                 if (checked) {

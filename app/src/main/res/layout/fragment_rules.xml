@@ -26,6 +26,7 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
+                <!-- 标题行：标题 + 新建按钮 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -36,7 +37,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t39"
-                        android:textSize="16sp"
+                        android:textSize="@dimen/ts_16"
                         android:textStyle="bold"
                         android:textColor="?attr/colorOnSurface"/>
                     <!-- 加号按钮：新建预设（用矢量图标，避免文字 "+" 渲染成空白） -->
@@ -57,23 +58,66 @@
                         app:iconPadding="0dp"
                         app:iconGravity="textStart"
                         android:contentDescription="@string/t41"/>
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnSelectRule"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:layout_width="wrap_content"
+                </LinearLayout>
+
+                <!-- 操作按钮双列（左列：选择预设/删除；右列：管理/应用映射）等宽对齐 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="2dp">
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:minHeight="36dp"
-                        android:textSize="12sp"
-                        android:text="@string/t41"
-                        android:layout_marginStart="4dp"/>
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnDeleteRule"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:layout_width="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnSelectRule"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minHeight="38dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0dp"
+                            android:textSize="@dimen/ts_15"
+                            android:text="@string/pm_btn_select"/>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnDeleteRule"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minHeight="38dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0dp"
+                            android:textSize="@dimen/ts_15"
+                            android:text="@string/pm_btn_delete_preset"/>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:minHeight="36dp"
-                        android:textSize="12sp"
-                        android:text="@string/t42"/>
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnManagePreset"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minHeight="38dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0dp"
+                            android:textSize="@dimen/ts_15"
+                            android:text="@string/pm_manage_preset"/>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnAppPreset"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minHeight="38dp"
+                            android:insetLeft="0dp"
+                            android:insetRight="0dp"
+                            android:textSize="@dimen/ts_15"
+                            android:text="@string/ap_title"/>
+                    </LinearLayout>
                 </LinearLayout>
 
                 <TextView
@@ -81,14 +125,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/t40"
-                    android:textSize="14sp"
+                    android:textSize="@dimen/ts_14"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="8dp"/>
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/t43"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="2dp"/>
             </LinearLayout>
@@ -120,7 +164,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t44"
-                        android:textSize="16sp"
+                        android:textSize="@dimen/ts_16"
                         android:textStyle="bold"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.button.MaterialButton
@@ -129,7 +173,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:minHeight="36dp"
-                        android:textSize="12sp"
+                        android:textSize="@dimen/ts_12"
                         android:text="@string/t45"/>
                 </LinearLayout>
 
@@ -145,7 +189,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/t46"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/ts_13"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:gravity="center"
                     android:paddingTop="16dp"
@@ -176,7 +220,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/t47"
-                    android:textSize="16sp"
+                    android:textSize="@dimen/ts_16"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"
                     android:paddingBottom="6dp"/>
@@ -193,7 +237,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t48"
-                        android:textSize="15sp"
+                        android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/swStyleSpaced"
@@ -214,7 +258,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t49"
-                        android:textSize="15sp"
+                        android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/swStyleUpper"
@@ -235,7 +279,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t50"
-                        android:textSize="15sp"
+                        android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/swAutoSend"
@@ -256,7 +300,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t51"
-                        android:textSize="15sp"
+                        android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/swHaptic"
@@ -277,7 +321,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t52"
-                        android:textSize="15sp"
+                        android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/swSnap"
@@ -298,7 +342,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t53"
-                        android:textSize="15sp"
+                        android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/swSilentModify"
@@ -309,7 +353,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/t54"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"/>
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
 
@@ -325,7 +369,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t57"
-                        android:textSize="15sp"
+                        android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/swPunctTrigger"
@@ -336,7 +380,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/t58"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"/>
                 <!-- 自定义触发标点 -->
                 <com.google.android.material.textfield.TextInputLayout
@@ -351,7 +395,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="自定义触发标点（如 。！？，）"
-                        android:textSize="14sp"
+                        android:textSize="@dimen/ts_14"
                         android:inputType="text"
                         android:maxLines="1"/>
                 </com.google.android.material.textfield.TextInputLayout>
@@ -369,7 +413,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t59"
-                        android:textSize="15sp"
+                        android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/swEmoticon"
@@ -380,7 +424,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/t60"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"/>
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
 
@@ -396,7 +440,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t1001"
-                        android:textSize="15sp"
+                        android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/swDeleteOptimize"
@@ -407,7 +451,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/t1002"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"/>
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
 
@@ -423,7 +467,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/t1003"
-                        android:textSize="15sp"
+                        android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/swVoiceOptimize"
@@ -434,7 +478,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/t1004"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"/>
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
 
@@ -450,7 +494,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/i43"
-                        android:textSize="15sp"
+                        android:textSize="@dimen/ts_15"
                         android:textColor="?attr/colorOnSurface"/>
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/swPriorityGlobal"
@@ -461,7 +505,62 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/i44"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
+                    android:textColor="?attr/colorOnSurfaceVariant"/>
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/st_mention_guard"
+                        android:textSize="@dimen/ts_15"
+                        android:textColor="?attr/colorOnSurface"/>
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/swMentionGuard"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/st_mention_guard_desc"
+                    android:textSize="@dimen/ts_11"
+                    android:textColor="?attr/colorOnSurfaceVariant"/>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/st_wechat_exp"
+                        android:textSize="@dimen/ts_15"
+                        android:textColor="?attr/colorOnSurface"/>
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/swWeChatExp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/st_wechat_exp_desc"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -487,14 +586,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/t69"
-                    android:textSize="16sp"
+                    android:textSize="@dimen/ts_16"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/t70"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="10dp"/>
                 <EditText
@@ -521,7 +620,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/t72"
-                    android:textSize="11sp"
+                    android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="14dp"/>
                 <TextView
@@ -530,7 +629,7 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_bubble_out"
                     android:padding="14dp"
-                    android:textSize="15sp"
+                    android:textSize="@dimen/ts_15"
                     android:textColor="?attr/colorOnSurface"
                     android:minHeight="52dp"
                     android:gravity="top|start"
