@@ -213,17 +213,16 @@ class HomeFragment : Fragment() {
 
     /** 全局 UI 语言切换：跟随系统（默认）/ 简体中文 / 繁體中文 / English */
     private fun showLanguageDialog() {
-        val tags = arrayOf("", "zh", "zh-TW", "en", "tr", "ru", "ja", "ko", "de")
-        val langs = arrayOf(getString(R.string.hc_follow_system), "简体中文", "繁體中文", "English", "Türkçe", "Русский", "日本語", "한국어", "Deutsch")
+        val tags = arrayOf("", "zh", "zh-TW", "en", "tr", "ja", "ko", "de")
+        val langs = arrayOf(getString(R.string.hc_follow_system), "简体中文", "繁體中文", "English", "Türkçe", "日本語", "한국어", "Deutsch")
         val checked = when (androidx.appcompat.app.AppCompatDelegate.getApplicationLocales().toLanguageTags()) {
             "zh" -> 1
             "zh-TW" -> 2
             "en" -> 3
             "tr" -> 4
-            "ru" -> 5
-            "ja" -> 6
-            "ko" -> 7
-            "de" -> 8
+            "ja" -> 5
+            "ko" -> 6
+            "de" -> 7
             else -> 0 // 空 = 跟随系统（默认）
         }
         var chosen = checked

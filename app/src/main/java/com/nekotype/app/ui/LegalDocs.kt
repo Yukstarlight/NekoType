@@ -259,7 +259,7 @@ object LegalDocs {
     fun licenses(): String = when (lang()) {
         "zh" -> """
             NekoType 开源许可
-            更新日期：2026-09-26
+            更新日期：2026-10-11
 
             本应用基于以下开源项目构建，在此致谢并保留其原始许可：
 
@@ -290,6 +290,13 @@ object LegalDocs {
             说明：集成终端的文本选取复制交互（长按选取后经 ActionMode 弹出「复制」
                   菜单、拖动选区时的放大镜与边缘自动滚动）参考其实现思路。
 
+            【支持 · 衍生项目】
+            本项目为以下项目提供代码支持（它们基于/借鉴本项目的实现衍生而来）：
+            · XERJ AI
+              地址：https://github.com/xerj-org/xerj
+            · 游龙工具
+              地址：https://xn--s6w866h.top/
+
             【本项目自身】
             项目主页：https://github.com/Yukstarlight/NekoType
             许可：GNU General Public License v3.0（GPL-3.0）
@@ -300,7 +307,7 @@ object LegalDocs {
 
         "tw" -> """
             NekoType 開源授權
-            更新日期：2026-09-26
+            更新日期：2026-10-11
 
             本應用基於以下開源專案建置，在此致謝並保留其原始授權：
 
@@ -331,6 +338,13 @@ object LegalDocs {
             說明：整合終端的文字選取複製互動（長按選取後經 ActionMode 彈出「複製」
                   選單、拖動選取區時的放大鏡與邊緣自動捲動）參考其實作思路。
 
+            【支持 · 衍生專案】
+            本專案為以下項目提供程式碼支持（它們基於/借鑒本專案的實現衍生而來）：
+            · XERJ AI
+              地址：https://github.com/xerj-org/xerj
+            · 遊龍工具
+              地址：https://xn--s6w866h.top/
+
             【本專案自身】
             專案首頁：https://github.com/Yukstarlight/NekoType
             授權：GNU General Public License v3.0（GPL-3.0）
@@ -341,7 +355,7 @@ object LegalDocs {
 
         else -> """
             NekoType Open Source Licenses
-            Last updated: 2026-09-26
+            Last updated: 2026-10-11
 
             This app is built on the following open-source projects. Thanks to their authors;
             their original licenses are retained.
@@ -375,6 +389,14 @@ object LegalDocs {
             Note: the integrated terminal's text-selection copy interaction (long-press to
                   select, then an ActionMode menu with "Copy", plus magnifier and edge
                   auto-scroll while dragging) follows its implementation approach.
+
+            [Supported · derivative projects]
+            This project provides code support to the following projects
+            (they are derived from / based on this project's implementation):
+            · XERJ AI
+              https://github.com/xerj-org/xerj
+            · YouLong Tools (遊龍工具)
+              https://xn--s6w866h.top/
 
             [This project]
             Project page: https://github.com/Yukstarlight/NekoType
