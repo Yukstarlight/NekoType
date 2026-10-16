@@ -188,6 +188,8 @@ class SettingsActivity : AppCompatActivity() {
 
         // ---- 支持与反馈 ----
         binding.ivSponsorQr.setOnClickListener { showSponsorDialog() }
+        binding.ivSponsorQrAlipay.setOnClickListener { showSponsorDialog(R.drawable.sponsor_qr_alipay) }
+        binding.btnAfdian.setOnClickListener { tryOpenAfdian() }
         binding.btnFeedback.setOnClickListener {
             NekoLog.info("发起意见反馈（邮件）")
             sendFeedbackEmail()
@@ -448,9 +450,9 @@ class SettingsActivity : AppCompatActivity() {
     // ---------- 支持与反馈 ----------
 
     /** 赞助码放大查看 */
-    private fun showSponsorDialog() {
+    private fun showSponsorDialog(resId: Int = R.drawable.sponsor_qr) {
         val img = ImageView(this).apply {
-            setImageResource(R.drawable.sponsor_qr)
+            setImageResource(resId)
             scaleType = ImageView.ScaleType.FIT_CENTER
             adjustViewBounds = true
         }
@@ -491,6 +493,15 @@ class SettingsActivity : AppCompatActivity() {
             startActivity(intent)
         } catch (_: Throwable) {
             toast(getString(R.string.u57))
+        }
+    }
+
+    private fun tryOpenAfdian() {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://afdian.com/a/Yukstarlight")))
+        } catch (_: Throwable) {
+            toast(getString(R.string.u57))
+            copyToClipboard("https://afdian.com/a/Yukstarlight")
         }
     }
 

@@ -227,6 +227,8 @@ class SettingsFragment : Fragment() {
                 copyToClipboard("4ldb0biz5")
                 tryOpenQqChannel()
             }
+            binding.ivSponsorQrAlipay.setOnClickListener { showSponsorDialog(R.drawable.sponsor_qr_alipay) }
+            binding.btnAfdian.setOnClickListener { tryOpenAfdian() }
         } catch (_: Throwable) { }
 
         // 刷新显示
@@ -544,9 +546,9 @@ class SettingsFragment : Fragment() {
 
     // ---------- 支持与反馈 ----------
 
-    private fun showSponsorDialog() {
+    private fun showSponsorDialog(resId: Int = R.drawable.sponsor_qr) {
         val img = ImageView(requireContext()).apply {
-            setImageResource(R.drawable.sponsor_qr)
+            setImageResource(resId)
             scaleType = ImageView.ScaleType.FIT_CENTER
             adjustViewBounds = true
         }
@@ -582,6 +584,15 @@ class SettingsFragment : Fragment() {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://pd.qq.com/s/4ldb0biz5?b=9")))
         } catch (_: Throwable) {
             toast(getString(R.string.u57))
+        }
+    }
+
+    private fun tryOpenAfdian() {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://afdian.com/a/Yukstarlight")))
+        } catch (_: Throwable) {
+            toast(getString(R.string.u57))
+            copyToClipboard("https://afdian.com/a/Yukstarlight")
         }
     }
 

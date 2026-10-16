@@ -942,6 +942,35 @@
                     android:padding="8dp"
                     android:foreground="?attr/selectableItemBackground"
                     android:layout_marginTop="6dp"/>
+                <ImageView
+                    android:id="@+id/ivSponsorQrAlipay"
+                    android:layout_width="150dp"
+                    android:layout_height="225dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/sponsor_qr_alipay"
+                    android:scaleType="fitCenter"
+                    android:background="@drawable/bg_qr_frame"
+                    android:padding="8dp"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:layout_marginTop="10dp"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAfdian"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:minHeight="46dp"
+                    android:text="@string/sp_afdian"
+                    android:textSize="@dimen/ts_13"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/sp_afdian_url"
+                    android:textSize="@dimen/ts_12"
+                    android:textColor="?attr/colorPrimary"
+                    android:textIsSelectable="true"
+                    android:paddingTop="6dp"/>
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnFeedback"
                     style="@style/Widget.Material3.Button.TonalButton"

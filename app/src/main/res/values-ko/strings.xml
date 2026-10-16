@@ -595,6 +595,9 @@
     <string name="sp_hint">아래 코드를 탭하면 확대되며, 길게 눌러 인식하거나 스크린샷 저장\n후원이 계속 업데이트하는 힘이 됩니다</string>
     <string name="sp_later">다음에</string>
     <string name="sp_sponsored">후원했어요</string>
+    <string name="sp_afdian">Afdian 후원</string>
+    <string name="sp_priv_title">기기 소유자 또는 Dhizuku 필요</string>
+    <string name="sp_priv_msg">「기기 소유자」 또는 「Dhizuku」가 감지되지 않았습니다. 이 모듈에는 둘 중 하나가 필요합니다.\n\n· 기기 소유자: adb로 dpm set-device-owner 실행\n· Dhizuku: Dhizuku를 설치하고 앱 안에서 NekoType 승인(상태는 Dhizuku 앱에서 확인)\n\n설정 후 모듈을 다시 켜세요.</string>
 
     <!-- i18n: 플로팅 버튼 길게 누름 퀵 메뉴 -->
     <string name="fm_title">플로팅 버튼 메뉴</string>

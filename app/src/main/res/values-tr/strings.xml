@@ -589,6 +589,9 @@
     <string name="sp_hint">Aşağıdaki kodu büyütmek için dokunun veya ekran görüntüsü alın.\nDestekleriniz kediyi güncel tutar.</string>
     <string name="sp_later">Başka sefer</string>
     <string name="sp_sponsored">Bağışladım</string>
+    <string name="sp_afdian">Afdian\'da destek ol</string>
+    <string name="sp_priv_title">Cihaz sahibi veya Dhizuku gerekli</string>
+    <string name="sp_priv_msg">「Cihaz sahibi」 veya 「Dhizuku」 bulunamadı. Bu modül için biri gerekli.\n\n· Cihaz sahibi: adb ile dpm set-device-owner çalıştırın\n· Dhizuku: Dhizuku\'yu kurup içinde NekoType\'a yetki verin (durum Dhizuku uygulamasında)\n\nKurulumdan sonra modülü yeniden açın.</string>
 
     <!-- i18n: yüzen düğme uzun basış hızlı menüsü -->
     <string name="fm_title">Yüzen düğme menüsü</string>

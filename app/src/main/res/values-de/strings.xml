@@ -625,6 +625,9 @@
     <string name="sp_hint">Kod unten antippen zum Vergrößern oder Screenshot machen.\nDeine Unterstützung hält das Projekt am Leben.</string>
     <string name="sp_later">Später</string>
     <string name="sp_sponsored">Gesponsert</string>
+    <string name="sp_afdian">Auf Afdian unterstützen</string>
+    <string name="sp_priv_title">Geräteeigentümer oder Dhizuku erforderlich</string>
+    <string name="sp_priv_msg">Kein Geräteeigentümer und kein Dhizuku gefunden. Dieses Modul benötigt eines davon.\n\n· Geräteeigentümer: per adb „dpm set-device-owner“ vergeben\n· Dhizuku: Dhizuku installieren und NekoType darin autorisieren (Status in der Dhizuku-App)\n\nDanach das Modul erneut aktivieren.</string>
 
     <!-- i18n: schwebendes Button-Menü bei langem Druck -->
     <string name="fm_title">Schwebendes Button-Menü</string>

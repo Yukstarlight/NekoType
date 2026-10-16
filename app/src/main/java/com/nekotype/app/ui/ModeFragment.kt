@@ -102,6 +102,11 @@ class ModeFragment : Fragment() {
         }
         binding.swHeartbeat.setOnCheckedChangeListener { _, v ->
             if (restoringSwitch) return@setOnCheckedChangeListener
+            if (v && !SysPower.keepAliveChannelReady()) {
+                showKeepAlivePrivilegeDialog()
+                restoreHeartbeatSwitch()
+                return@setOnCheckedChangeListener
+            }
             if (!v && AppPrefs.lockEnabled) {
                 showVerifyLockPasswordDialog(
                     getString(R.string.u67),
@@ -113,6 +118,12 @@ class ModeFragment : Fragment() {
             applyHeartbeat(v)
         }
         binding.swCrashRestart.setOnCheckedChangeListener { _, v ->
+            if (restoringSwitch) return@setOnCheckedChangeListener
+            if (v && !SysPower.keepAliveChannelReady()) {
+                showKeepAlivePrivilegeDialog()
+                restoreCrashRestartSwitch()
+                return@setOnCheckedChangeListener
+            }
             AppPrefs.crashRestartEnabled = v
             NekoLog.adjust(if (v) "开启崩溃自启" else "关闭崩溃自启")
         }
@@ -458,6 +469,22 @@ class ModeFragment : Fragment() {
         restoringSwitch = true
         binding.swHeartbeat.isChecked = AppPrefs.heartbeatEnabled
         restoringSwitch = false
+    }
+
+    private fun restoreCrashRestartSwitch() {
+        restoringSwitch = true
+        binding.swCrashRestart.isChecked = AppPrefs.crashRestartEnabled
+        restoringSwitch = false
+    }
+
+    /** 心跳保活 / 崩溃自启 需要设备所有者或 Dhizuku：未检测到则提示并拒绝开启 */
+    private fun showKeepAlivePrivilegeDialog() {
+        val ctx = context ?: return
+        NekoDialog.builder(ctx)
+            .setTitle(getString(R.string.sp_priv_title))
+            .setMessage(getString(R.string.sp_priv_msg))
+            .setPositiveButton(getString(R.string.u156), null)
+            .show()
     }
 
     private fun toast(msg: String) {

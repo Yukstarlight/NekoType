@@ -662,6 +662,32 @@ object SysPower {
      */
     fun privilegedChannelReady(): Boolean = isShizukuAvailable() && isShizukuPermissionGranted()
 
+    /** 是否已被授予设备所有者（adb: dpm set-device-owner，或企业/市场下发的 DPC 授权） */
+    fun isDeviceOwner(): Boolean = try {
+        val dpm = NekoTypeApp.instance.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        dpm.isDeviceOwnerApp(NekoTypeApp.instance.packageName)
+    } catch (_: Throwable) {
+        false
+    }
+
+    /** Dhizuku 是否已安装（清单已声明 queries，否则 Android 11+ 查不到） */
+    fun isDhizukuInstalled(): Boolean = try {
+        NekoTypeApp.instance.packageManager.getPackageInfo("com.rosan.dhizuku", 0)
+        true
+    } catch (_: Throwable) {
+        false
+    }
+
+    /** Dhizuku 的 API 权限是否已授权（清单声明 com.rosan.dhizuku.permission.API，授权在 Dhizuku 应用内完成） */
+    fun isDhizukuGranted(): Boolean = try {
+        NekoTypeApp.instance.checkSelfPermission("com.rosan.dhizuku.permission.API") == PackageManager.PERMISSION_GRANTED
+    } catch (_: Throwable) {
+        false
+    }
+
+    /** 保活类模块所需的高权限通道：设备所有者，或已安装并已授权的 Dhizuku */
+    fun keepAliveChannelReady(): Boolean = isDeviceOwner() || (isDhizukuInstalled() && isDhizukuGranted())
+
     /** UserService 长连接是否已建立（诊断显示用；为 false 不代表通道不可用，会自动走 newProcess） */
     fun isUserServiceConnected(): Boolean = shellConnected && shellMessenger != null
 

@@ -526,6 +526,9 @@
     <string name="sp_hint">贊助碼見下方，點擊可放大，長按識別或截圖保存\n你的支持會讓小貓繼續更新</string>
     <string name="sp_later">下次一定</string>
     <string name="sp_sponsored">已贊助</string>
+    <string name="sp_afdian">愛發電贊助</string>
+    <string name="sp_priv_title">需要裝置所有者或 Dhizuku</string>
+    <string name="sp_priv_msg">未偵測到「裝置所有者」或「Dhizuku」，該模組需要其中之一才能真正生效。\n\n· 裝置所有者：用 adb 執行 dpm set-device-owner 授予本應用\n· Dhizuku：安裝 Dhizuku 並在其應用內授權 NekoType（授權狀態也在 Dhizuku 裡查看）\n\n設定完成後重新開啟本模組即可。</string>
 
     <!-- i18n: 懸浮球長按快捷選單 -->
     <string name="fm_title">懸浮球快捷選單</string>

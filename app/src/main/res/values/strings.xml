@@ -522,6 +522,10 @@
     <string name="sp_hint">赞助码见下方，点击可放大，长按识别或截图保存\n你的支持会让小猫继续更新</string>
     <string name="sp_later">下次一定</string>
     <string name="sp_sponsored">已赞助</string>
+    <string name="sp_afdian">爱发电赞助</string>
+    <string name="sp_priv_title">需要设备所有者或 Dhizuku</string>
+    <string name="sp_priv_msg">未检测到「设备所有者」或「Dhizuku」，该模块需要其中之一才能真正生效。\n\n· 设备所有者：用 adb 执行 dpm set-device-owner 授予本应用\n· Dhizuku：安装 Dhizuku 并在其应用内授权 NekoType（授权状态也在 Dhizuku 里查看）\n\n配置完成后重新开启本模块即可。</string>
+    <string name="sp_afdian_url" translatable="false">https://afdian.com/a/Yukstarlight</string>
 
     <!-- i18n: 悬浮球长按快捷菜单 -->
     <string name="fm_title">悬浮球快捷菜单</string>

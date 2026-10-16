@@ -526,6 +526,9 @@
     <string name="sp_hint">Tap the code below to zoom in, or screenshot it.\nYour support keeps the cat updating.</string>
     <string name="sp_later">Later</string>
     <string name="sp_sponsored">Sponsored</string>
+    <string name="sp_afdian">Support on Afdian</string>
+    <string name="sp_priv_title">Device Owner or Dhizuku required</string>
+    <string name="sp_priv_msg">No Device Owner or Dhizuku was detected. This module needs one of them to actually work.\n\n· Device Owner: grant this app via adb: dpm set-device-owner\n· Dhizuku: install Dhizuku and authorize NekoType inside it (the status is shown in the Dhizuku app)\n\nRe-enable this module after setup.</string>
 
     <!-- i18n: floating button long-press quick menu -->
     <string name="fm_title">Floating button menu</string>
