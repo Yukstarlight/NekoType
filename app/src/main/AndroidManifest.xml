@@ -36,6 +36,13 @@
             android:theme="@style/Theme.NekoType.Splash"
             android:screenOrientation="portrait"/>
 
+        <!-- 模块管理（ZIP 模块的安装/启停/删除/导出与格式说明） -->
+        <activity
+            android:name=".ui.ModuleActivity"
+            android:exported="false"
+            android:label="@string/mod_title"
+            android:theme="@style/Theme.NekoType.Main"/>
+
         <!-- 重构版主界面：底部导航 + 四 Fragment（首页/规则/模式/设置） -->
         <activity
             android:name=".ui.HomeActivity"

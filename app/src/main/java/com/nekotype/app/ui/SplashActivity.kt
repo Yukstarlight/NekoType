@@ -30,8 +30,13 @@ class SplashActivity : AppCompatActivity() {
             goHome()
             return
         }
-        // 1秒后跳转主界面（动画播完即走，不浪费时间）
-        handler.postDelayed({ goHome() }, 1000)
+        // 模块启动页装饰：模块可往内容区加 View / 跑动画（失败不影响启动）
+        try {
+            val content = findViewById<android.view.ViewGroup>(android.R.id.content)
+            if (content != null) com.nekotype.app.module.ModuleHooks.dispatchSplash(this, content)
+        } catch (_: Throwable) { }
+        // 模块可申请更长的启动展示时间（默认 1 秒）
+        handler.postDelayed({ goHome() }, com.nekotype.app.module.ModuleHooks.splashDelayMs)
     }
 
     private fun startAnimations() {

@@ -204,6 +204,25 @@ class SettingsFragment : Fragment() {
             binding.btnImportConfig.setOnClickListener { showImportDialog() }
         } catch (_: Throwable) { }
 
+        // 模块（ZIP）：管理 / 导入 / 导出
+        try {
+            binding.rowModule.setOnClickListener {
+                startActivity(Intent(requireContext(), ModuleActivity::class.java))
+            }
+            binding.btnImportModuleZip.setOnClickListener {
+                startActivity(Intent(requireContext(), ModuleActivity::class.java).putExtra("action", "import"))
+            }
+        } catch (_: Throwable) { }
+
+        // 模块钩子：隐藏被模块声明的内置入口 + 注入模块卡片
+        try {
+            com.nekotype.app.module.ModuleUi.applyHidden(binding.btnOpenTerminal, com.nekotype.app.module.FeatureKeys.TERMINAL)
+            com.nekotype.app.module.ModuleUi.applyHidden(binding.cardSponsor, com.nekotype.app.module.FeatureKeys.SPONSOR)
+            com.nekotype.app.module.ModuleUi.applyHidden(binding.cardImportExport, com.nekotype.app.module.FeatureKeys.IMPORT_EXPORT)
+            com.nekotype.app.module.ModuleUi.applyHidden(binding.rowModule, com.nekotype.app.module.FeatureKeys.MODULES)
+            com.nekotype.app.module.ModuleUi.injectSettingsCards(requireContext(), binding.settingsRoot)
+        } catch (_: Throwable) { }
+
         // 黑名单
         try {
             binding.btnBlacklist.setOnClickListener {
@@ -224,7 +243,7 @@ class SettingsFragment : Fragment() {
                 startActivity(Intent(requireContext(), TerminalActivity::class.java))
             }
             binding.btnCopyGroup.setOnClickListener {
-                copyToClipboard("4ldb0biz5")
+                copyToClipboard("1007865515")
                 tryOpenQqChannel()
             }
             binding.ivSponsorQrAlipay.setOnClickListener { showSponsorDialog(R.drawable.sponsor_qr_alipay) }
@@ -367,6 +386,14 @@ class SettingsFragment : Fragment() {
             refreshTheme()
             refreshStatsDaily()
             _binding?.tvDetails?.text = buildDetails()
+            // 模块可能在页面创建之后才安装/加载，这里重算一次（注入与隐藏都是幂等的）
+            try {
+                com.nekotype.app.module.ModuleUi.injectSettingsCards(requireContext(), binding.settingsRoot)
+                com.nekotype.app.module.ModuleUi.applyHidden(binding.btnOpenTerminal, com.nekotype.app.module.FeatureKeys.TERMINAL)
+                com.nekotype.app.module.ModuleUi.applyHidden(binding.cardSponsor, com.nekotype.app.module.FeatureKeys.SPONSOR)
+                com.nekotype.app.module.ModuleUi.applyHidden(binding.cardImportExport, com.nekotype.app.module.FeatureKeys.IMPORT_EXPORT)
+                com.nekotype.app.module.ModuleUi.applyHidden(binding.rowModule, com.nekotype.app.module.FeatureKeys.MODULES)
+            } catch (_: Throwable) { }
         } catch (_: Throwable) { }
     }
 
@@ -375,6 +402,9 @@ class SettingsFragment : Fragment() {
         if (!hidden && view != null) {
             refreshTheme()
             refreshStatsDaily()
+            try {
+                com.nekotype.app.module.ModuleUi.injectSettingsCards(requireContext(), binding.settingsRoot)
+            } catch (_: Throwable) { }
         }
     }
 
@@ -581,7 +611,7 @@ class SettingsFragment : Fragment() {
 
     private fun tryOpenQqChannel() {
         try {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://pd.qq.com/s/4ldb0biz5?b=9")))
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://qm.qq.com/q/pEKhYV2lI6")))
         } catch (_: Throwable) {
             toast(getString(R.string.u57))
         }

@@ -31,6 +31,10 @@ object TextTransformEngine {
     /** 变换一条消息文本（App 内预览与悬浮按钮共用同一入口） */
     fun transform(input: String): TransformResult {
         if (input.isEmpty()) return TransformResult(input)
+        // 模块接管：任一模块返回非 null，则由该模块决定最终文本（可整体替换内置规则引擎）
+        if (com.nekotype.app.module.ModuleHooks.hasTextTransformers) {
+            com.nekotype.app.module.ModuleHooks.transformText(input, "")?.let { return TransformResult(it) }
+        }
         // 全局等级模式：所有类别打散，严格按优先级逐条执行
         if (AppPrefs.priorityGlobalEnabled) return transformByPriority(input)
 

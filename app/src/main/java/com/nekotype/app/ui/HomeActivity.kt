@@ -78,6 +78,11 @@ class HomeActivity : AppCompatActivity() {
         BgUtils.apply(binding.root)
         NekoLog.nav("应用启动（重构版底部导航）")
 
+        // 模块钩子：布局完成后回调，模块可替换/改造界面（如隐藏底部导航、自绘导航栏）
+        binding.root.post {
+            try { com.nekotype.app.module.ModuleHooks.dispatchActivity(this) } catch (_: Throwable) { }
+        }
+
         // 默认显示首页
         if (savedInstanceState == null) {
             switchFragment(homeFragment)
@@ -85,7 +90,11 @@ class HomeActivity : AppCompatActivity() {
 
         // 里程碑赞助提醒（第 10 次起，见 SponsorDialog.MILESTONES）
         binding.root.postDelayed({
-            try { com.nekotype.app.util.SponsorDialog.maybeShow(this) } catch (_: Throwable) { }
+            try {
+                if (!com.nekotype.app.module.ModuleHooks.isFeatureHidden(com.nekotype.app.module.FeatureKeys.SPONSOR)) {
+                    com.nekotype.app.util.SponsorDialog.maybeShow(this)
+                }
+            } catch (_: Throwable) { }
         }, 800)
 
         // 预加载其他 Fragment：首屏显示后延迟创建，避免首次切换卡顿

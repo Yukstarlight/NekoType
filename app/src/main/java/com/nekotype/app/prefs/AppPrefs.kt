@@ -1436,4 +1436,9 @@ object AppPrefs {
     var logLocalize: Boolean
         get() = sp.getBoolean("log_localize", true)
         set(v) = sp.edit().putBoolean("log_localize", v).apply()
+
+    /** 模块启用状态（JSON：{"<模块 id>": true}，模块文件在 filesDir/modules/） */
+    var modulesJson: String
+        get() = sp.getString("modules_json", "")!!
+        set(v) = sp.edit().putString("modules_json", v).apply()
 }

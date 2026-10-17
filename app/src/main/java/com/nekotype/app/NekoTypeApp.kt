@@ -29,6 +29,10 @@ class NekoTypeApp : Application() {
         try { AppPrefs.launchCount = AppPrefs.launchCount + 1 } catch (_: Throwable) { }
         // 初始化 Shizuku 长连接通道（注册 Binder 监听 + 预绑定 UserService）
         com.nekotype.app.sys.SysPower.initShizukuChannel()
+        // 加载已启用的模块（DEX 动态加载会做校验/优化，放后台线程避免拖慢启动）
+        Thread {
+            try { com.nekotype.app.module.ModuleManager.loadAll(this) } catch (_: Throwable) { }
+        }.start()
         // 防篡改检测：签名不匹配（重打包）或检测到 Hook 框架 → 标记，各入口拒绝运行
         val tampered = !TamperGuard.isSignatureValid(this) || TamperGuard.hasHookFramework()
         if (tampered != AppPrefs.tampered) {

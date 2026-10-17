@@ -255,8 +255,9 @@
     <string name="t99">Tüm kural ve ayarları dışa aktar (paylaşmak/cihaz değiştirmek için), içe aktarınca hemen geçerli olur</string>
     <string name="t1002">Metin silerken geçici olarak değiştirmez, yaklaşık 0,5 saniye sonra devam eder («son ek silinemiyor / gitgide çoğalıyor» sorununu önler)</string>
     <string name="t101">Kara liste modu: listedeki uygulamalarda otomatik değiştirme yapılmaz; beyaz liste modu: yalnızca listedeki uygulamalarda otomatik değiştirme yapılır. Yüzen düğmeyle elle işlem sınırsızdır</string>
-    <string name="t106">QQ kanalı: 4ldb0biz5\nE-posta: TR114512@qq.com</string>
-    <string name="t110">QQ kanalı: 4ldb0biz5</string>
+    <string name="t106">QQ grubu: 1007865515
+E-posta: TR114512@qq.com</string>
+    <string name="t110">QQ grubu: 1007865515</string>
     <string name="t113">Bu uygulama (NekoType) gizliliğinize büyük önem verir:\n\n1. Yerel işleme: Tüm mesaj metinlerinin okunması, dönüştürülmesi ve gönderilmesi cihazda yapılır; uygulama internete bağlanmaz, hiçbir girdiyi yüklemez veya saklamaz.\n\n2. İzinlerin amacı:\n· Erişilebilirlik: Yalnızca geçerli giriş alanının metnini okumak, metin değiştirmek ve göndermeyi tetiklemek için; parola alanları okunmaz (sistem parola alanlarını erişilebilirlik servisine zaten açmaz).\n· Yüzen pencere: Yüzen düğmeyi göstermek için.\n· Pil optimizasyonu: Servisin arka planda kalıcı olması için.\n· Cihaz yöneticisi / Shizuku / Root: İsteğe bağlı; yalnızca siz izin verdikten sonra sistem komutlarını çalıştırmak için (pil optimizasyonu beyaz listesi gibi).\n\n3. Üçüncü taraflar: Bu uygulama hiçbir üçüncü taraf istatistik, reklam veya izleme SDK\'sı içermez.\n\n4. İzni geri alma: Verdiğiniz izinleri sistem ayarlarından istediğiniz zaman geri alabilirsiniz.\n\n5. İletişim: TR114512@qq.com</string>
     <string name="t115">Kayıt</string>
     <string name="t122">Sistem günlüğü</string>
@@ -384,7 +385,7 @@
     <string name="u54">Önce cihaz yöneticisini etkinleştirin (izin rehberi 2. adım), sonra gizli modu açın</string>
     <string name="u55">Kopyalanacak içerik yok</string>
     <string name="u56">Pil hariç tutma yazılamadı: %1$s</string>
-    <string name="u57">Kanal numarası kopyalandı: 4ldb0biz5, QQ\'da arayarak katılabilirsiniz</string>
+    <string name="u57">Grup numarası kopyalandı: 1007865515, QQ uygulamasında arayarak katılabilirsiniz</string>
     <string name="u58">E-posta uygulaması bulunamadı, lütfen TR114512@qq.com adresine elle gönderin</string>
     <string name="u59">Parola kilidi açıldı, açılışta başlatma da otomatik açıldı</string>
     <string name="u60">Shizuku izni başarılı ✅</string>

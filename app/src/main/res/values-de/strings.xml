@@ -270,8 +270,9 @@
     <string name="t98">Konfiguration importieren</string>
     <string name="t99">Alle Regeln und Einstellungen exportieren (zum Teilen oder für ein neues Gerät); nach dem Import sofort wirksam</string>
     <string name="t101">Sperrlisten-Modus: Apps auf der Liste werden nicht automatisch umgeschrieben; Erlaubtlisten-Modus: nur Apps auf der Liste werden automatisch umgeschrieben. Die schwebende Taste bleibt uneingeschränkt</string>
-    <string name="t106">QQ-Kanal: 4ldb0biz5\nE-Mail: TR114512@qq.com</string>
-    <string name="t110">QQ-Kanal: 4ldb0biz5</string>
+    <string name="t106">QQ-Gruppe: 1007865515
+E-Mail: TR114512@qq.com</string>
+    <string name="t110">QQ-Gruppe: 1007865515</string>
     <string name="t113">Diese App (NekoType) nimmt Ihren Datenschutz sehr ernst. Dazu folgende Hinweise:\n\n1. Lokale Verarbeitung: Das Lesen, Umwandeln und Senden aller Nachrichtentexte erfolgt vollständig lokal auf dem Gerät. Die App greift nicht auf das Netzwerk zu, lädt nichts hoch und speichert keine Eingaben.\n\n2. Zweck der Berechtigungen:\n· Bedienungshilfe: nur zum Lesen des aktuellen Textes im Eingabefeld, zum Ersetzen von Text und zum Auslösen des Sendens; Passwortfelder werden nicht gelesen (das System stellt deren Inhalt der Bedienungshilfe nicht bereit).\n· Overlay: zum Anzeigen der schwebenden Taste.\n· Akkuoptimierung: damit der Dienst dauerhaft im Hintergrund aktiv bleiben kann.\n· Geräteadministrator / Shizuku / Root: optional und nur nach Ihrer ausdrücklichen Freigabe für Systembefehle (z. B. für die Ausnahmeliste der Akkuoptimierung).\n\n3. Drittanbieter: Diese App enthält keinerlei Statistik-, Werbe- oder Tracking-SDKs von Drittanbietern.\n\n4. Berechtigungen widerrufen: Sie können jede erteilte Berechtigung jederzeit in den Systemeinstellungen widerrufen.\n\n5. Kontakt: TR114512@qq.com</string>
     <string name="t115">Nach dem Aktivieren von „Tastatur-Umschreibung erzwingen“ wird der Inhalt des Eingabefelds bei Eingabe über die Systemtastatur automatisch nach Ihren Regeln umgeschrieben und möglicherweise automatisch gesendet.\n\nBitte unbedingt bestätigen:\n1. Diese Funktion ist nur für das eigene Gerät und für rechtmäßige, private Zwecke bestimmt;\n2. nach dem Aktivieren können Eingaben in allen Apps automatisch umgeschrieben werden (zum Beispiel in Chats, bei Suchen und in Kommentaren) – bitte je nach Situation einsetzen;\n3. die Nutzung für Belästigung, Betrug, gefälschte Informationen, Identitätsmissbrauch oder andere rechtswidrige Zwecke ist untersagt; alle daraus entstehenden Folgen trägt die nutzende Person;\n4. der Bedienungshilfe-Dienst muss aktiviert bleiben; Sie können die Funktion jederzeit ausschalten und normal weiter eingeben.\n\nMit dem Tippen auf „Ich habe es gelesen und stimme zu“ bestätigen Sie, dass Sie die obigen Bedingungen gelesen haben und akzeptieren.</string>
     <string name="t122">Systemprotokoll</string>
@@ -349,7 +350,7 @@
     <string name="u54">Bitte zuerst den Geräteadministrator aktivieren (Schritt 2 des Berechtigungsassistenten) und dann den versteckten Modus einschalten</string>
     <string name="u55">Nichts zum Kopieren vorhanden</string>
     <string name="u56">Akku-Ausnahme konnte nicht gespeichert werden: %1$s</string>
-    <string name="u57">Kanalnummer kopiert: 4ldb0biz5 – bitte in QQ suchen und beitreten</string>
+    <string name="u57">Gruppennummer kopiert: 1007865515 – bitte in QQ suchen und beitreten</string>
     <string name="u58">Keine E-Mail-App gefunden. Bitte manuell an TR114512@qq.com senden</string>
     <string name="u59">Passwortsperre aktiviert – der Autostart wurde ebenfalls eingeschaltet</string>
     <string name="u60">Shizuku-Autorisierung erfolgreich ✅</string>

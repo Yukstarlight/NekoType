@@ -179,6 +179,17 @@ class SettingsActivity : AppCompatActivity() {
             startActivity(Intent.createChooser(send, getString(R.string.u124)))
         }
         binding.btnImportConfig.setOnClickListener { showImportDialog() }
+        binding.rowModule.setOnClickListener { startActivity(Intent(this, ModuleActivity::class.java)) }
+        binding.btnImportModuleZip.setOnClickListener {
+            startActivity(Intent(this, ModuleActivity::class.java).putExtra("action", "import"))
+        }
+        try {
+            com.nekotype.app.module.ModuleUi.applyHidden(binding.btnOpenTerminal, com.nekotype.app.module.FeatureKeys.TERMINAL)
+            com.nekotype.app.module.ModuleUi.applyHidden(binding.cardSponsor, com.nekotype.app.module.FeatureKeys.SPONSOR)
+            com.nekotype.app.module.ModuleUi.applyHidden(binding.cardImportExport, com.nekotype.app.module.FeatureKeys.IMPORT_EXPORT)
+            com.nekotype.app.module.ModuleUi.applyHidden(binding.rowModule, com.nekotype.app.module.FeatureKeys.MODULES)
+            com.nekotype.app.module.ModuleUi.injectSettingsCards(this, binding.settingsRoot)
+        } catch (_: Throwable) { }
 
         // ---- 应用黑名单 ----
         binding.btnBlacklist.setOnClickListener {
@@ -203,8 +214,8 @@ class SettingsActivity : AppCompatActivity() {
             startActivity(Intent(this, TerminalActivity::class.java))
         }
         binding.btnCopyGroup.setOnClickListener {
-            NekoLog.info("复制 QQ 频道号：4ldb0biz5")
-            copyToClipboard("4ldb0biz5")
+            NekoLog.info("复制 QQ 群号：1007865515")
+            copyToClipboard("1007865515")
             tryOpenQqChannel()
         }
 
@@ -483,12 +494,12 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    /** 复制频道号，并尝试拉起 QQ 频道 */
+    /** 复制群号，并尝试拉起 QQ 群 */
     private fun tryOpenQqChannel() {
         try {
             val intent = Intent(
                 Intent.ACTION_VIEW,
-                Uri.parse("https://pd.qq.com/s/4ldb0biz5?b=9")
+                Uri.parse("https://qm.qq.com/q/pEKhYV2lI6")
             )
             startActivity(intent)
         } catch (_: Throwable) {

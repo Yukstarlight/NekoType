@@ -7,6 +7,7 @@
     android:background="@drawable/bg_gradient_app">
 
     <LinearLayout
+        android:id="@+id/settingsRoot"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -398,6 +399,7 @@
 
         <!-- 数据导入导出 -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardImportExport"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="20dp"
@@ -451,6 +453,29 @@
                     android:textSize="@dimen/ts_11"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="6dp"/>
+                <LinearLayout
+                    android:id="@+id/rowModule"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="10dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/mod_settings_row"
+                        android:textSize="@dimen/ts_14"
+                        android:textColor="?attr/colorOnSurface"/>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnImportModuleZip"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:text="@string/mod_import_zip"/>
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -599,6 +624,7 @@
 
         <!-- 支持与反馈 -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSponsor"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="20dp"

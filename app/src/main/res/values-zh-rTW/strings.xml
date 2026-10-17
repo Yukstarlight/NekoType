@@ -123,11 +123,12 @@
     <string name="t103">詳細資訊</string>
     <string name="t104">版本資訊</string>
     <string name="t105">關於</string>
-    <string name="t106">QQ 頻道：4ldb0biz5\n信箱：TR114512@qq.com</string>
+    <string name="t106">QQ 群：1007865515
+信箱：TR114512@qq.com</string>
     <string name="t107">支援與回饋</string>
     <string name="t108">贊助支援（點按可放大）</string>
     <string name="t109">意見回饋</string>
-    <string name="t110">QQ 頻道：4ldb0biz5</string>
+    <string name="t110">QQ 群：1007865515</string>
     <string name="t111">複製頻道</string>
     <string name="t112">隱私權政策</string>
     <string name="t113">本應用（NekoType）高度重視你的隱私，特此說明：\n\n1. 本地處理：所有訊息文字的讀取、變換、送出均在裝置本地完成，應用不連網、不上傳、不儲存任何輸入內容。\n\n2. 權限用途：\n· 無障礙：僅用於讀取目前輸入框文字、執行文字替換與觸發送出；不讀取密碼框（系統對密碼框本身不向無障礙服務暴露內容）。\n· 懸浮窗：用於顯示懸浮按鈕。\n· 電池最佳化：用於保持服務背景常駐。\n· 裝置管理員 / Shizuku / Root：可選項，僅在你主動授權後用於執行系統命令（如電池最佳化白名單）。\n\n3. 第三方：本應用不含任何第三方統計、廣告或追蹤 SDK。\n\n4. 撤銷權限：你可在系統設定中隨時撤銷任何已授予的權限。\n\n5. 聯絡方式：TR114512@qq.com</string>
@@ -210,7 +211,7 @@
     <string name="u54">請先啟動裝置管理員（權限引導第 2 步），再開啟隱藏模式</string>
     <string name="u55">暫無可複製的內容</string>
     <string name="u56">免電寫入失敗：%1$s</string>
-    <string name="u57">頻道號已複製：4ldb0biz5，請在 QQ 中搜尋加入</string>
+    <string name="u57">群號已複製：1007865515，請在 QQ 中搜尋加入</string>
     <string name="u58">未找到郵件應用，請手動寄送至 TR114512@qq.com</string>
     <string name="u59">密碼鎖定已開啟，開機自啟已連動開啟</string>
     <string name="u60">Shizuku 授權成功 ✅</string>
@@ -529,6 +530,25 @@
     <string name="sp_afdian">愛發電贊助</string>
     <string name="sp_priv_title">需要裝置所有者或 Dhizuku</string>
     <string name="sp_priv_msg">未偵測到「裝置所有者」或「Dhizuku」，該模組需要其中之一才能真正生效。\n\n· 裝置所有者：用 adb 執行 dpm set-device-owner 授予本應用\n· Dhizuku：安裝 Dhizuku 並在其應用內授權 NekoType（授權狀態也在 Dhizuku 裡查看）\n\n設定完成後重新開啟本模組即可。</string>
+    <string name="mod_title">NekoType-OS V1</string>
+    <string name="mod_subtitle">模組化擴充系統</string>
+    <string name="mod_import_zip">匯入模組</string>
+    <string name="mod_settings_row">模組管理</string>
+    <string name="mod_hint">匯入的模組會立即載入生效；改動介面/鉤子的模組建議重啟應用後查看完整效果。</string>
+    <string name="mod_empty">還沒有安裝任何模組</string>
+    <string name="mod_enable">啟用</string>
+    <string name="mod_delete">刪除</string>
+    <string name="mod_deleted">模組已刪除</string>
+    <string name="mod_delete_confirm">刪除模組「%1$s」？模組檔案與資料都會被移除。</string>
+    <string name="mod_install_ok">模組已安裝：%1$s</string>
+    <string name="mod_fail">操作失敗：%1$s</string>
+    <string name="mod_status_loaded">已載入</string>
+    <string name="mod_status_disabled">已停用</string>
+    <string name="mod_status_error">載入失敗：%1$s</string>
+    <string name="mod_abilities">宣告能力：%1$s</string>
+    <string name="mod_doc">模組參考文案</string>
+    <string name="mod_doc_body">NekoType-OS V1 模組參考\n\n【分發格式】\nZIP：根目錄放 module.json（清單）與 classes.dex（入口類）。\n\n【載入邏輯】\n· Android 原生 DexClassLoader，在應用程式行程內載入模組 dex\n· 父載入器為宿主載入器，模組可直接引用宿主類別\n· 與宿主同權限執行（無障礙讀取的內容、Shizuku 通道、裝置管理員）——只安裝可信任模組\n\n【module.json 欄位】\n· id / name / version / author / description\n· entryClass：實作 NekoModule 的入口類全名\n· dex：dex 檔名（預設 classes.dex）\n· minVersionCode：要求的最低應用版本號（可選）\n· abilities：宣告能力，用於匯入提示\n  （text_transform / settings_card / splash / activity / menu / hide_feature / ui_override）\n\n【引擎與參考】\n· 模組執行環境：Android DexClassLoader（系統原生，無額外執行環境相依）\n· 玻璃光學配方：Kyant0 / Backdrop（Apache-2.0）\n· 靜態分析與校驗工具鏈：REA（MIT，morluto/rea）</string>
+    <string name="mod_restart_hint">提示：模組與宿主同權限執行，請只安裝你信任的模組。</string>
 
     <!-- i18n: 懸浮球長按快捷選單 -->
     <string name="fm_title">懸浮球快捷選單</string>
