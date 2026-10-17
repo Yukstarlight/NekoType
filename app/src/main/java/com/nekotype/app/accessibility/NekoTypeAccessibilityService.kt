@@ -119,24 +119,30 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
     /** 最近一次窗口切换的包名（仅记录，不用于取消任务） */
     private var lastWindowPkg = ""
 
+    /** 启动服务后待应用一次"应用预设映射"（只应用一次，之后不再静默改预设） */
+    private var mappingPending = false
+    private var lastServiceEnabled = false
+
+    /**
+     * 应用预设映射：按映射切换当前预设。**只在服务启动时调用一次**——
+     * 原来挂在前台应用变化上，进任何被映射的应用都会把你手选的预设改掉且不还原。
+     */
+    private fun applyMappedPreset(pkg: String) {
+        try {
+            val mapped = AppPrefs.mappedPresetFor(pkg) ?: return
+            if (mapped == AppPrefs.activePresetId()) return
+            if (AppPrefs.presetList().none { it.first == mapped }) return
+            AppPrefs.selectPreset(mapped)
+            NekoLog.adjust("服务启动：应用映射 $pkg → 「${AppPrefs.activePresetName()}」")
+        } catch (_: Throwable) {
+        }
+    }
+
     /** 强制篡改键盘：内容变化事件（微信刷屏式触发）的短防抖毫秒数 */
     private val AUTO_TRANSFORM_DEBOUNCE_MS = 150L
 
     /** 回显跳过窗口：写回后 600ms 内文本与 lastSet 一致 → 视为自己的回显，忽略（防死循环） */
     private val ECHO_WINDOW_MS = 600L
-
-    /** @提及输入保护：检测到正在输入 @昵称 时，此时刻前不改写（避免打断选人弹窗） */
-
-    /** @提及输入保护：命中后继续保持不改写的毫秒数（读不到文本时也能沿用） */
-
-    /** 视为 @提及已结束的字符（出现即说明昵称已选完/句子已继续） */
-
-    /**
-     * 是否正在输入 @提及：末尾最后一个 @ 之后没有空白/句读/换行（即昵称还没选完）。
-     * @提及的数据结构是「@A」后面紧跟一个空格：空格一出现即代表提及已完成，
-     * 之后规则必须照常触发。所以判定只看「末尾 @ 后有没有空格」。
-     * 例：`@` / `@小` / `@小白` → true；`@小白 好` / `@小白。` / 无 @ → false。
-     */
 
     override fun onServiceConnected() {
         try {
@@ -166,6 +172,8 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             notificationTimeout = 50
         }
         NekoTypeAccessibilityBridge.attach(this)
+        mappingPending = true
+        lastServiceEnabled = AppPrefs.serviceEnabled
         // 无障碍一连接就确保悬浮服务常驻（用户开过"启动服务"即可，之后一直显示）
         if (AppPrefs.serviceEnabled) {
             FloatingButtonService.start(this)
@@ -314,15 +322,12 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                 // 旧实现在这里取消 pending 任务 + 清空 autoStates，微信里切键盘/面板时会打断 1000ms 防抖，
                 // 导致"强制篡改键盘"永远排不上队（篡改模式在微信失效的元凶之一）。
                 lastWindowPkg = event.packageName?.toString().orEmpty()
-                // 应用预设映射：前台应用变化 → 自动切到映射的预设（预设被删则跳过，映射在 UI 里清理）
-                if (lastWindowPkg.isNotEmpty()) {
-                    val mapped = AppPrefs.mappedPresetFor(lastWindowPkg)
-                    if (mapped != null && mapped != AppPrefs.activePresetId() &&
-                        AppPrefs.presetList().any { it.first == mapped }
-                    ) {
-                        AppPrefs.selectPreset(mapped)
-                        NekoLog.adjust("应用映射：$lastWindowPkg → 自动切换「${AppPrefs.activePresetName()}」")
-                    }
+                // 应用预设映射：只在服务启动后应用一次（不再随前台应用变化静默改项目前预设）
+                if (AppPrefs.serviceEnabled && !lastServiceEnabled) mappingPending = true
+                lastServiceEnabled = AppPrefs.serviceEnabled
+                if (mappingPending && AppPrefs.serviceEnabled && lastWindowPkg.isNotEmpty()) {
+                    mappingPending = false
+                    applyMappedPreset(lastWindowPkg)
                 }
             }
 
@@ -968,60 +973,6 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             // 不再用剪贴板回读：反复「全选→复制」会不停写剪贴板、
             // 在微信里弹"已复制"，就是"老是复制东西"的元凶。读不到文本就跳过本轮。
             android.util.Log.e("NekoA11y", "自动篡改读取: pkg=$pkg len=${trim.length} text=${trim.take(20)}")
-            // @提及输入保护（传送门式数据结构）：「@昵称」+空格是提及的结构方块。
-            // - 提及后空格不足 2 个：结构未成型，绝不改写（写回会打碎提及）
-            // - 成型后（@小白␣␣你好）：只把后缀【粘贴追加】到输入框末尾——光标移到末尾+PASTE
-            //   只插入新文本，绝不 SET_TEXT 整框改写，[@小白 ] 结构分毫不动
-            if (isWeChat && AppPrefs.mentionGuardEnabled && trim.contains('@')) {
-                val m = Regex("@[^\\s@]+").find(trim)
-                if (m == null) {
-                    android.util.Log.e("NekoA11y", "提及输入保护：孤立 @，本轮不改写")
-                    return
-                }
-                val afterMention = trim.substring(m.range.last + 1)
-                val spaceCount = afterMention.takeWhile { it == ' ' }.length
-                if (spaceCount < 2) {
-                    android.util.Log.e("NekoA11y", "提及输入保护：提及未成型（@后空格 $spaceCount/2），不改写 text=${trim.take(20)}")
-                    return
-                }
-                // 成型后：@小白␣␣ 之后的整段消息按【全部规则】变换（替换/前缀/随机/后缀/颜文字），
-                // 再用「选中变化区间 + PASTE」无痕更新——提及结构方块分毫不动
-                val headLen = m.range.last + 1 + spaceCount
-                val rest = trim.substring(headLen)
-                val result = TextTransformEngine.transform(rest)
-                if (result.text.isEmpty() || result.text == rest) {
-                    android.util.Log.e("NekoA11y", "提及成型：规则无变化，跳过")
-                    return
-                }
-                val mkey = node.viewIdResourceName ?: "node_${node.hashCode()}"
-                val mst = autoStates[mkey] ?: AutoState("", "", 0L)
-                val mnow = System.currentTimeMillis()
-                if (mnow - mst.lastBlindTime < blindCooldownMs && !fromSendFallback) {
-                    android.util.Log.e("NekoA11y", "提及成型：冷却中，跳过")
-                    return
-                }
-                var cp = 0
-                while (cp < rest.length && cp < result.text.length && rest[cp] == result.text[cp]) cp++
-                var cs = 0
-                while (cs < rest.length - cp && cs < result.text.length - cp &&
-                    rest[rest.length - 1 - cs] == result.text[result.text.length - 1 - cs]) cs++
-                val selStart = headLen + cp
-                val selEnd = headLen + rest.length - cs
-                val pasteText = result.text.substring(cp, result.text.length - cs)
-                if (pasteText.isEmpty()) {
-                    android.util.Log.e("NekoA11y", "提及成型：变化为纯删除，粘贴通道不支持，跳过")
-                    return
-                }
-                val ok = pasteReplaceRange(node, selStart, selEnd, pasteText)
-                android.util.Log.e("NekoA11y", "提及成型更新: ok=$ok rest='$rest' -> '${result.text}'")
-                if (ok) {
-                    mst.lastBlindTime = mnow
-                    autoStates[mkey] = mst
-                    AppPrefs.transformCount = AppPrefs.transformCount + 1
-                    AppPrefs.incrementToday()
-                }
-                return
-            }
             if (trim.isEmpty()) {
                 // 微信等自定义输入框读不到文本 → 盲操作：只追加后缀类规则产物
                 // @提及保护期内同样不改（读不到文本时沿用最近一次判定，避免打断选人弹窗）

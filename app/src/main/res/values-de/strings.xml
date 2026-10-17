@@ -688,8 +688,6 @@ E-Mail: TR114512@qq.com</string>
     <string name="pm_close">Schließen</string>
     <string name="pm_current_row">%1$s (%2$d Regeln · aktuell)</string>
     <string name="pm_count">%1$s (%2$d Regeln)</string>
-    <string name="st_mention_guard">@-Erwähnung schützen</string>
-    <string name="st_mention_guard_desc">Standardmäßig an. Das Umschreiben pausiert, solange ein unfertiger @Name getippt wird, damit die Erwähnungs-Auswahl nicht unterbrochen wird. Beim Senden wird normal umgeschrieben.</string>
     <string name="u206">Aktivieren Sie NekoType manuell unter Einstellungen → Sicherheit → Weitere Sicherheitseinstellungen → Geräteadministrator-Apps</string>    <string name="u209">Einige Berechtigungen wurden verweigert. Bitte SMS- und App-Liste-Berechtigung manuell aktivieren.</string>
 
     <string name="ap_title">App-Preset-Zuordnung</string>

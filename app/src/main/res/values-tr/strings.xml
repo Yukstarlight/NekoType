@@ -652,8 +652,6 @@ E-posta: TR114512@qq.com</string>
     <string name="pm_close">Kapat</string>
     <string name="pm_current_row">%1$s (%2$d kural · geçerli)</string>
     <string name="pm_count">%1$s (%2$d kural)</string>
-    <string name="st_mention_guard">@bahsetme giriş koruması</string>
-    <string name="st_mention_guard_desc">Varsayılan açık. Yarım kalan @isim yazılırken dönüştürme duraklar, böylece bahsetme listesi bozulmaz. Gönderirken normal dönüştürülür.</string>
     <string name="u206">NekoType uygulamasını Ayarlar → Güvenlik → Diğer güvenlik ayarları → Cihaz yöneticisi uygulamaları bölümünden elle etkinleştirin</string>    <string name="u209">Bazı izinler reddedildi. SMS ve uygulama listesi izinlerini uygulama ayrıntılarından elle açın.</string>
 
     <string name="ap_title">Uygulama ön ayar eşlemesi</string>

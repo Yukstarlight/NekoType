@@ -608,8 +608,6 @@ Email: TR114512@qq.com</string>
     <string name="pm_close">Close</string>
     <string name="pm_current_row">%1$s (%2$d rules · current)</string>
     <string name="pm_count">%1$s (%2$d rules)</string>
-    <string name="st_mention_guard">@mention input guard</string>
-    <string name="st_mention_guard_desc">On by default. Rewriting pauses while an unfinished @name is being typed, so the mention picker is not interrupted. Sending still transforms normally.</string>
     <string name="u206">Enable NekoType manually in Settings → Security → More security settings → Device admin apps</string>    <string name="u209">Some permissions were denied. Please enable SMS and app-list permissions manually in app details.</string>
 
     <string name="ap_title">App preset mapping</string>
@@ -623,4 +621,8 @@ Email: TR114512@qq.com</string>
     <string name="hc_applist_loading">Loading app list…</string>
     <string name="st_log_settings_desc">Switch controls logging; tap this row to view the run log</string>
     <string name="st_admin_search_tip">On some devices, search "Activate" in Settings and enable it under Device administration</string>
+    <string name="st_autostart_title">Auto-start needs Shizuku</string>
+    <string name="st_autostart_msg">Auto-start relies on Shizuku running as root. Without root, the service cannot be started automatically after boot.\n\nYou can skip it for now and enable it once Shizuku runs as root.</string>
+    <string name="st_autostart_later">Not now</string>
+    <string name="st_autostart_ok">Enabled</string>
 </resources>

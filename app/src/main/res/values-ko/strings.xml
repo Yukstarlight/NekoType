@@ -658,8 +658,6 @@
     <string name="pm_close">닫기</string>
     <string name="pm_current_row">%1$s (%2$d개 · 현재)</string>
     <string name="pm_count">%1$s (%2$d개 규칙)</string>
-    <string name="st_mention_guard">@멘션 입력 보호</string>
-    <string name="st_mention_guard_desc">기본 켜짐. 입력 중인 「@이름」이 완성되기 전에는 변환을 잠시 멈춰 @선택 팝업을 방해하지 않습니다. 전송 시에는 정상적으로 변환됩니다.</string>
     <string name="u206">설정 → 보안 → 추가 보안 설정 → 기기 관리 앱에서 NekoType을 직접 활성화하세요</string>    <string name="u209">일부 권한이 거부되었습니다. 앱 정보에서 문자 및 앱 목록 권한을 직접 허용하세요.</string>
 
     <string name="ap_title">앱 프리셋 매핑</string>

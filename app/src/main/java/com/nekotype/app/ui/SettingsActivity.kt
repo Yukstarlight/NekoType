@@ -180,9 +180,6 @@ class SettingsActivity : AppCompatActivity() {
         }
         binding.btnImportConfig.setOnClickListener { showImportDialog() }
         binding.rowModule.setOnClickListener { startActivity(Intent(this, ModuleActivity::class.java)) }
-        binding.btnImportModuleZip.setOnClickListener {
-            startActivity(Intent(this, ModuleActivity::class.java).putExtra("action", "import"))
-        }
         try {
             com.nekotype.app.module.ModuleUi.applyHidden(binding.btnOpenTerminal, com.nekotype.app.module.FeatureKeys.TERMINAL)
             com.nekotype.app.module.ModuleUi.applyHidden(binding.cardSponsor, com.nekotype.app.module.FeatureKeys.SPONSOR)

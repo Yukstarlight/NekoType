@@ -178,28 +178,36 @@
                         android:textSize="@dimen/ts_14"
                         android:text="@string/theme_star"/>
                 </GridLayout>
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnThemeNeko"
-                    style="@style/Widget.Material3.Button.TonalButton"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:minHeight="44dp"
-                    android:checkable="true"
-                    android:textSize="@dimen/ts_14"
-                    android:text="@string/i16"/>
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnThemeCccp"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:minHeight="44dp"
-                    android:checkable="true"
-                    android:textSize="@dimen/ts_14"
-                    app:icon="@drawable/ic_cccp_star"
-                    app:iconGravity="textStart"
-                    android:text="@string/theme_cccp"/>
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnThemeNeko"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:minHeight="44dp"
+                        android:checkable="true"
+                        android:textSize="@dimen/ts_14"
+                        android:text="@string/i16"/>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnThemeCccp"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:minHeight="44dp"
+                        android:checkable="true"
+                        android:textSize="@dimen/ts_14"
+                        app:icon="@drawable/ic_cccp_star"
+                        app:iconGravity="textStart"
+                        android:text="@string/theme_cccp"/>
+                </LinearLayout>
                 <TextView
                     android:id="@+id/tvThemeHint"
                     android:layout_width="match_parent"
@@ -840,14 +848,6 @@
                         android:text="@string/mod_settings_row"
                         android:textSize="@dimen/ts_14"
                         android:textColor="?attr/colorOnSurface"/>
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnImportModuleZip"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
-                        android:text="@string/mod_import_zip"/>
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

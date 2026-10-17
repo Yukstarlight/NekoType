@@ -173,12 +173,27 @@ class SettingsFragment : Fragment() {
         }
         binding.swAutoStart.isChecked = AppPrefs.autoStartEnabled
             binding.swAutoStart.setOnCheckedChangeListener { _, checked ->
-                if (!checked && AppPrefs.lockEnabled) {
-                    toast(getString(R.string.u20))
-                    binding.swAutoStart.isChecked = true
+                if (!checked) {
+                    if (AppPrefs.lockEnabled) {
+                        toast(getString(R.string.u20))
+                        binding.swAutoStart.isChecked = true
+                        return@setOnCheckedChangeListener
+                    }
+                    AppPrefs.autoStartEnabled = false
                     return@setOnCheckedChangeListener
                 }
-                AppPrefs.autoStartEnabled = checked
+                // 每次开启都提示：开机自启依赖 Shizuku 以 root 运行
+                NekoDialog.builder(requireContext())
+                    .setTitle(getString(R.string.st_autostart_title))
+                    .setMessage(getString(R.string.st_autostart_msg))
+                    .setPositiveButton(getString(R.string.st_autostart_ok)) { _, _ ->
+                        AppPrefs.autoStartEnabled = true
+                    }
+                    .setNegativeButton(getString(R.string.st_autostart_later)) { _, _ ->
+                        binding.swAutoStart.isChecked = false
+                    }
+                    .setOnCancelListener { binding.swAutoStart.isChecked = false }
+                    .show()
             }
         } catch (_: Throwable) { }
 
@@ -208,9 +223,6 @@ class SettingsFragment : Fragment() {
         try {
             binding.rowModule.setOnClickListener {
                 startActivity(Intent(requireContext(), ModuleActivity::class.java))
-            }
-            binding.btnImportModuleZip.setOnClickListener {
-                startActivity(Intent(requireContext(), ModuleActivity::class.java).putExtra("action", "import"))
             }
         } catch (_: Throwable) { }
 

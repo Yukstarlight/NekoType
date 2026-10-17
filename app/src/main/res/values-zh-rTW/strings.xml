@@ -608,8 +608,6 @@
     <string name="pm_close">關閉</string>
     <string name="pm_current_row">%1$s（%2$d 條·目前）</string>
     <string name="pm_count">%1$s（%2$d 條規則）</string>
-    <string name="st_mention_guard">@提及輸入保護</string>
-    <string name="st_mention_guard_desc">預設開啟。打字到一半的「@暱稱」還沒選完時暫停改寫，避免打斷 @選人彈窗；點傳送時仍會正常改寫。</string>
     <string name="u206">請到「設定 → 安全性 → 更多安全性設定 → 裝置管理應用程式」中手動勾選 NekoType</string>    <string name="u209">部分權限未授予，請在應用程式詳情頁手動開啟「簡訊」和「應用程式清單」權限</string>
 
     <string name="ap_title">應用預設映射</string>

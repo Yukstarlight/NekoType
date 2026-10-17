@@ -49,11 +49,6 @@ object AppPrefs {
         get() = sp.getBoolean("emoticon", false)
         set(v) = sp.edit().putBoolean("emoticon", v).apply()
 
-    /** 行为与样式：@提及输入保护（默认开启，打字到一半的「@昵称」不被改写打断） */
-    var mentionGuardEnabled: Boolean
-        get() = sp.getBoolean("mention_guard", true)
-        set(v) = sp.edit().putBoolean("mention_guard", v).apply()
-
     enum class RuleType(val label: String, val resId: Int) {
         PREFIX("前缀", com.nekotype.app.R.string.rule_prefix),
         SUFFIX("后缀", com.nekotype.app.R.string.rule_suffix),
@@ -607,7 +602,6 @@ object AppPrefs {
         sb.append("语音输入优化：${onOff(voiceInputOptimizeEnabled)}\n")
         sb.append("语音停顿判定：$voiceDebounceMs\n")
         sb.append("按等级全局执行：${onOff(priorityGlobalEnabled)}\n")
-        sb.append("提及输入保护：${onOff(mentionGuardEnabled)}\n")
         sb.append("随机颜文字：${onOff(emoticonEnabled)}\n")
         sb.append("应用黑名单：${onOff(blacklistEnabled)}\n")
         sb.append("黑名单应用：").append(blacklist().joinToString(",")).append("\n")
@@ -925,7 +919,6 @@ object AppPrefs {
                         line.removePrefix("语音停顿判定：").trim().toIntOrNull()?.let { voiceDebounceMs = it }
                     }
                     line.startsWith("按等级全局执行：") -> { anyData = true; priorityGlobalEnabled = onOffValue(line.removePrefix("按等级全局执行：")) }
-                    sec == "behaviors" && line.startsWith("提及输入保护：") -> { anyData = true; mentionGuardEnabled = onOffValue(line.removePrefix("提及输入保护：")) }
                     sec == "behaviors" && line.startsWith("随机颜文字：") -> { anyData = true; emoticonEnabled = onOffValue(line.removePrefix("随机颜文字：")) }
                     line.startsWith("应用黑名单：") -> { anyData = true; blacklistEnabled = onOffValue(line.removePrefix("应用黑名单：")) }
                     line.startsWith("黑名单应用：") -> {

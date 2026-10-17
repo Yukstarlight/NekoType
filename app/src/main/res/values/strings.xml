@@ -605,8 +605,6 @@
     <string name="pm_close">关闭</string>
     <string name="pm_current_row">%1$s（%2$d 条·当前）</string>
     <string name="pm_count">%1$s（%2$d 条规则）</string>
-    <string name="st_mention_guard">@提及输入保护</string>
-    <string name="st_mention_guard_desc">默认开启。打字到一半的「@昵称」还没选完时暂停改写，避免打断 @选人弹窗；点发送时仍会正常改写。</string>
     <string name="u206">请到「设置 → 安全 → 更多安全设置 → 设备管理应用」中手动勾选 NekoType</string>    <string name="u209">部分权限未授予，请在应用详情页手动开启「短信」和「应用列表」权限</string>
 
     <string name="ap_title">应用预设映射</string>
@@ -620,4 +618,8 @@
     <string name="hc_applist_loading">正在加载应用列表…</string>
     <string name="st_log_settings_desc">开关控制日志记录；点这行文字查看运行日志</string>
     <string name="st_admin_search_tip">部分机型需在系统设置搜索「激活」，在设备管理器一栏开启</string>
+    <string name="st_autostart_title">开机自启需要 Shizuku</string>
+    <string name="st_autostart_msg">开机自启依赖 Shizuku 以 root 运行；未以 root 运行时，开机后无法自动拉起服务。\n\n可以暂不开启，等 Shizuku 以 root 运行后再打开。</string>
+    <string name="st_autostart_later">暂不开启</string>
+    <string name="st_autostart_ok">已开启</string>
 </resources>
