@@ -224,6 +224,9 @@ class SettingsFragment : Fragment() {
             binding.rowModule.setOnClickListener {
                 startActivity(Intent(requireContext(), ModuleActivity::class.java))
             }
+            binding.btnEnterModule.setOnClickListener {
+                startActivity(Intent(requireContext(), ModuleActivity::class.java))
+            }
         } catch (_: Throwable) { }
 
         // 模块钩子：隐藏被模块声明的内置入口 + 注入模块卡片

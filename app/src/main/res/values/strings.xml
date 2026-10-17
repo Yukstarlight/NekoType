@@ -622,4 +622,5 @@
     <string name="st_autostart_msg">开机自启依赖 Shizuku 以 root 运行；未以 root 运行时，开机后无法自动拉起服务。\n\n可以暂不开启，等 Shizuku 以 root 运行后再打开。</string>
     <string name="st_autostart_later">暂不开启</string>
     <string name="st_autostart_ok">已开启</string>
+    <string name="mod_enter">进入</string>
 </resources>

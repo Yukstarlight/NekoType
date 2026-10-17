@@ -625,4 +625,5 @@ Email: TR114512@qq.com</string>
     <string name="st_autostart_msg">Auto-start relies on Shizuku running as root. Without root, the service cannot be started automatically after boot.\n\nYou can skip it for now and enable it once Shizuku runs as root.</string>
     <string name="st_autostart_later">Not now</string>
     <string name="st_autostart_ok">Enabled</string>
+    <string name="mod_enter">Open</string>
 </resources>
