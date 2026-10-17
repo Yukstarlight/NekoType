@@ -448,7 +448,7 @@
     <string name="i59">法律信息与开源许可</string>
     <string name="i60">已重置：下次启动会重新显示免责声明弹窗</string>
     <string name="bl_loading">正在加载应用列表…</string>
-    <string name="theme_cccp">前苏联（CCCP）</string>
+    <string name="theme_cccp">前苏联</string>
     <!-- i18n: 硬编码中文抽取 -->
     <string name="hc_autostart_fail">无法打开自启动设置，请在系统设置中手动查找</string>
     <string name="hc_applist_fail">应用列表加载失败：%1$s</string>

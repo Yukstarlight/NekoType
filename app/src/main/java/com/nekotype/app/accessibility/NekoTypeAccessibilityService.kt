@@ -174,6 +174,15 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
         NekoTypeAccessibilityBridge.attach(this)
         mappingPending = true
         lastServiceEnabled = AppPrefs.serviceEnabled
+        // 连接时如果已经停在被映射的应用里，立即应用一次
+        try {
+            val fg = rootInActiveWindow?.packageName?.toString().orEmpty()
+            if (AppPrefs.serviceEnabled && fg.isNotEmpty() && AppPrefs.mappedPresetFor(fg) != null) {
+                mappingPending = false
+                applyMappedPreset(fg)
+            }
+        } catch (_: Throwable) {
+        }
         // 无障碍一连接就确保悬浮服务常驻（用户开过"启动服务"即可，之后一直显示）
         if (AppPrefs.serviceEnabled) {
             FloatingButtonService.start(this)
@@ -325,7 +334,10 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                 // 应用预设映射：只在服务启动后应用一次（不再随前台应用变化静默改项目前预设）
                 if (AppPrefs.serviceEnabled && !lastServiceEnabled) mappingPending = true
                 lastServiceEnabled = AppPrefs.serviceEnabled
-                if (mappingPending && AppPrefs.serviceEnabled && lastWindowPkg.isNotEmpty()) {
+                if (mappingPending && AppPrefs.serviceEnabled && lastWindowPkg.isNotEmpty() &&
+                    AppPrefs.mappedPresetFor(lastWindowPkg) != null
+                ) {
+                    // 没被映射的前台应用不消耗这次机会：等真正进入被映射的应用时应用一次
                     mappingPending = false
                     applyMappedPreset(lastWindowPkg)
                 }

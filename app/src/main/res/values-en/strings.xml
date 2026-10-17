@@ -453,7 +453,7 @@ Email: TR114512@qq.com</string>
     <string name="i31">Mesugaki</string>
     <string name="i32">Neko Girl</string>
     <string name="bl_loading">Loading app list…</string>
-    <string name="theme_cccp">Soviet (CCCP)</string>
+    <string name="theme_cccp">Soviet</string>
 
     <!-- i18n: hardcoded Chinese extracted -->
     <string name="hc_autostart_fail">Cannot open auto-start settings, please find it manually in system settings</string>

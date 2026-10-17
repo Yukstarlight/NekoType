@@ -204,8 +204,6 @@
                         android:minHeight="44dp"
                         android:checkable="true"
                         android:textSize="@dimen/ts_14"
-                        app:icon="@drawable/ic_cccp_star"
-                        app:iconGravity="textStart"
                         android:text="@string/theme_cccp"/>
                 </LinearLayout>
                 <TextView

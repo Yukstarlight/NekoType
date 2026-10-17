@@ -4,7 +4,7 @@
     <string name="bl_loading">앱 목록을 불러오는 중…</string>
     <string name="home_language">언어</string>
     <string name="log_label">동작 로그</string>
-    <string name="theme_cccp">소비에트(CCCP)</string>
+    <string name="theme_cccp">소비에트</string>
 
     <string name="t0">NekoType</string>
     <string name="t1">메시지 문구 커스터마이즈 · 플로팅 버튼 · 시스템 연동</string>

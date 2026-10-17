@@ -453,7 +453,7 @@
     <string name="i31">雌小鬼</string>
     <string name="i32">貓娘</string>
     <string name="bl_loading">正在載入應用程式清單…</string>
-    <string name="theme_cccp">前蘇聯（CCCP）</string>
+    <string name="theme_cccp">前蘇聯</string>
 
     <!-- i18n: hardcoded Chinese extracted -->
     <string name="hc_autostart_fail">無法開啟自啟動設定，請在系統設定中手動尋找</string>
