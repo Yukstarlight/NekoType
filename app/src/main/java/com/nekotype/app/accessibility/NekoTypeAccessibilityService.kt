@@ -123,6 +123,30 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
      * 应用预设映射：按映射切换当前预设。**只在服务启动时调用一次**——
      * 原来挂在前台应用变化上，进任何被映射的应用都会把你手选的预设改掉且不还原。
      */
+    /** 最近一次做过映射判定的前台应用（避免同一窗口的重复事件反复切预设） */
+    private var lastMappedPkg = ""
+
+    /** 按前台应用决定预设：映射了就用映射的，没映射就回到用户手选的 */
+    private fun applyPresetForPackage(pkg: String) {
+        try {
+            val list = AppPrefs.presetList()
+            val mapped = AppPrefs.mappedPresetFor(pkg)
+            if (mapped != null) {
+                if (mapped != AppPrefs.activePresetId() && list.any { it.first == mapped }) {
+                    AppPrefs.selectPreset(mapped)
+                    NekoLog.adjust("应用映射：$pkg → 「${AppPrefs.activePresetName()}」")
+                }
+                return
+            }
+            val manual = AppPrefs.manualPresetId() ?: return
+            if (manual != AppPrefs.activePresetId() && list.any { it.first == manual }) {
+                AppPrefs.selectPreset(manual)
+                NekoLog.adjust("离开映射应用：恢复手选预设「${AppPrefs.activePresetName()}」")
+            }
+        } catch (_: Throwable) {
+        }
+    }
+
     /** 服务启动时解析当前前台应用（无障碍树优先，退回最近一次窗口事件） */
     private fun foregroundPackage(): String {
         try {
@@ -185,15 +209,6 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             notificationTimeout = 50
         }
         NekoTypeAccessibilityBridge.attach(this)
-        // 应用预设映射：**只在服务启动（连接）这一刻**按当前前台应用应用一次；
-        // 之后任何窗口切换都不再动预设（原来挂在前台应用变化上，会把用户手选的预设改掉且不还原）。
-        try {
-            if (AppPrefs.serviceEnabled) {
-                val fg = foregroundPackage()
-                if (fg.isNotEmpty()) applyMappedPreset(fg)
-            }
-        } catch (_: Throwable) {
-        }
         // 无障碍一连接就确保悬浮服务常驻（用户开过"启动服务"即可，之后一直显示）
         if (AppPrefs.serviceEnabled) {
             FloatingButtonService.start(this)
@@ -342,6 +357,12 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                 // 旧实现在这里取消 pending 任务 + 清空 autoStates，微信里切键盘/面板时会打断 1000ms 防抖，
                 // 导致"强制篡改键盘"永远排不上队（篡改模式在微信失效的元凶之一）。
                 lastWindowPkg = event.packageName?.toString().orEmpty()
+                // 应用预设映射（按应用生效）：进入被映射的应用 → 用它映射的预设；
+                // 离开映射应用 → 回到用户手选的预设，不会把手选永久改掉。
+                if (AppPrefs.serviceEnabled && lastWindowPkg.isNotEmpty() && lastWindowPkg != lastMappedPkg) {
+                    lastMappedPkg = lastWindowPkg
+                    applyPresetForPackage(lastWindowPkg)
+                }
             }
 
             AccessibilityEvent.TYPE_VIEW_CLICKED -> {

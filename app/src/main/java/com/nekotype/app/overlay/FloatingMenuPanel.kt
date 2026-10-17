@@ -412,7 +412,7 @@ class FloatingMenuPanel(private val service: FloatingButtonService) {
                         return@presetRow
                     }
                     try {
-                        AppPrefs.selectPreset(id)
+                        AppPrefs.selectPreset(id, byUser = true)
                         NekoLog.rule("悬浮菜单切换规则预设：$name")
                         toast(str(R.string.fm_preset_switched, AppPrefs.activePresetName()))
                     } catch (t: Throwable) { Log.w(TAG, "selectPreset failed", t) }

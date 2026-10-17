@@ -268,13 +268,19 @@ object AppPrefs {
 
     fun activePresetName(): String = activePreset().name
 
-    fun selectPreset(id: String) {
+    fun selectPreset(id: String, byUser: Boolean = false) {
         // 防御：写入不存在的 ID 会让 active_rule 永远命中不到，界面上就表现为"预设切不过去"（一直停在第一个）。
         // 命中不到时回落到第一个真实存在的预设。
         val list = rulesList()
         val target = list.firstOrNull { it.id == id } ?: list.firstOrNull()
-        sp.edit().putString("active_rule", target?.id ?: "default").apply()
+        val tid = target?.id ?: "default"
+        sp.edit().putString("active_rule", tid).apply()
+        // 用户手选的预设单独记一份：应用映射离开被映射的应用时回到它，避免手选被永久改掉
+        if (byUser) sp.edit().putString("manual_rule", tid).apply()
     }
+
+    /** 用户最近一次手选的预设（应用映射离开映射应用后恢复用） */
+    fun manualPresetId(): String? = sp.getString("manual_rule", null)?.takeIf { it.isNotEmpty() }
 
     fun deletePreset(id: String) {
         val list = rulesList().filterNot { it.id == id }
@@ -690,7 +696,7 @@ object AppPrefs {
                     autoStartEnabled = b.optBoolean("auto_start", autoStartEnabled)
                     themeMode = b.optString("theme", themeMode)
                 }
-                o.optString("active_rule").takeIf { it.isNotEmpty() }?.let { selectPreset(it) }
+                o.optString("active_rule").takeIf { it.isNotEmpty() }?.let { selectPreset(it, byUser = true) }
                 null
             }
         } catch (t: Throwable) {
@@ -983,7 +989,7 @@ object AppPrefs {
                 }
                 val wantActive = activeName ?: presetRules.keys.firstOrNull { it != "___active___" }
                 if (wantActive != null) {
-                    rulesList().firstOrNull { it.name == wantActive }?.let { selectPreset(it.id) }
+                    rulesList().firstOrNull { it.name == wantActive }?.let { selectPreset(it.id, byUser = true) }
                 }
             }
             return null

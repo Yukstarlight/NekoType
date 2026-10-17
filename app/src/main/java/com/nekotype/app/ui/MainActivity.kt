@@ -633,7 +633,7 @@ class MainActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.u30))
             .setItems(names) { _, which ->
-                AppPrefs.selectPreset(presets[which].first)
+                AppPrefs.selectPreset(presets[which].first, byUser = true)
                 NekoLog.rule("切换规则预设：${presets[which].second}")
                 toast(getString(R.string.u6, presets[which].second))
                 renderRules()
