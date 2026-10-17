@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 한국어 (Korean) — 주요 UI + 개발자 모드 -->
 <resources>
-    <string name="splash_version">v2.8.0</string>
     <string name="bl_loading">앱 목록을 불러오는 중…</string>
     <string name="home_language">언어</string>
     <string name="log_label">동작 로그</string>

@@ -58,7 +58,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
         android:layout_marginBottom="40dp"
-        android:text="@string/splash_version"
         android:textSize="@dimen/ts_11"
         android:textColor="#88FFFFFF"
         android:alpha="0"/>

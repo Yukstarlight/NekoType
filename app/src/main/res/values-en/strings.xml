@@ -2,7 +2,6 @@
 <resources>
     <string name="app_name">NekoType</string>
     <string name="splash_subtitle">Welcome to Mist Unveils Infinite Tomorrows</string>
-    <string name="splash_version">v2.8.0</string>
     <string name="accessibility_label">NekoType Message Transform</string>
     <string name="accessibility_description">NekoType needs accessibility permission to detect keyboard input, read the message being typed, automatically add prefix/suffix/text replacement, and send after rewriting via the floating button. All text processing is done locally.</string>
     <string name="admin_label">NekoType Device Admin</string>

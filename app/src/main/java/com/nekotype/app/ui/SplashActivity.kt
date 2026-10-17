@@ -44,6 +44,11 @@ class SplashActivity : AppCompatActivity() {
         val title = findViewById<View>(R.id.tvSplashTitle)
         val subtitle = findViewById<View>(R.id.tvSplashSubtitle)
         val version = findViewById<View>(R.id.tvSplashVersion)
+        // 版本号运行时取，跟随 versionName（原来写死在 7 个 strings.xml 里，升版本会忘记改）
+        try {
+            val vn = packageManager.getPackageInfo(packageName, 0).versionName
+            (version as? android.widget.TextView)?.text = "v" + (vn ?: "")
+        } catch (_: Throwable) { }
 
         // 图标圆形裁剪（API 21+，视图布局完成后生效）
         try {

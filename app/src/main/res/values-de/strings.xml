@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Deutsch (German) — Kern-UI + Entwicklermodus -->
 <resources>
-    <string name="splash_version">v2.8.0</string>
     <string name="bl_loading">App-Liste wird geladen…</string>
     <string name="home_language">Sprache</string>
     <string name="log_label">Betriebsprotokoll</string>
