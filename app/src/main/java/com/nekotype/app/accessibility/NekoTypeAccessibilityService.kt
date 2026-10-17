@@ -119,14 +119,27 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
     /** 最近一次窗口切换的包名（仅记录，不用于取消任务） */
     private var lastWindowPkg = ""
 
-    /** 启动服务后待应用一次"应用预设映射"（只应用一次，之后不再静默改预设） */
-    private var mappingPending = false
-    private var lastServiceEnabled = false
-
     /**
      * 应用预设映射：按映射切换当前预设。**只在服务启动时调用一次**——
      * 原来挂在前台应用变化上，进任何被映射的应用都会把你手选的预设改掉且不还原。
      */
+    /** 服务启动时解析当前前台应用（无障碍树优先，退回最近一次窗口事件） */
+    private fun foregroundPackage(): String {
+        try {
+            rootInActiveWindow?.packageName?.toString()?.takeIf { it.isNotEmpty() }?.let { return it }
+        } catch (_: Throwable) {
+        }
+        try {
+            for (w in windows) {
+                if (!w.isActive) continue
+                val p = w.root?.packageName?.toString().orEmpty()
+                if (p.isNotEmpty()) return p
+            }
+        } catch (_: Throwable) {
+        }
+        return lastWindowPkg
+    }
+
     private fun applyMappedPreset(pkg: String) {
         try {
             val mapped = AppPrefs.mappedPresetFor(pkg) ?: return
@@ -172,14 +185,12 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             notificationTimeout = 50
         }
         NekoTypeAccessibilityBridge.attach(this)
-        mappingPending = true
-        lastServiceEnabled = AppPrefs.serviceEnabled
-        // 连接时如果已经停在被映射的应用里，立即应用一次
+        // 应用预设映射：**只在服务启动（连接）这一刻**按当前前台应用应用一次；
+        // 之后任何窗口切换都不再动预设（原来挂在前台应用变化上，会把用户手选的预设改掉且不还原）。
         try {
-            val fg = rootInActiveWindow?.packageName?.toString().orEmpty()
-            if (AppPrefs.serviceEnabled && fg.isNotEmpty() && AppPrefs.mappedPresetFor(fg) != null) {
-                mappingPending = false
-                applyMappedPreset(fg)
+            if (AppPrefs.serviceEnabled) {
+                val fg = foregroundPackage()
+                if (fg.isNotEmpty()) applyMappedPreset(fg)
             }
         } catch (_: Throwable) {
         }
@@ -331,16 +342,6 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                 // 旧实现在这里取消 pending 任务 + 清空 autoStates，微信里切键盘/面板时会打断 1000ms 防抖，
                 // 导致"强制篡改键盘"永远排不上队（篡改模式在微信失效的元凶之一）。
                 lastWindowPkg = event.packageName?.toString().orEmpty()
-                // 应用预设映射：只在服务启动后应用一次（不再随前台应用变化静默改项目前预设）
-                if (AppPrefs.serviceEnabled && !lastServiceEnabled) mappingPending = true
-                lastServiceEnabled = AppPrefs.serviceEnabled
-                if (mappingPending && AppPrefs.serviceEnabled && lastWindowPkg.isNotEmpty() &&
-                    AppPrefs.mappedPresetFor(lastWindowPkg) != null
-                ) {
-                    // 没被映射的前台应用不消耗这次机会：等真正进入被映射的应用时应用一次
-                    mappingPending = false
-                    applyMappedPreset(lastWindowPkg)
-                }
             }
 
             AccessibilityEvent.TYPE_VIEW_CLICKED -> {
