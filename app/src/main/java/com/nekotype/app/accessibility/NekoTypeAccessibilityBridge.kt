@@ -41,6 +41,10 @@ object NekoTypeAccessibilityBridge {
     }
 
     /** 悬浮按钮点击时调用：让无障碍服务执行 变换 + 发送 */
+    fun refreshShakeDetector() {
+        service?.refreshShakeDetector()
+    }
+
     fun requestTransformAndSend() {
         service?.transformActiveTextAndSend()
     }

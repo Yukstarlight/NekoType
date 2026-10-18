@@ -626,4 +626,12 @@ Email: TR114512@qq.com</string>
     <string name="st_autostart_later">Not now</string>
     <string name="st_autostart_ok">Enabled</string>
     <string name="mod_enter">Open</string>
+    <string name="mode_shake">Shake mode</string>
+    <string name="mode_shake_desc">Shake the phone to transform and send: no floating ball, no keyboard interception</string>
+    <string name="mode_shake_enabled">Shake mode on — just shake your phone</string>
+    <string name="shake_strength_label">Trigger strength</string>
+    <string name="shake_level_light">Light</string>
+    <string name="shake_level_standard">Standard</string>
+    <string name="shake_level_hard">Hard</string>
+    <string name="shake_level_strong">Strong</string>
 </resources>

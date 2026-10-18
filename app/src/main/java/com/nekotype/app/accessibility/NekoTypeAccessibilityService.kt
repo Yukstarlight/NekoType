@@ -123,6 +123,28 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
      * 应用预设映射：按映射切换当前预设。**只在服务启动时调用一次**——
      * 原来挂在前台应用变化上，进任何被映射的应用都会把你手选的预设改掉且不还原。
      */
+    private var shakeDetector: com.nekotype.app.sys.ShakeDetector? = null
+
+    /** 摇一摇模式：按当前设置与强度启停加速度传感器 */
+    fun refreshShakeDetector() {
+        try {
+            shakeDetector?.stop()
+            shakeDetector = null
+            if (!AppPrefs.serviceEnabled || !AppPrefs.shakeTriggerEnabled) return
+            val threshold = when (AppPrefs.shakeStrength) {
+                0 -> 8f
+                2 -> 22f
+                3 -> 32f
+                else -> 14f
+            }
+            shakeDetector = com.nekotype.app.sys.ShakeDetector(this, threshold) {
+                NekoTypeAccessibilityBridge.requestTransformAndSend()
+            }.also { it.start() }
+            NekoLog.adjust("摇一摇已启用（阈值 $threshold m/s²）")
+        } catch (_: Throwable) {
+        }
+    }
+
     /** 最近一次做过映射判定的前台应用（避免同一窗口的重复事件反复切预设） */
     private var lastMappedPkg = ""
 
@@ -213,6 +235,7 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
         if (AppPrefs.serviceEnabled) {
             FloatingButtonService.start(this)
         }
+        refreshShakeDetector()
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -388,6 +411,11 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         instance = null
+        try {
+            shakeDetector?.stop()
+            shakeDetector = null
+        } catch (_: Throwable) {
+        }
         NekoTypeAccessibilityBridge.detach()
         super.onDestroy()
     }

@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import com.nekotype.app.R
 import com.nekotype.app.databinding.FragmentModeBinding
 import com.nekotype.app.overlay.FloatingButtonService
+import com.nekotype.app.accessibility.NekoTypeAccessibilityBridge
 import com.nekotype.app.prefs.AppPrefs
 import com.nekotype.app.sys.SysPower
 import com.nekotype.app.util.BgUtils
@@ -70,6 +71,9 @@ class ModeFragment : Fragment() {
         binding.btnSelectFab.setOnClickListener { selectFabMode() }
         binding.btnSelectForce.setOnClickListener { selectForceKeyboardMode() }
         binding.btnSelectPunct.setOnClickListener { selectPunctAppendMode() }
+        binding.btnSelectShake.setOnClickListener { selectShakeMode() }
+        binding.cardModeShake.setOnClickListener { selectShakeMode() }
+        binding.btnSelectShakeStrength.setOnClickListener { selectShakeStrength() }
         binding.cardModeFab.setOnClickListener { selectFabMode() }
         binding.cardModeForce.setOnClickListener { selectForceKeyboardMode() }
         binding.cardModePunct.setOnClickListener { selectPunctAppendMode() }
@@ -159,6 +163,7 @@ class ModeFragment : Fragment() {
     // ---------- 模式切换 ----------
 
     private fun currentModeName(): String = when {
+        AppPrefs.shakeTriggerEnabled -> getString(R.string.mode_shake)
         !AppPrefs.forceKeyboardEnabled -> getString(R.string.mode_fab)
         AppPrefs.punctTriggerEnabled -> getString(R.string.mode_punct_append)
         else -> getString(R.string.mode_force_keyboard)
@@ -168,9 +173,10 @@ class ModeFragment : Fragment() {
         if (_binding == null) return
         binding.tvCurrentMode.text = currentModeName()
 
-        val isFab = !AppPrefs.forceKeyboardEnabled
-        val isForce = AppPrefs.forceKeyboardEnabled && !AppPrefs.punctTriggerEnabled
-        val isPunct = AppPrefs.forceKeyboardEnabled && AppPrefs.punctTriggerEnabled
+        val isShake = AppPrefs.shakeTriggerEnabled
+        val isFab = !AppPrefs.forceKeyboardEnabled && !isShake
+        val isForce = AppPrefs.forceKeyboardEnabled && !AppPrefs.punctTriggerEnabled && !isShake
+        val isPunct = AppPrefs.forceKeyboardEnabled && AppPrefs.punctTriggerEnabled && !isShake
 
         binding.cardModeFab.strokeColor = if (isFab)
             resources.getColor(R.color.md_theme_primary, null)
@@ -188,6 +194,14 @@ class ModeFragment : Fragment() {
         binding.btnSelectFab.text = if (isFab) "✓" else getString(R.string.u71)
         binding.btnSelectForce.text = if (isForce) "✓" else getString(R.string.u71)
         binding.btnSelectPunct.text = if (isPunct) "✓" else getString(R.string.u71)
+
+        binding.cardModeShake.strokeColor = if (isShake)
+            resources.getColor(R.color.md_theme_primary, null)
+        else
+            resources.getColor(R.color.divider, null)
+        binding.btnSelectShake.text = if (isShake) "✓" else getString(R.string.u71)
+        binding.btnSelectShakeStrength.text = shakeLevelName()
+        binding.btnSelectShakeStrength.isEnabled = isShake
 
         restoringSwitch = true
         binding.swLock.isChecked = AppPrefs.lockEnabled
@@ -216,6 +230,7 @@ class ModeFragment : Fragment() {
     }
 
     private fun doSelectFabMode() {
+        AppPrefs.shakeTriggerEnabled = false
         AppPrefs.forceKeyboardEnabled = false
         AppPrefs.punctTriggerEnabled = false
         FloatingButtonService.reload()
@@ -242,6 +257,51 @@ class ModeFragment : Fragment() {
         showForceDisclaimer(false)
     }
 
+    /** 摇一摇模式 */
+    private fun selectShakeMode() {
+        if (AppPrefs.shakeTriggerEnabled) {
+            toast(getString(R.string.mode_applied, getString(R.string.mode_shake)))
+            return
+        }
+        AppPrefs.shakeTriggerEnabled = true
+        AppPrefs.forceKeyboardEnabled = false
+        AppPrefs.punctTriggerEnabled = false
+        FloatingButtonService.reload()
+        NekoTypeAccessibilityBridge.refreshShakeDetector()
+        NekoLog.adjust("切换到摇一摇模式（强度：${shakeLevelName()}）")
+        toast(getString(R.string.mode_shake_enabled))
+        refreshModeUI()
+    }
+
+    private fun shakeLevelName(): String = getString(when (AppPrefs.shakeStrength) {
+        0 -> R.string.shake_level_light
+        2 -> R.string.shake_level_hard
+        3 -> R.string.shake_level_strong
+        else -> R.string.shake_level_standard
+    })
+
+    /** 选择触发强度 */
+    private fun selectShakeStrength() {
+        val names = arrayOf(
+            R.string.shake_level_light,
+            R.string.shake_level_standard,
+            R.string.shake_level_hard,
+            R.string.shake_level_strong
+        )
+        val labels = names.map { getString(it) }.toTypedArray()
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.shake_strength_label))
+            .setSingleChoiceItems(labels, AppPrefs.shakeStrength) { dialog, which ->
+                AppPrefs.shakeStrength = which
+                NekoTypeAccessibilityBridge.refreshShakeDetector()
+                NekoLog.adjust("摇一摇强度改为：${labels[which]}")
+                refreshModeUI()
+                dialog.dismiss()
+            }
+            .setNegativeButton(getString(R.string.u72), null)
+            .show()
+    }
+
     /** 断句追加模式 */
     private fun selectPunctAppendMode() {
         if (AppPrefs.forceKeyboardEnabled && AppPrefs.punctTriggerEnabled) {
@@ -265,6 +325,7 @@ class ModeFragment : Fragment() {
             .setTitle(getString(R.string.mode_force_disclaimer_title))
             .setMessage(getString(R.string.mode_force_disclaimer))
             .setPositiveButton(getString(R.string.mode_agree)) { _, _ ->
+                AppPrefs.shakeTriggerEnabled = false
                 AppPrefs.forceKeyboardEnabled = true
                 AppPrefs.punctTriggerEnabled = punctMode
                 if (AppPrefs.serviceEnabled) {

@@ -623,4 +623,12 @@
     <string name="st_autostart_later">暂不开启</string>
     <string name="st_autostart_ok">已开启</string>
     <string name="mod_enter">进入</string>
+    <string name="mode_shake">摇一摇模式</string>
+    <string name="mode_shake_desc">摇动手机触发改写并发送：不用点悬浮球，也不拦截键盘</string>
+    <string name="mode_shake_enabled">已切换到摇一摇模式，摇一摇手机即可触发</string>
+    <string name="shake_strength_label">触发强度</string>
+    <string name="shake_level_light">轻摇</string>
+    <string name="shake_level_standard">标准</string>
+    <string name="shake_level_hard">用力</string>
+    <string name="shake_level_strong">强力</string>
 </resources>

@@ -437,6 +437,16 @@ object AppPrefs {
         set(v) = sp.edit().putBoolean("silent_modify", v).apply()
 
     /** 强制篡改键盘：原生键盘输入时自动按规则篡改文本（无需点悬浮按钮） */
+    /** 模式页：摇一摇触发 */
+    var shakeTriggerEnabled: Boolean
+        get() = sp.getBoolean("shake_trigger", false)
+        set(v) = sp.edit().putBoolean("shake_trigger", v).apply()
+
+    /** 摇一摇强度：0 轻摇 / 1 标准 / 2 用力 / 3 强力 */
+    var shakeStrength: Int
+        get() = sp.getInt("shake_strength", 1)
+        set(v) = sp.edit().putInt("shake_strength", v).apply()
+
     var forceKeyboardEnabled: Boolean
         get() = sp.getBoolean("force_keyboard", false)
         set(v) = sp.edit().putBoolean("force_keyboard", v).apply()
@@ -599,6 +609,8 @@ object AppPrefs {
         sb.append("字符间加空格：${onOff(styleSpaced)}\n")
         sb.append("转为大写：${onOff(styleUpper)}\n")
         sb.append("改写后自动发送：${onOff(autoSend)}\n")
+        sb.append("摇一摇触发：${onOff(shakeTriggerEnabled)}\n")
+        sb.append("摇一摇强度：$shakeStrength\n")
         sb.append("点击震动反馈：${onOff(hapticEnabled)}\n")
         sb.append("拖拽边缘自动吸附：${onOff(snapEdges)}\n")
         sb.append("静默修改：${onOff(silentModifyEnabled)}\n")
@@ -772,6 +784,8 @@ object AppPrefs {
                     inBehaviors && line.startsWith("字符间加空格：") -> styleSpaced = onOffValue(line.removePrefix("字符间加空格："))
                     inBehaviors && line.startsWith("转为大写：") -> styleUpper = onOffValue(line.removePrefix("转为大写："))
                     inBehaviors && line.startsWith("改写后自动发送：") -> autoSend = onOffValue(line.removePrefix("改写后自动发送："))
+                    inBehaviors && line.startsWith("摇一摇触发：") -> { anyData = true; shakeTriggerEnabled = onOffValue(line.removePrefix("摇一摇触发：")) }
+                    inBehaviors && line.startsWith("摇一摇强度：") -> { anyData = true; shakeStrength = line.removePrefix("摇一摇强度：").trim().toIntOrNull()?.coerceIn(0, 3) ?: 1 }
                     inBehaviors && line.startsWith("点击震动反馈：") -> hapticEnabled = onOffValue(line.removePrefix("点击震动反馈："))
                     inBehaviors && line.startsWith("拖拽边缘自动吸附：") -> snapEdges = onOffValue(line.removePrefix("拖拽边缘自动吸附："))
                     inBehaviors && line.startsWith("静默修改：") -> silentModifyEnabled = onOffValue(line.removePrefix("静默修改："))
