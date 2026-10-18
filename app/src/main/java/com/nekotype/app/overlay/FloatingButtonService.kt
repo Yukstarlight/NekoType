@@ -376,8 +376,8 @@ class FloatingButtonService : Service() {
     // ---------- 悬浮按钮 ----------
 
     private fun showButton() {
-        // 强制篡改模式与悬浮按钮互斥：强制篡改开启时不显示悬浮球（服务 + 通知保留）
-        if (AppPrefs.forceKeyboardEnabled) {
+        // 悬浮球只在「悬浮球模式」显示：强制篡改 / 摇一摇模式下隐藏（服务 + 通知保留）
+        if (AppPrefs.forceKeyboardEnabled || AppPrefs.shakeTriggerEnabled) {
             hideButton()
             return
         }

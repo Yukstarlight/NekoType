@@ -281,14 +281,14 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
-                    <TextView
+                    <ImageView
                         android:layout_width="40dp"
                         android:layout_height="40dp"
-                        android:text="📳"
-                        android:textSize="@dimen/ts_20"
-                        android:gravity="center"
-                        android:textColor="@color/md_theme_primary"
-                        android:background="@drawable/bg_circle"/>
+                        android:padding="9dp"
+                        android:background="@drawable/bg_circle"
+                        android:src="@drawable/ic_mode_shake"
+                        android:tint="@color/md_theme_primary"
+                        android:contentDescription="@string/mode_shake"/>
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"

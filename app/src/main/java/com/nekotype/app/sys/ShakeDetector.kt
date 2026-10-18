@@ -5,29 +5,42 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.Build
 import android.os.SystemClock
+import android.os.VibrationEffect
+import android.os.Vibrator
 import kotlin.math.sqrt
 
 /**
  * 摇一摇检测（加速度计）。
  *
- * 陀螺仪只测旋转，判定"抖动"用重力分量的快速变化更稳：
- * 低通估重力 → 线性加速度模长超过阈值 → 窗口内累计两次越过 → 触发。
- * 阈值对应模式页四档：轻摇 8 / 标准 14 / 用力 22 / 强力 32 (m/s²)。
+ * 参数与算法对齐参照应用「游龙安全护盾」(com.youlong.hd / ProtectService) 的实测数值：
+ *  - 度量：相邻两帧 |Δax|、|Δay|、|Δaz| 的模长（帧间差分，天然不含重力，不需要低通）
+ *  - 阈值：轻摇 7.0 / 标准 10.0 / 用力 13.5 / 强力 18.0 (m/s²)
+ *  - 命中：窗口 1500ms 内累计命中 3 / 3 / 4 / 5 次才触发 —— 档位差异不只靠阈值，也靠命中数
+ *  - 冷却：触发后 6000ms 内不再触发
+ *  - 触发时振动 100ms
  */
 class ShakeDetector(
     ctx: Context,
-    private val threshold: Float,
+    level: Int,
     private val onShake: () -> Unit
 ) : SensorEventListener {
 
-    private val sm = ctx.applicationContext.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+    private val appCtx = ctx.applicationContext
+    private val sm = appCtx.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
     private val sensor = sm?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
-    private val gravity = FloatArray(3)
-    private var crossings = 0
-    private var windowStart = 0L
-    private var lastTrigger = 0L
+    private val idx = level.coerceIn(0, 3)
+    private val threshold = THRESHOLDS[idx]
+    private val hitsNeeded = HITS[idx]
+
+    private var lastX = 0f
+    private var lastY = 0f
+    private var lastZ = 0f
+    private var hits = 0
+    private var lastHitTs = 0L
+    private var lastTriggerTs = 0L
 
     fun start() {
         sensor?.let { sm?.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME) }
@@ -41,26 +54,55 @@ class ShakeDetector(
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-        val alpha = 0.8f
-        for (i in 0..2) gravity[i] = alpha * gravity[i] + (1 - alpha) * event.values[i]
-        val lx = event.values[0] - gravity[0]
-        val ly = event.values[1] - gravity[1]
-        val lz = event.values[2] - gravity[2]
-        val mag = sqrt(lx * lx + ly * ly + lz * lz)
-        if (mag < threshold) return
+        if (event.sensor.type != Sensor.TYPE_ACCELEROMETER) return
+        val ax = event.values[0]
+        val ay = event.values[1]
+        val az = event.values[2]
+        val dx = ax - lastX
+        val dy = ay - lastY
+        val dz = az - lastZ
+        lastX = ax
+        lastY = ay
+        lastZ = az
+
+        val delta = sqrt(dx * dx + dy * dy + dz * dz)
+        if (delta < threshold) return
 
         val now = SystemClock.elapsedRealtime()
-        if (now - windowStart > 600L) {
-            crossings = 0
-            windowStart = now
-        }
-        crossings++
-        if (crossings >= 2 && now - lastTrigger > 1200L) {
-            lastTrigger = now
-            crossings = 0
-            onShake()
+        hits = if (now - lastHitTs < WINDOW_MS) hits + 1 else 1
+        lastHitTs = now
+        if (hits < hitsNeeded) return
+        hits = 0
+        if (now - lastTriggerTs < COOLDOWN_MS) return
+        lastTriggerTs = now
+        vibrate()
+        onShake()
+    }
+
+    private fun vibrate() {
+        try {
+            val v = appCtx.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator ?: return
+            if (!v.hasVibrator()) return
+            if (Build.VERSION.SDK_INT >= 26) {
+                v.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                @Suppress("DEPRECATION")
+                v.vibrate(100)
+            }
+        } catch (_: Throwable) {
         }
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
+    companion object {
+        /** 参照应用 SHAKE_THRESHOLDS */
+        private val THRESHOLDS = floatArrayOf(7.0f, 10.0f, 13.5f, 18.0f)
+        /** 参照应用 SHAKE_HITS_TABLE */
+        private val HITS = intArrayOf(3, 3, 4, 5)
+        /** 参照应用 SHAKE_WINDOW */
+        private const val WINDOW_MS = 1500L
+        /** 参照应用 SHAKE_RESCUE_COOLDOWN_MS */
+        private const val COOLDOWN_MS = 6000L
+    }
 }
