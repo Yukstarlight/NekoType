@@ -148,7 +148,9 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             val list = AppPrefs.presetList()
             val mapped = AppPrefs.mappedPresetFor(pkg)
             if (mapped != null) {
-                if (mapped != AppPrefs.activePresetId() && list.any { it.first == mapped }) {
+                if (!list.any { it.first == mapped }) {
+                    NekoLog.warn("应用映射：$pkg 指向的预设 $mapped 不存在，跳过")
+                } else if (mapped != AppPrefs.activePresetId()) {
                     AppPrefs.selectPreset(mapped)
                     NekoLog.adjust("应用映射：$pkg → 「${AppPrefs.activePresetName()}」")
                 }
@@ -971,6 +973,13 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
     @Volatile private var pendingRerun: AccessibilityNodeInfo? = null
 
     private suspend fun autoTransform(src: AccessibilityNodeInfo, fromSendFallback: Boolean = false) {
+        // 改写前按当前前台应用再确认一次预设（窗口事件可能漏发/顺序颠倒）
+        try {
+            val fg = lastWindowPkg
+            val mapped = if (fg.isNotEmpty()) AppPrefs.mappedPresetFor(fg) else null
+            if (mapped != null && mapped != AppPrefs.activePresetId()) applyPresetForPackage(fg)
+        } catch (_: Throwable) {
+        }
         // 防重入（processing 标志）
         if (autoProcessing) {
             pendingRerun = src

@@ -1148,7 +1148,8 @@ object AppPrefs {
         m[pkg] = presetId
         val o = JSONObject()
         m.forEach { (k, v) -> o.put(k, v) }
-        sp.edit().putString("app_preset_map", o.toString()).apply()
+        // 加了映射就把总开关打开：否则名单里有条目但开关关着，表现就是"完全不生效"
+        sp.edit().putString("app_preset_map", o.toString()).putBoolean("app_preset_auto_switch", true).apply()
     }
 
     fun removeAppPreset(pkg: String) {
