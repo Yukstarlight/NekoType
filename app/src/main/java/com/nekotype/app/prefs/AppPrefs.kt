@@ -1130,6 +1130,22 @@ object AppPrefs {
 
     // ================= 应用预设映射（前台应用变化时自动切换预设） =================
 
+    /**
+     * 老数据迁移：早期版本加映射不会打开 app_preset_auto_switch，
+     * 导致"名单里有条目但完全不生效"。这里一次性把有映射的安装打开总开关。
+     */
+    init {
+        try {
+            if (!sp.getBoolean("app_preset_switch_migrated", false)) {
+                if (appPresetMapRaw().isNotEmpty() && !appPresetAutoSwitch) {
+                    sp.edit().putBoolean("app_preset_auto_switch", true).apply()
+                }
+                sp.edit().putBoolean("app_preset_switch_migrated", true).apply()
+            }
+        } catch (_: Throwable) {
+        }
+    }
+
     /** 映射 JSON：{"com.tencent.mm":"presetId", ...} */
     private fun appPresetMapRaw(): MutableMap<String, String> {
         return try {

@@ -147,6 +147,10 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
         try {
             val list = AppPrefs.presetList()
             val mapped = AppPrefs.mappedPresetFor(pkg)
+            // 诊断（EMUI 不会过滤 Log.e）：权限/开关/ID 全打出来
+            android.util.Log.e("NekoA11y", "映射判定 pkg=$pkg mapped=$mapped active=${AppPrefs.activePresetId()} " +
+                    "autoSwitch=${AppPrefs.appPresetAutoSwitch} presets=${list.joinToString(",") { it.first + "=" + it.second }} " +
+                    "enabled=${AppPrefs.serviceEnabled}")
             if (mapped != null) {
                 if (!list.any { it.first == mapped }) {
                     NekoLog.warn("应用映射：$pkg 指向的预设 $mapped 不存在，跳过")
