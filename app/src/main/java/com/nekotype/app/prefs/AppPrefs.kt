@@ -394,7 +394,19 @@ object AppPrefs {
 
     // ================= 规则 CRUD（作用于当前预设） =================
 
-    fun rules(): List<NekoRule> = activePreset().rules
+    /** 无障碍服务写入的当前前台包名：规则按它解析（应用映射不再依赖 active_rule 被改） */
+    @Volatile
+    var foregroundPkgForRules: String? = null
+
+    fun rules(): List<NekoRule> {
+        val pkg = foregroundPkgForRules
+        val mapped = if (pkg.isNullOrEmpty()) null else mappedPresetFor(pkg)
+        if (mapped != null) {
+            val p = rulesList().firstOrNull { it.id == mapped }
+            if (p != null) return p.rules
+        }
+        return activePreset().rules
+    }
 
     fun addRule(rule: NekoRule) {
         updateActivePreset { it.copy(rules = it.rules + rule) }

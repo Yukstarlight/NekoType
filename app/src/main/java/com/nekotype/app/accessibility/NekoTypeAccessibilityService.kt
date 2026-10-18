@@ -380,6 +380,8 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                 // 旧实现在这里取消 pending 任务 + 清空 autoStates，微信里切键盘/面板时会打断 1000ms 防抖，
                 // 导致"强制篡改键盘"永远排不上队（篡改模式在微信失效的元凶之一）。
                 lastWindowPkg = event.packageName?.toString().orEmpty()
+                // 规则解析直接按前台应用取（映射生效的兜底路径，不依赖 active_rule）
+                AppPrefs.foregroundPkgForRules = lastWindowPkg
                 // 应用预设映射（按应用生效）：进入被映射的应用 → 用它映射的预设；
                 // 离开映射应用 → 回到用户手选的预设，不会把手选永久改掉。
                 if (AppPrefs.serviceEnabled && lastWindowPkg.isNotEmpty() && lastWindowPkg != lastMappedPkg) {
