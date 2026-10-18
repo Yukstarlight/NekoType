@@ -979,6 +979,12 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
     @Volatile private var pendingRerun: AccessibilityNodeInfo? = null
 
     private suspend fun autoTransform(src: AccessibilityNodeInfo, fromSendFallback: Boolean = false) {
+        // 用输入框自己的包名解析规则：不再等窗口事件，切到 QQ 后第一个字就用对预设（零延迟）
+        try {
+            val nodePkg = try { src.packageName?.toString() } catch (_: Throwable) { null }
+            if (!nodePkg.isNullOrEmpty()) AppPrefs.foregroundPkgForRules = nodePkg
+        } catch (_: Throwable) {
+        }
         // 改写前按当前前台应用再确认一次预设（窗口事件可能漏发/顺序颠倒）
         try {
             val fg = lastWindowPkg
