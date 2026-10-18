@@ -665,4 +665,16 @@ E-posta: TR114512@qq.com</string>
     <string name="hc_applist_loading">Uygulama listesi yükleniyor…</string>
     <string name="st_log_settings_desc">Anahtar günlük kaydını denetler; çalışma günlüğünü görmek için bu satıra dokunun</string>
     <string name="st_admin_search_tip">Bazı cihazlarda Ayarlar içinde "Activate" aratın ve cihaz yöneticisi satırından açın</string>
+    <string name="mode_shake">Sallama modu</string>
+    <string name="mode_shake_desc">Dönüştürüp göndermek için telefonu salla: yüzen top yok, klavye engellenmez</string>
+    <string name="mode_shake_enabled">Sallama modu açık — telefonu sallamanız yeterli</string>
+    <string name="shake_strength_label">Tetik gücü</string>
+    <string name="shake_level_light">Hafif</string>
+    <string name="shake_level_standard">Standart</string>
+    <string name="shake_level_hard">Sert</string>
+    <string name="mod_enter">Aç</string>
+    <string name="st_autostart_title">Otomatik başlatma Shizuku gerektirir</string>
+    <string name="st_autostart_msg">Otomatik başlatma, Shizuku root olarak çalışırken kullanılabilir. Root yoksa açılıştan sonra hizmet otomatik başlatılamaz.\n\nŞimdilik açmadan bırakıp root çalışınca açabilirsiniz.</string>
+    <string name="st_autostart_later">Şimdi değil</string>
+    <string name="st_autostart_ok">Açık</string>
 </resources>

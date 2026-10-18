@@ -132,9 +132,9 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             shakeDetector = null
             if (!AppPrefs.serviceEnabled || !AppPrefs.shakeTriggerEnabled) return
             shakeDetector = com.nekotype.app.sys.ShakeDetector(this, AppPrefs.shakeStrength) {
-                NekoTypeAccessibilityBridge.requestTransformAndSend()
+                if (AppPrefs.serviceEnabled) NekoTypeAccessibilityBridge.requestTransformAndSend()
             }.also { it.start() }
-            NekoLog.adjust("摇一摇已启用（档位 ${AppPrefs.shakeStrength + 1}/4）")
+            NekoLog.adjust("摇一摇已启用（档位 ${AppPrefs.shakeStrength.coerceIn(0, 2) + 1}/3）")
         } catch (_: Throwable) {
         }
     }

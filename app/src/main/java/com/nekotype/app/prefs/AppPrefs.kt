@@ -785,7 +785,7 @@ object AppPrefs {
                     inBehaviors && line.startsWith("转为大写：") -> styleUpper = onOffValue(line.removePrefix("转为大写："))
                     inBehaviors && line.startsWith("改写后自动发送：") -> autoSend = onOffValue(line.removePrefix("改写后自动发送："))
                     inBehaviors && line.startsWith("摇一摇触发：") -> { anyData = true; shakeTriggerEnabled = onOffValue(line.removePrefix("摇一摇触发：")) }
-                    inBehaviors && line.startsWith("摇一摇强度：") -> { anyData = true; shakeStrength = line.removePrefix("摇一摇强度：").trim().toIntOrNull()?.coerceIn(0, 3) ?: 1 }
+                    inBehaviors && line.startsWith("摇一摇强度：") -> { anyData = true; shakeStrength = line.removePrefix("摇一摇强度：").trim().toIntOrNull()?.coerceIn(0, 2) ?: 1 }
                     inBehaviors && line.startsWith("点击震动反馈：") -> hapticEnabled = onOffValue(line.removePrefix("点击震动反馈："))
                     inBehaviors && line.startsWith("拖拽边缘自动吸附：") -> snapEdges = onOffValue(line.removePrefix("拖拽边缘自动吸附："))
                     inBehaviors && line.startsWith("静默修改：") -> silentModifyEnabled = onOffValue(line.removePrefix("静默修改："))
@@ -927,6 +927,8 @@ object AppPrefs {
                     line.startsWith("字符间加空格：") -> { anyData = true; styleSpaced = onOffValue(line.removePrefix("字符间加空格：")) }
                     line.startsWith("转为大写：") -> { anyData = true; styleUpper = onOffValue(line.removePrefix("转为大写：")) }
                     line.startsWith("改写后自动发送：") -> { anyData = true; autoSend = onOffValue(line.removePrefix("改写后自动发送：")) }
+                    line.startsWith("摇一摇触发：") -> { anyData = true; shakeTriggerEnabled = onOffValue(line.removePrefix("摇一摇触发：")) }
+                    line.startsWith("摇一摇强度：") -> { anyData = true; shakeStrength = line.removePrefix("摇一摇强度：").trim().toIntOrNull()?.coerceIn(0, 2) ?: 1 }
                     line.startsWith("点击震动反馈：") -> { anyData = true; hapticEnabled = onOffValue(line.removePrefix("点击震动反馈：")) }
                     line.startsWith("拖拽边缘自动吸附：") -> { anyData = true; snapEdges = onOffValue(line.removePrefix("拖拽边缘自动吸附：")) }
                     line.startsWith("静默修改：") -> { anyData = true; silentModifyEnabled = onOffValue(line.removePrefix("静默修改：")) }
@@ -1044,7 +1046,14 @@ object AppPrefs {
     // ================= 服务状态 =================
     var serviceEnabled: Boolean
         get() = sp.getBoolean("service_enabled", false)
-        set(v) = sp.edit().putBoolean("service_enabled", v).apply()
+        set(v) {
+            sp.edit().putBoolean("service_enabled", v).apply()
+            // 关服务要立刻停掉摇一摇（否则传感器还在跑，摇一下仍会触发）
+            try {
+                com.nekotype.app.accessibility.NekoTypeAccessibilityBridge.refreshShakeDetector()
+            } catch (_: Throwable) {
+            }
+        }
 
     /** 免责声明是否已同意（首次进入弹窗，同意后永久不再弹出）
      *  用 commit() 同步落盘：apply() 是异步写，进程被系统杀掉时可能丢失（EMUI 杀后台很凶）。 */

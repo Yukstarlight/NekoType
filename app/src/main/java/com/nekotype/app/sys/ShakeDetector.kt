@@ -16,8 +16,8 @@ import kotlin.math.sqrt
  *
  * 参数与算法对齐参照应用「游龙安全护盾」(com.youlong.hd / ProtectService) 的实测数值：
  *  - 度量：相邻两帧 |Δax|、|Δay|、|Δaz| 的模长（帧间差分，天然不含重力，不需要低通）
- *  - 阈值：轻摇 7.0 / 标准 10.0 / 用力 13.5 / 强力 18.0 (m/s²)
- *  - 命中：窗口 1500ms 内累计命中 3 / 3 / 4 / 5 次才触发 —— 档位差异不只靠阈值，也靠命中数
+ *  - 阈值：轻摇 5.0 / 标准 10.0 / 用力 13.5 (m/s²)（三档；轻摇按用户反馈下调）
+ *  - 命中：窗口 1500ms 内累计命中 3 / 3 / 4 次才触发 —— 档位差异不只靠阈值，也靠命中数
  *  - 冷却：触发后 6000ms 内不再触发
  *  - 触发时振动 100ms
  */
@@ -31,7 +31,7 @@ class ShakeDetector(
     private val sm = appCtx.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
     private val sensor = sm?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
-    private val idx = level.coerceIn(0, 3)
+    private val idx = level.coerceIn(0, 2)
     private val threshold = THRESHOLDS[idx]
     private val hitsNeeded = HITS[idx]
 
@@ -97,9 +97,9 @@ class ShakeDetector(
 
     companion object {
         /** 参照应用 SHAKE_THRESHOLDS */
-        private val THRESHOLDS = floatArrayOf(7.0f, 10.0f, 13.5f, 18.0f)
+        private val THRESHOLDS = floatArrayOf(5.0f, 10.0f, 13.5f)
         /** 参照应用 SHAKE_HITS_TABLE */
-        private val HITS = intArrayOf(3, 3, 4, 5)
+        private val HITS = intArrayOf(3, 3, 4)
         /** 参照应用 SHAKE_WINDOW */
         private const val WINDOW_MS = 1500L
         /** 参照应用 SHAKE_RESCUE_COOLDOWN_MS */

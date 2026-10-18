@@ -213,7 +213,8 @@ class ModeFragment : Fragment() {
 
     /** 悬浮球模式 */
     private fun selectFabMode() {
-        if (!AppPrefs.forceKeyboardEnabled) {
+        // 摇一摇模式下也要允许切回悬浮球模式（原来只判断强制篡改，导致切不回来）
+        if (!AppPrefs.forceKeyboardEnabled && !AppPrefs.shakeTriggerEnabled) {
             toast(getString(R.string.mode_applied, getString(R.string.mode_fab)))
             return
         }
@@ -273,10 +274,9 @@ class ModeFragment : Fragment() {
         refreshModeUI()
     }
 
-    private fun shakeLevelName(): String = getString(when (AppPrefs.shakeStrength) {
+    private fun shakeLevelName(): String = getString(when (AppPrefs.shakeStrength.coerceIn(0, 2)) {
         0 -> R.string.shake_level_light
         2 -> R.string.shake_level_hard
-        3 -> R.string.shake_level_strong
         else -> R.string.shake_level_standard
     })
 
@@ -285,13 +285,12 @@ class ModeFragment : Fragment() {
         val names = arrayOf(
             R.string.shake_level_light,
             R.string.shake_level_standard,
-            R.string.shake_level_hard,
-            R.string.shake_level_strong
+            R.string.shake_level_hard
         )
         val labels = names.map { getString(it) }.toTypedArray()
         com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
             .setTitle(getString(R.string.shake_strength_label))
-            .setSingleChoiceItems(labels, AppPrefs.shakeStrength) { dialog, which ->
+            .setSingleChoiceItems(labels, AppPrefs.shakeStrength.coerceIn(0, 2)) { dialog, which ->
                 AppPrefs.shakeStrength = which
                 NekoTypeAccessibilityBridge.refreshShakeDetector()
                 NekoLog.adjust("摇一摇强度改为：${labels[which]}")

@@ -630,5 +630,4 @@
     <string name="shake_level_light">轻摇</string>
     <string name="shake_level_standard">标准</string>
     <string name="shake_level_hard">用力</string>
-    <string name="shake_level_strong">强力</string>
 </resources>

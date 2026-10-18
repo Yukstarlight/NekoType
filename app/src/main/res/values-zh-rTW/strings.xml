@@ -621,4 +621,16 @@
     <string name="hc_applist_loading">正在載入應用列表…</string>
     <string name="st_log_settings_desc">開關控制日誌記錄；點這行文字查看執行日誌</string>
     <string name="st_admin_search_tip">部分機型需在系統設定搜尋「啟動」，在裝置管理員一欄開啟</string>
+    <string name="mode_shake">搖一搖模式</string>
+    <string name="mode_shake_desc">搖動手機觸發改寫並發送：不用點懸浮球，也不攔截鍵盤</string>
+    <string name="mode_shake_enabled">已切換到搖一搖模式，搖一搖手機即可觸發</string>
+    <string name="shake_strength_label">觸發強度</string>
+    <string name="shake_level_light">輕搖</string>
+    <string name="shake_level_standard">標準</string>
+    <string name="shake_level_hard">用力</string>
+    <string name="mod_enter">進入</string>
+    <string name="st_autostart_title">開機自啟需要 Shizuku</string>
+    <string name="st_autostart_msg">開機自啟依賴 Shizuku 以 root 執行；未以 root 執行時，開機後無法自動拉起服務。\n\n可以暫不開啟，等 Shizuku 以 root 執行後再打開。</string>
+    <string name="st_autostart_later">暫不開啟</string>
+    <string name="st_autostart_ok">已開啟</string>
 </resources>

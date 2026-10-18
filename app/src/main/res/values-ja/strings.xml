@@ -672,4 +672,16 @@
     <string name="hc_applist_loading">アプリリストを読み込み中…</string>
     <string name="st_log_settings_desc">スイッチでログ記録を切り替え。この行をタップすると実行ログを表示します</string>
     <string name="st_admin_search_tip">一部の機種では設定で「Activate」を検索し、デバイス管理者欄で有効にしてください</string>
+    <string name="mode_shake">シェイクモード</string>
+    <string name="mode_shake_desc">端末を振って変換・送信：フローティングボール不要、キーボードも乗っ取りません</string>
+    <string name="mode_shake_enabled">シェイクモードに切り替えました。端末を振ってください</string>
+    <string name="shake_strength_label">トリガー強度</string>
+    <string name="shake_level_light">軽く振る</string>
+    <string name="shake_level_standard">標準</string>
+    <string name="shake_level_hard">強く振る</string>
+    <string name="mod_enter">開く</string>
+    <string name="st_autostart_title">自動起動には Shizuku が必要です</string>
+    <string name="st_autostart_msg">自動起動は Shizuku が root で動作している必要があります。root でない場合、起動後にサービスを自動起動できません。\n\n今は有効にせず、root で動作してから有効にできます。</string>
+    <string name="st_autostart_later">今はしない</string>
+    <string name="st_autostart_ok">有効にする</string>
 </resources>

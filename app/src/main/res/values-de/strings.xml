@@ -701,4 +701,16 @@ E-Mail: TR114512@qq.com</string>
     <string name="hc_applist_loading">App-Liste wird geladen…</string>
     <string name="st_log_settings_desc">Schalter steuert die Protokollierung; Zeile antippen, um das Laufprotokoll zu sehen</string>
     <string name="st_admin_search_tip">Auf einigen Geräten in den Einstellungen „Aktivieren" suchen und unter Geräteverwaltung aktivieren</string>
+    <string name="mode_shake">Schüttelmodus</string>
+    <string name="mode_shake_desc">Telefon schütteln zum Umwandeln und Senden: kein schwebender Knopf, keine Tastatur-Übernahme</string>
+    <string name="mode_shake_enabled">Schüttelmodus aktiv – einfach das Telefon schütteln</string>
+    <string name="shake_strength_label">Auslösestärke</string>
+    <string name="shake_level_light">Leicht</string>
+    <string name="shake_level_standard">Standard</string>
+    <string name="shake_level_hard">Kräftig</string>
+    <string name="mod_enter">Öffnen</string>
+    <string name="st_autostart_title">Autostart benötigt Shizuku</string>
+    <string name="st_autostart_msg">Autostart setzt voraus, dass Shizuku als root läuft. Ohne root kann der Dienst nach dem Boot nicht automatisch gestartet werden.\n\nDu kannst es jetzt überspringen und später aktivieren.</string>
+    <string name="st_autostart_later">Jetzt nicht</string>
+    <string name="st_autostart_ok">Aktiviert</string>
 </resources>

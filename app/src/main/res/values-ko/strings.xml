@@ -671,4 +671,16 @@
     <string name="hc_applist_loading">앱 목록 불러오는 중…</string>
     <string name="st_log_settings_desc">스위치로 로그 기록을 제어합니다. 이 행을 탭하면 실행 로그를 봅니다</string>
     <string name="st_admin_search_tip">일부 기기는 설정에서 "Activate"를 검색해 기기 관리자 항목에서 활성화하세요</string>
+    <string name="mode_shake">흔들기 모드</string>
+    <string name="mode_shake_desc">휴대폰을 흔들어 변환 및 전송: 플로팅 볼 없이, 키보드를 가로채지 않습니다</string>
+    <string name="mode_shake_enabled">흔들기 모드로 전환했습니다. 휴대폰을 흔드세요</string>
+    <string name="shake_strength_label">트리거 강도</string>
+    <string name="shake_level_light">약하게</string>
+    <string name="shake_level_standard">표준</string>
+    <string name="shake_level_hard">강하게</string>
+    <string name="mod_enter">열기</string>
+    <string name="st_autostart_title">자동 시작에는 Shizuku가 필요합니다</string>
+    <string name="st_autostart_msg">자동 시작은 Shizuku가 root로 실행 중이어야 합니다. root가 아니면 부팅 후 서비스를 자동으로 시작할 수 없습니다.\n\n지금은 켜지 않고 root 실행 후 켜도 됩니다.</string>
+    <string name="st_autostart_later">지금은 안 함</string>
+    <string name="st_autostart_ok">사용 중</string>
 </resources>
