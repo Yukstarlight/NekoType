@@ -686,11 +686,19 @@ object AppPrefs {
     /** 导入配置（支持可读文本格式；兼容旧 JSON），返回 null 表示成功，否则返回错误信息 */
     fun importConfigText(text: String): String? {
         val trimmed = text.trim()
-        return if (trimmed.startsWith("{")) {
-            importJsonConfig(trimmed)
-        } else {
-            importTextConfig(text)
+        val err = if (trimmed.startsWith("{")) importJsonConfig(trimmed) else importTextConfig(text)
+        // 导入会改模式/摇一摇：立刻按新状态启停，而不是等下次开应用
+        if (err == null) {
+            try {
+                com.nekotype.app.accessibility.NekoTypeAccessibilityBridge.refreshShakeDetector()
+            } catch (_: Throwable) {
+            }
+            try {
+                com.nekotype.app.overlay.FloatingButtonService.reload()
+            } catch (_: Throwable) {
+            }
         }
+        return err
     }
 
     private fun importJsonConfig(text: String): String? {
