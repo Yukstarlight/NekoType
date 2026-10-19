@@ -640,4 +640,5 @@ You can skip it for now and enable it once Shizuku runs as root.</string>
     <string name="t_perm_check">Permission auto-check</string>
     <string name="t_perm_check_desc">Every 5 minutes checks accessibility, device admin, battery whitelist, overlay and Shizuku; re-grants via the one-tap channel when lost (needs Shizuku running)</string>
     <string name="t_perm_check_on">Enabled: one check now, then every 5 minutes</string>
+    <string name="grant_battery_manual_hint">On HUAWEI and similar brands, battery optimization must be disabled manually (Phone Manager > App launch)</string>
 </resources>

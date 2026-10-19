@@ -720,4 +720,5 @@ Du kannst es jetzt überspringen und später aktivieren.</string>
     <string name="t_perm_check">Automatische Rechteprüfung</string>
     <string name="t_perm_check_desc">Prüft alle 5 Minuten Bedienungshilfen, Geräteadmin, Akku-Ausnahme, Overlay und Shizuku; bei Verlust werden sie über den Ein-Tipp-Kanal neu erteilt (Shizuku muss laufen)</string>
     <string name="t_perm_check_on">Aktiviert: jetzt eine Prüfung, danach alle 5 Minuten</string>
+    <string name="grant_battery_manual_hint">Bei HUAWEI und ähnlichen Marken muss die Akku-Optimierung manuell deaktiviert werden (Telefonmanager > App-Start)</string>
 </resources>

@@ -640,4 +640,5 @@
     <string name="t_perm_check">權限自動巡檢</string>
     <string name="t_perm_check_desc">每 5 分鐘檢查無障礙、裝置管理員、電池白名單、懸浮窗、Shizuku；遺失時沿用一鍵授權通道自動補回（需 Shizuku 執行中）</string>
     <string name="t_perm_check_on">已開啟：會立即巡檢一次，之後每 5 分鐘一次</string>
+    <string name="grant_battery_manual_hint">華為等品牌關閉省電優化需要手動開啟（手機管家 → 應用程式啟動管理）</string>
 </resources>

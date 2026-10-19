@@ -637,4 +637,5 @@
     <string name="t_perm_check">权限自动巡检</string>
     <string name="t_perm_check_desc">每 5 分钟检查无障碍、设备管理员、电池白名单、悬浮窗、Shizuku；丢失时复用一键授权通道自动补回（需 Shizuku 在运行）</string>
     <string name="t_perm_check_on">已开启：会立即巡检一次，之后每 5 分钟一次</string>
+    <string name="grant_battery_manual_hint">HUAWEI 等品牌关闭省电优化需要手动开启（手机管家 → 应用启动管理）</string>
 </resources>

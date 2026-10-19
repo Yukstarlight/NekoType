@@ -423,6 +423,7 @@ class HomeFragment : Fragment() {
                 sb.appendLine()
             }
             sb.appendLine(getString(R.string.u188, successCount, failCount))
+            sb.appendLine(getString(R.string.grant_battery_manual_hint))
             // 失败时额外提示
             if (failCount > 0) {
                 sb.appendLine()
