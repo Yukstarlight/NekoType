@@ -573,6 +573,32 @@ object SysPower {
         return ExecResult(true, r, lastChannelUsed)
     }
 
+    /** 本地真实状态：无障碍是否已启用本应用服务 */
+    private fun realAccessibilityOn(): Boolean = try {
+        val ctx = NekoTypeApp.instance
+        val enabled = android.provider.Settings.Secure.getInt(ctx.contentResolver, "accessibility_enabled", 0) == 1
+        val list = android.provider.Settings.Secure.getString(
+            ctx.contentResolver, "enabled_accessibility_services"
+        ).orEmpty()
+        enabled && list.contains(ctx.packageName + "/" + FixedCommands.ACCESSIBILITY_SERVICE)
+    } catch (_: Throwable) { false }
+
+    /** 本地真实状态：悬浮窗 */
+    private fun realOverlayOn(): Boolean = try {
+        android.provider.Settings.canDrawOverlays(NekoTypeApp.instance)
+    } catch (_: Throwable) { false }
+
+    /** 短轮询等系统刷新（设备管理员/无障碍激活有几百毫秒延迟） */
+    private fun waitAll(granted: () -> BooleanArray): BooleanArray {
+        var last = granted()
+        for (i in 0 until 12) {
+            if (last.all { it }) return last
+            try { Thread.sleep(100) } catch (_: Throwable) { }
+            last = granted()
+        }
+        return last
+    }
+
     /** 解析合并脚本输出：KEY=ok / KEY=fail… → Map<KEY, Pair<成功, 详情>> */
     private fun parseGrantAll(out: String?): Map<String, Pair<Boolean, String>>? {
         if (out.isNullOrBlank()) return null
@@ -606,11 +632,22 @@ object SysPower {
                 if (again != null) parsed = again
             }
             if (parsed != null) {
+                // 以系统 API 的真实状态为准（脚本回读在部分 ROM 上不可靠：
+                // 例如 dumpsys device_policy 的格式差异会把"已激活"判成失败）
+                val real = waitAll {
+                    booleanArrayOf(
+                        realAccessibilityOn(),
+                        isDeviceAdminActive(),
+                        isIgnoringBatteryOptimizations(),
+                        realOverlayOn()
+                    )
+                }
+                val detail = { k: String -> (parsed[k]?.second ?: "") + if (real == null) "" else "" }
                 return listOf(
-                    PermissionStep(ctx.getString(R.string.u180), parsed["ACCESSIBILITY"]?.first == true, parsed["ACCESSIBILITY"]?.second ?: "", "fast"),
-                    PermissionStep(ctx.getString(R.string.u181), parsed["ADMIN"]?.first == true, parsed["ADMIN"]?.second ?: "", "fast"),
-                    PermissionStep(ctx.getString(R.string.u182), parsed["BATTERY"]?.first == true, parsed["BATTERY"]?.second ?: "", "fast"),
-                    PermissionStep(ctx.getString(R.string.u183), parsed["OVERLAY"]?.first == true, parsed["OVERLAY"]?.second ?: "", "fast")
+                    PermissionStep(ctx.getString(R.string.u180), real[0], detail("ACCESSIBILITY"), "fast"),
+                    PermissionStep(ctx.getString(R.string.u181), real[1], detail("ADMIN"), "fast"),
+                    PermissionStep(ctx.getString(R.string.u182), real[2], detail("BATTERY"), "fast"),
+                    PermissionStep(ctx.getString(R.string.u183), real[3], detail("OVERLAY"), "fast")
                 )
             }
         } catch (_: Throwable) {
