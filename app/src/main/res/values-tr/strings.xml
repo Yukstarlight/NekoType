@@ -685,4 +685,5 @@ Ayrıca Shizuku otomatik başlatma (root) modülünü etkinleştirmeniz gerekir.
     <string name="t_perm_check_desc">Her 5 dakikada erişilebilirlik, cihaz yöneticisi, pil izni, üstte görünme ve Shizuku kontrol edilir; kaybolursa tek dokunuşla yeniden verilir (Shizuku çalışıyor olmalı)</string>
     <string name="t_perm_check_on">Açıldı: şimdi bir kez, sonra her 5 dakikada bir denetlenir</string>
     <string name="grant_battery_manual_hint">HUAWEI gibi markalarda pil optimizasyonu elle kapatılmalıdır (Telefon Yöneticisi > Uygulama başlatma)</string>
+    <string name="grant_battery_dialog_hint">Sistem izin penceresi açıldı — İzin ver seçeneğine dokunun</string>
 </resources>

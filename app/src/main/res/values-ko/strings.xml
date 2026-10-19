@@ -691,4 +691,5 @@
     <string name="t_perm_check_desc">5분마다 접근성, 기기 관리자, 배터리 허용, 오버레이, Shizuku를 확인하고 사라지면 원터치 권한 부여로 복구합니다(Shizuku 실행 필요)</string>
     <string name="t_perm_check_on">켜졌습니다: 지금 한 번 점검하고 이후 5분마다 점검합니다</string>
     <string name="grant_battery_manual_hint">HUAWEI 등 브랜드에서는 배터리 최적화를 수동으로 해제해야 합니다(휴대폰 관리자 → 앱 시작 관리)</string>
+    <string name="grant_battery_dialog_hint">시스템 허용 창이 열렸습니다. 허용을 눌러 주세요</string>
 </resources>

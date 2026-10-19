@@ -424,6 +424,14 @@ class HomeFragment : Fragment() {
             }
             sb.appendLine(getString(R.string.u188, successCount, failCount))
             sb.appendLine(getString(R.string.grant_battery_manual_hint))
+            // 电池白名单在华为等 ROM 上 shell 写入可能被忽略：直接弹系统授权框让用户点「允许」
+            val batteryStep = steps.getOrNull(2)
+            if (batteryStep != null && !batteryStep.success) {
+                try {
+                    SysPower.requestBatteryOptimizationDialog()
+                    sb.appendLine(getString(R.string.grant_battery_dialog_hint))
+                } catch (_: Throwable) { }
+            }
             // 失败时额外提示
             if (failCount > 0) {
                 sb.appendLine()

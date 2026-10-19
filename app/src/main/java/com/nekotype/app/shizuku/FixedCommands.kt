@@ -118,6 +118,7 @@ object FixedCommands {
             "case \":\$now:\" in *\":\$acc:\"*) if [ \"\$en\" = \"1\" ]; then echo ACCESSIBILITY=ok; else echo ACCESSIBILITY=fail_en; fi ;; *) echo ACCESSIBILITY=fail_list ;; esac",
             "dpm set-active-admin $adm >/dev/null 2>&1",
             "if dumpsys device_policy 2>/dev/null | grep -q \"$adm\"; then echo ADMIN=ok; else echo ADMIN=fail; fi",
+            "cmd deviceidle whitelist +$pkg >/dev/null 2>&1",
             "dumpsys deviceidle whitelist +$pkg >/dev/null 2>&1",
             "if dumpsys deviceidle whitelist 2>/dev/null | grep -q \"$pkg\"; then echo BATTERY=ok; else echo BATTERY=fail; fi",
             "appops set $pkg SYSTEM_ALERT_WINDOW allow >/dev/null 2>&1",
