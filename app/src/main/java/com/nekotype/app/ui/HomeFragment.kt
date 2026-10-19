@@ -56,6 +56,8 @@ class HomeFragment : Fragment() {
                 toast(getString(R.string.u60))
                 // 权限授权成功后，自动触发 UserService 绑定探测
                 probeShizukuChannel()
+                // 并立刻继续跑一键授权（否则用户还要再点一次）
+                try { grantAllPermissions() } catch (_: Throwable) { }
             } else {
                 toast(getString(R.string.u61))
                 binding.tvPrivLog.text = "Shizuku API 权限被拒绝，UserService 绑定可能失败。\n请在 Shizuku 应用 → 应用管理 → 开启 NekoType 后重试。"

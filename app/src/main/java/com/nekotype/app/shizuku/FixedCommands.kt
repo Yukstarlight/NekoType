@@ -79,6 +79,8 @@ object FixedCommands {
         NekoShellService.MSG_GRANT_OVERLAY ->
             if (validPkg(pkg)) "appops set $pkg android:system_alert_window allow" else null
 
+        NekoShellService.MSG_GRANT_ALL -> grantAllScript(pkg)
+
         NekoShellService.MSG_GRANT_ACCESSIBILITY ->
             if (validPkg(pkg)) accessibilityScript(pkg) else null
 
@@ -95,6 +97,34 @@ object FixedCommands {
         NekoShellService.MSG_LOGCAT_CRASH -> logcatCmd(data?.getString("tag"), crash = true)
 
         else -> null
+    }
+
+    /**
+     * 一键授权合并脚本：一个 sh 进程跑完四项，每一项都在脚本内**回读真实状态**后再输出。
+     * 输出格式：ACCESSIBILITY=ok|fail、ADMIN=ok|fail、BATTERY=ok|fail、OVERLAY=ok|fail
+     * 目的：只起一次 newProcess（省掉 3 次冷启动）+ 不信退出码、只信回读。
+     */
+    fun grantAllScript(pkg: String): String? {
+        if (!validPkg(pkg)) return null
+        val acc = "$pkg/$ACCESSIBILITY_SERVICE"
+        val adm = "$pkg/$DEVICE_ADMIN_RECEIVER"
+        return listOf(
+            "cur=\$(settings get secure enabled_accessibility_services)",
+            "acc='$acc'",
+            "case \":\$cur:\" in *\":\$acc:\"*) ;; *) if [ \"\$cur\" = \"null\" ] || [ -z \"\$cur\" ]; then settings put secure enabled_accessibility_services \"\$acc\"; else settings put secure enabled_accessibility_services \"\$cur:\$acc\"; fi ;; esac",
+            "settings put secure accessibility_enabled 1",
+            "now=\$(settings get secure enabled_accessibility_services)",
+            "en=\$(settings get secure accessibility_enabled)",
+            "case \":\$now:\" in *\":\$acc:\"*) if [ \"\$en\" = \"1\" ]; then echo ACCESSIBILITY=ok; else echo ACCESSIBILITY=fail_en; fi ;; *) echo ACCESSIBILITY=fail_list ;; esac",
+            "dpm set-active-admin $adm >/dev/null 2>&1",
+            "if dumpsys device_policy 2>/dev/null | grep -q \"$adm\"; then echo ADMIN=ok; else echo ADMIN=fail; fi",
+            "dumpsys deviceidle whitelist +$pkg >/dev/null 2>&1",
+            "if dumpsys deviceidle whitelist 2>/dev/null | grep -q \"$pkg\"; then echo BATTERY=ok; else echo BATTERY=fail; fi",
+            "appops set $pkg SYSTEM_ALERT_WINDOW allow >/dev/null 2>&1",
+            "op=\$(appops get $pkg SYSTEM_ALERT_WINDOW 2>/dev/null)",
+            "case \"\$op\" in *allow*) echo OVERLAY=ok ;; *) appops set $pkg 24 allow >/dev/null 2>&1; echo OVERLAY=fail ;; esac",
+            "exit 0"
+        ).joinToString("; ")
     }
 
     /** 悬浮窗授权兜底命令：部分 ROM 只认数字 op（24 = SYSTEM_ALERT_WINDOW） */

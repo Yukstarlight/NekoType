@@ -46,6 +46,8 @@ class NekoShellService : Service() {
         const val MSG_INJECT_KEYS = 11
         // 光标移到末尾（CTRL+END 组合键，盲操作追加后缀前用）
         const val MSG_INJECT_MOVE_END = 12
+        // 一键授权：一次 sh -c 跑完 无障碍/设备管理员/电池/悬浮窗，并各自回读真实状态
+        const val MSG_GRANT_ALL = 13
 
         // 结果
         const val MSG_RESULT = 100

@@ -573,6 +573,23 @@ object SysPower {
         return ExecResult(true, r, lastChannelUsed)
     }
 
+    /** 解析合并脚本输出：KEY=ok / KEY=fail… → Map<KEY, Pair<成功, 详情>> */
+    private fun parseGrantAll(out: String?): Map<String, Pair<Boolean, String>>? {
+        if (out.isNullOrBlank()) return null
+        val m = LinkedHashMap<String, Pair<Boolean, String>>()
+        out.lineSequence().forEach { line ->
+            val t = line.trim()
+            val i = t.indexOf('=')
+            if (i <= 0) return@forEach
+            val k = t.substring(0, i)
+            val v = t.substring(i + 1)
+            if (k in setOf("ACCESSIBILITY", "ADMIN", "BATTERY", "OVERLAY")) {
+                m[k] = (v == "ok") to v
+            }
+        }
+        return if (m.isEmpty()) null else m
+    }
+
     /**
      * 一键授权所有权限：依次执行 无障碍 → 设备管理员 → 电池优化 → 悬浮窗。
      * 每步独立记录成功/失败和输出，任一步失败不影响后续步骤。
@@ -581,6 +598,23 @@ object SysPower {
      */
     fun grantAllPermissions(): List<PermissionStep> {
         val ctx = NekoTypeApp.instance
+        // 快路径：一次 sh -c 跑完四项（每项脚本内回读真实状态）；失败则热重试一次
+        try {
+            var parsed = parseGrantAll(shizukuAction(NekoShellService.MSG_GRANT_ALL))
+            if (parsed != null && parsed.values.any { !it.first }) {
+                val again = parseGrantAll(shizukuAction(NekoShellService.MSG_GRANT_ALL))
+                if (again != null) parsed = again
+            }
+            if (parsed != null) {
+                return listOf(
+                    PermissionStep(ctx.getString(R.string.u180), parsed["ACCESSIBILITY"]?.first == true, parsed["ACCESSIBILITY"]?.second ?: "", "fast"),
+                    PermissionStep(ctx.getString(R.string.u181), parsed["ADMIN"]?.first == true, parsed["ADMIN"]?.second ?: "", "fast"),
+                    PermissionStep(ctx.getString(R.string.u182), parsed["BATTERY"]?.first == true, parsed["BATTERY"]?.second ?: "", "fast"),
+                    PermissionStep(ctx.getString(R.string.u183), parsed["OVERLAY"]?.first == true, parsed["OVERLAY"]?.second ?: "", "fast")
+                )
+            }
+        } catch (_: Throwable) {
+        }
         val steps = mutableListOf<PermissionStep>()
 
         // 1. 无障碍
@@ -731,7 +765,9 @@ object SysPower {
     private fun execActionViaRemoteProcess(action: Int, data: Bundle?): String? {
         val pkg = NekoTypeApp.instance.packageName
         val cmd = FixedCommands.build(action, data, pkg)
-        if (cmd != null) return execRemote(cmd)
+        // 一键授权要跑 dpm/dumpsys，给足 20s；其它动作（打字等）仍用 3s，避免拖慢输入
+        val timeout = if (action == NekoShellService.MSG_GRANT_ALL) 20000L else 3000L
+        if (cmd != null) return execRemote(cmd, timeout)
         // 悬浮窗授权：名称 op 不被识别时用数字 op（24）兜底
         if (action == NekoShellService.MSG_GRANT_OVERLAY) {
             FixedCommands.overlayFallback(pkg)?.let { return execRemote(it) }
@@ -741,7 +777,7 @@ object SysPower {
     }
 
     /** 执行一条固定命令并取回输出（newProcess 通道） */
-    private fun execRemote(cmd: String): String? {
+    private fun execRemote(cmd: String, timeoutMs: Long = 3000L): String? {
         return try {
             if (!isShizukuAvailable()) {
                 lastShizukuError = "Shizuku 服务未运行"
@@ -780,7 +816,7 @@ object SysPower {
             outThread.start()
             // 读输出最多等 3 秒：sh 进程偶发挂死时无超时阻塞会永远卡住写回协程，
             // 连锁把自动篡改的处理锁锁死（微信"改不了字"的元凶）。超时即杀进程返回失败。
-            outThread.join(3000)
+            outThread.join(timeoutMs)
             if (!outDone) {
                 try { proc.destroy() } catch (_: Throwable) { }
                 lastShizukuError = "newProcess 读输出超时（3000ms）"
