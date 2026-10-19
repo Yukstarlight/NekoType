@@ -145,10 +145,10 @@ Email: TR114512@qq.com</string>
     <string name="t125">Select All</string>
     <string name="rule_prefix">Prefix</string>
     <string name="rule_suffix">Suffix</string>
-    <string name="rule_rand_prefix">Random Prefix (Fixed)</string>
-    <string name="rule_rand_suffix">Random Suffix (Fixed)</string>
-    <string name="rule_rand_prefix_once">Random Prefix (One)</string>
-    <string name="rule_rand_suffix_once">Random Suffix (One)</string>
+    <string name="rule_rand_prefix">Random prefix (concurrent)</string>
+    <string name="rule_rand_suffix">Random suffix (concurrent)</string>
+    <string name="rule_rand_prefix_once">Random prefix (exclusive)</string>
+    <string name="rule_rand_suffix_once">Random suffix (exclusive)</string>
     <string name="rule_replace">Replace Text</string>
     <string name="notif_title">NekoType Running</string>
     <string name="notif_text">Floating button stays on screen edge, tap to transform &amp; send</string>
@@ -622,7 +622,11 @@ Email: TR114512@qq.com</string>
     <string name="st_log_settings_desc">Switch controls logging; tap this row to view the run log</string>
     <string name="st_admin_search_tip">On some devices, search "Activate" in Settings and enable it under Device administration</string>
     <string name="st_autostart_title">Auto-start needs Shizuku</string>
-    <string name="st_autostart_msg">Auto-start relies on Shizuku running as root. Without root, the service cannot be started automatically after boot.\n\nYou can skip it for now and enable it once Shizuku runs as root.</string>
+    <string name="st_autostart_msg">Auto-start relies on Shizuku running as root. Without root, the service cannot be started automatically after boot.
+
+Also enable the Shizuku boot-start (root) module.
+
+You can skip it for now and enable it once Shizuku runs as root.</string>
     <string name="st_autostart_later">Not now</string>
     <string name="st_autostart_ok">Enabled</string>
     <string name="mod_enter">Open</string>
@@ -633,4 +637,7 @@ Email: TR114512@qq.com</string>
     <string name="shake_level_light">Light</string>
     <string name="shake_level_standard">Standard</string>
     <string name="shake_level_hard">Hard</string>
+    <string name="t_perm_check">Permission auto-check</string>
+    <string name="t_perm_check_desc">Every 5 minutes checks accessibility, device admin, battery whitelist, overlay and Shizuku; re-grants via the one-tap channel when lost (needs Shizuku running)</string>
+    <string name="t_perm_check_on">Enabled: one check now, then every 5 minutes</string>
 </resources>

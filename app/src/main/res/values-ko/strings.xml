@@ -266,10 +266,10 @@
 
     <string name="rule_prefix">접두사</string>
     <string name="rule_suffix">접미사</string>
-    <string name="rule_rand_prefix">랜덤 접두사(고정)</string>
-    <string name="rule_rand_suffix">랜덤 접미사(고정)</string>
-    <string name="rule_rand_prefix_once">랜덤 접두사(비고정)</string>
-    <string name="rule_rand_suffix_once">랜덤 접미사(비고정)</string>
+    <string name="rule_rand_prefix">무작위 접두사(동시)</string>
+    <string name="rule_rand_suffix">무작위 접미사(동시)</string>
+    <string name="rule_rand_prefix_once">무작위 접두사(상호배타)</string>
+    <string name="rule_rand_suffix_once">무작위 접미사(상호배타)</string>
     <string name="rule_replace">텍스트 바꾸기</string>
 
     <string name="notif_title">NekoType 실행 중</string>
@@ -680,7 +680,14 @@
     <string name="shake_level_hard">강하게</string>
     <string name="mod_enter">열기</string>
     <string name="st_autostart_title">자동 시작에는 Shizuku가 필요합니다</string>
-    <string name="st_autostart_msg">자동 시작은 Shizuku가 root로 실행 중이어야 합니다. root가 아니면 부팅 후 서비스를 자동으로 시작할 수 없습니다.\n\n지금은 켜지 않고 root 실행 후 켜도 됩니다.</string>
+    <string name="st_autostart_msg">자동 시작은 Shizuku가 root로 실행 중이어야 합니다. root가 아니면 부팅 후 서비스를 자동으로 시작할 수 없습니다.
+
+또한 Shizuku의 부팅 시 자동 시작(root) 모듈을 활성화해야 합니다.
+
+지금은 켜지 않고 root 실행 후 켜도 됩니다.</string>
     <string name="st_autostart_later">지금은 안 함</string>
     <string name="st_autostart_ok">사용 중</string>
+    <string name="t_perm_check">권한 자동 점검</string>
+    <string name="t_perm_check_desc">5분마다 접근성, 기기 관리자, 배터리 허용, 오버레이, Shizuku를 확인하고 사라지면 원터치 권한 부여로 복구합니다(Shizuku 실행 필요)</string>
+    <string name="t_perm_check_on">켜졌습니다: 지금 한 번 점검하고 이후 5분마다 점검합니다</string>
 </resources>

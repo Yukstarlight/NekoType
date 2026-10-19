@@ -145,10 +145,10 @@
     <string name="t125">全選</string>
     <string name="rule_prefix">前綴</string>
     <string name="rule_suffix">後綴</string>
-    <string name="rule_rand_prefix">隨機前綴（固定）</string>
-    <string name="rule_rand_suffix">隨機後綴（固定）</string>
-    <string name="rule_rand_prefix_once">隨機前綴（不固定）</string>
-    <string name="rule_rand_suffix_once">隨機後綴（不固定）</string>
+    <string name="rule_rand_prefix">隨機前綴（並發）</string>
+    <string name="rule_rand_suffix">隨機後綴（並發）</string>
+    <string name="rule_rand_prefix_once">隨機前綴（互斥）</string>
+    <string name="rule_rand_suffix_once">隨機後綴（互斥）</string>
     <string name="rule_replace">替換文字</string>
     <string name="notif_title">NekoType 執行中</string>
     <string name="notif_text">懸浮按鈕常駐螢幕邊緣，點擊自動改寫並送出</string>
@@ -630,7 +630,14 @@
     <string name="shake_level_hard">用力</string>
     <string name="mod_enter">進入</string>
     <string name="st_autostart_title">開機自啟需要 Shizuku</string>
-    <string name="st_autostart_msg">開機自啟依賴 Shizuku 以 root 執行；未以 root 執行時，開機後無法自動拉起服務。\n\n可以暫不開啟，等 Shizuku 以 root 執行後再打開。</string>
+    <string name="st_autostart_msg">開機自啟依賴 Shizuku 以 root 執行；未以 root 執行時，開機後無法自動拉起服務。
+
+並且需要啟用 Shizuku 的開機啟動（root）模組。
+
+可以暫不開啟，等 Shizuku 以 root 執行後再打開。</string>
     <string name="st_autostart_later">暫不開啟</string>
     <string name="st_autostart_ok">已開啟</string>
+    <string name="t_perm_check">權限自動巡檢</string>
+    <string name="t_perm_check_desc">每 5 分鐘檢查無障礙、裝置管理員、電池白名單、懸浮窗、Shizuku；遺失時沿用一鍵授權通道自動補回（需 Shizuku 執行中）</string>
+    <string name="t_perm_check_on">已開啟：會立即巡檢一次，之後每 5 分鐘一次</string>
 </resources>

@@ -267,10 +267,10 @@
 
     <string name="rule_prefix">プレフィックス</string>
     <string name="rule_suffix">サフィックス</string>
-    <string name="rule_rand_prefix">ランダムプレフィックス（固定）</string>
-    <string name="rule_rand_suffix">ランダムサフィックス（固定）</string>
-    <string name="rule_rand_prefix_once">ランダムプレフィックス（非固定）</string>
-    <string name="rule_rand_suffix_once">ランダムサフィックス（非固定）</string>
+    <string name="rule_rand_prefix">ランダム接頭辞（並行）</string>
+    <string name="rule_rand_suffix">ランダム接尾辞（並行）</string>
+    <string name="rule_rand_prefix_once">ランダム接頭辞（排他）</string>
+    <string name="rule_rand_suffix_once">ランダム接尾辞（排他）</string>
     <string name="rule_replace">テキストを置換</string>
     <string name="notif_title">NekoType 実行中</string>
     <string name="notif_text">フローティングボタンが画面の端に常駐し、タップで自動的に書き換えて送信します</string>
@@ -681,7 +681,14 @@
     <string name="shake_level_hard">強く振る</string>
     <string name="mod_enter">開く</string>
     <string name="st_autostart_title">自動起動には Shizuku が必要です</string>
-    <string name="st_autostart_msg">自動起動は Shizuku が root で動作している必要があります。root でない場合、起動後にサービスを自動起動できません。\n\n今は有効にせず、root で動作してから有効にできます。</string>
+    <string name="st_autostart_msg">自動起動は Shizuku が root で動作している必要があります。root でない場合、起動後にサービスを自動起動できません。
+
+さらに Shizuku の自動起動（root）モジュールを有効にする必要があります。
+
+今は有効にせず、root で動作してから有効にできます。</string>
     <string name="st_autostart_later">今はしない</string>
     <string name="st_autostart_ok">有効にする</string>
+    <string name="t_perm_check">権限の自動チェック</string>
+    <string name="t_perm_check_desc">5分ごとにアクセシビリティ、デバイス管理者、バッテリー許可、オーバーレイ、Shizuku を確認し、失われたらワンタップ認可で復元します（Shizuku の実行が必要）</string>
+    <string name="t_perm_check_on">有効にしました：すぐに1回確認し、その後5分ごとに確認します</string>
 </resources>

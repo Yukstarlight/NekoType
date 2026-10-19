@@ -47,6 +47,27 @@ class FloatingButtonService : Service() {
 
         @Volatile private var instance: FloatingButtonService? = null
 
+        private const val PERM_CHECK_INTERVAL_MS = 5 * 60 * 1000L
+
+        /** 开关打开时立刻巡检一次（后台线程，不阻塞 UI） */
+        fun runPermCheckOnce() {
+            try {
+                if (!AppPrefs.serviceEnabled || !AppPrefs.permAutoCheckEnabled) return
+                if (!com.nekotype.app.sys.SysPower.isShizukuAvailable()) return
+                if (!com.nekotype.app.sys.SysPower.isShizukuPermissionGranted()) return
+                Thread {
+                    try {
+                        val steps = com.nekotype.app.sys.SysPower.grantAllPermissions()
+                        val bad = steps.filterNot { it.success }
+                        if (bad.isEmpty()) com.nekotype.app.util.NekoLog.ok("权限巡检：全部正常")
+                        else com.nekotype.app.util.NekoLog.warn("权限巡检：${bad.size} 项未通过")
+                    } catch (_: Throwable) {
+                    }
+                }.start()
+            } catch (_: Throwable) {
+            }
+        }
+
         fun start(context: Context) {
             try {
                 val intent = Intent(context, FloatingButtonService::class.java)
@@ -177,6 +198,7 @@ class FloatingButtonService : Service() {
     }
 
     override fun onCreate() {
+        try { startPermCheckLoop() } catch (_: Throwable) { }
         super.onCreate()
         instance = this
         wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -259,6 +281,7 @@ class FloatingButtonService : Service() {
     }
 
     override fun onDestroy() {
+        try { permHandler.removeCallbacks(permCheckRunnable) } catch (_: Throwable) { }
         cancelHeartbeat()
         try { menuPanel?.dismiss() } catch (_: Throwable) { }
         menuPanel = null
@@ -276,6 +299,41 @@ class FloatingButtonService : Service() {
     // ---------- 心跳保活（用户开关控制） ----------
 
     private val HEARTBEAT_INTERVAL_MS = 60_000L
+
+    private val permHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var permLoopStarted = false
+
+    private val permCheckRunnable = object : Runnable {
+        override fun run() {
+            runPermCheckNow()
+            permHandler.postDelayed(this, PERM_CHECK_INTERVAL_MS)
+        }
+    }
+
+    private fun runPermCheckNow() {
+        try {
+            if (!AppPrefs.serviceEnabled || !AppPrefs.permAutoCheckEnabled) return
+            if (!com.nekotype.app.sys.SysPower.isShizukuAvailable()) return
+            if (!com.nekotype.app.sys.SysPower.isShizukuPermissionGranted()) return
+            Thread {
+                try {
+                    val steps = com.nekotype.app.sys.SysPower.grantAllPermissions()
+                    val bad = steps.filterNot { it.success }
+                    if (bad.isEmpty()) com.nekotype.app.util.NekoLog.ok("权限巡检：全部正常")
+                    else com.nekotype.app.util.NekoLog.warn("权限巡检：${bad.size} 项未通过（${bad.joinToString { it.name }}）")
+                } catch (t: Throwable) {
+                    com.nekotype.app.util.NekoLog.warn("权限巡检异常：${t.javaClass.simpleName}")
+                }
+            }.start()
+        } catch (_: Throwable) {
+        }
+    }
+
+    private fun startPermCheckLoop() {
+        if (permLoopStarted) return
+        permLoopStarted = true
+        permHandler.postDelayed(permCheckRunnable, PERM_CHECK_INTERVAL_MS)
+    }
 
     private fun startHeartbeat() {
         if (AppPrefs.heartbeatEnabled && AppPrefs.serviceEnabled) {

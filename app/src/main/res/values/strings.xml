@@ -144,10 +144,10 @@
     <string name="t125">全选</string>
     <string name="rule_prefix">前缀</string>
     <string name="rule_suffix">后缀</string>
-    <string name="rule_rand_prefix">随机前缀（固定）</string>
-    <string name="rule_rand_suffix">随机后缀（固定）</string>
-    <string name="rule_rand_prefix_once">随机前缀（不固定）</string>
-    <string name="rule_rand_suffix_once">随机后缀（不固定）</string>
+    <string name="rule_rand_prefix">随机前缀（并发）</string>
+    <string name="rule_rand_suffix">随机后缀（并发）</string>
+    <string name="rule_rand_prefix_once">随机前缀（互斥）</string>
+    <string name="rule_rand_suffix_once">随机后缀（互斥）</string>
     <string name="rule_replace">替换文本</string>
     <string name="notif_title">NekoType 运行中</string>
     <string name="notif_text">悬浮按钮常驻屏幕边缘，点击自动改写并发送</string>
@@ -619,7 +619,11 @@
     <string name="st_log_settings_desc">开关控制日志记录；点这行文字查看运行日志</string>
     <string name="st_admin_search_tip">部分机型需在系统设置搜索「激活」，在设备管理器一栏开启</string>
     <string name="st_autostart_title">开机自启需要 Shizuku</string>
-    <string name="st_autostart_msg">开机自启依赖 Shizuku 以 root 运行；未以 root 运行时，开机后无法自动拉起服务。\n\n可以暂不开启，等 Shizuku 以 root 运行后再打开。</string>
+    <string name="st_autostart_msg">开机自启依赖 Shizuku 以 root 运行；未以 root 运行时，开机后无法自动拉起服务。
+
+并且需要启用 Shizuku 的开机启动（root）模块。
+
+可以暂不开启，等 Shizuku 以 root 运行后再打开。</string>
     <string name="st_autostart_later">暂不开启</string>
     <string name="st_autostart_ok">已开启</string>
     <string name="mod_enter">进入</string>
@@ -630,4 +634,7 @@
     <string name="shake_level_light">轻摇</string>
     <string name="shake_level_standard">标准</string>
     <string name="shake_level_hard">用力</string>
+    <string name="t_perm_check">权限自动巡检</string>
+    <string name="t_perm_check_desc">每 5 分钟检查无障碍、设备管理员、电池白名单、悬浮窗、Shizuku；丢失时复用一键授权通道自动补回（需 Shizuku 在运行）</string>
+    <string name="t_perm_check_on">已开启：会立即巡检一次，之后每 5 分钟一次</string>
 </resources>

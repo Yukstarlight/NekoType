@@ -104,6 +104,15 @@ class ModeFragment : Fragment() {
                 )
             }
         }
+        binding.swPermCheck.setOnCheckedChangeListener { _, v ->
+            if (restoringSwitch) return@setOnCheckedChangeListener
+            AppPrefs.permAutoCheckEnabled = v
+            NekoLog.adjust(if (v) "开启权限自动巡检（每 5 分钟）" else "关闭权限自动巡检")
+            if (v) {
+                toast(getString(R.string.t_perm_check_on))
+                com.nekotype.app.overlay.FloatingButtonService.runPermCheckOnce()
+            }
+        }
         binding.swHeartbeat.setOnCheckedChangeListener { _, v ->
             if (restoringSwitch) return@setOnCheckedChangeListener
             if (v && !SysPower.keepAliveChannelReady()) {
@@ -208,6 +217,7 @@ class ModeFragment : Fragment() {
         binding.swHiddenMode.isChecked = AppPrefs.hiddenModeEnabled
         binding.swHeartbeat.isChecked = AppPrefs.heartbeatEnabled
         binding.swCrashRestart.isChecked = AppPrefs.crashRestartEnabled
+        binding.swPermCheck.isChecked = AppPrefs.permAutoCheckEnabled
         restoringSwitch = false
     }
 

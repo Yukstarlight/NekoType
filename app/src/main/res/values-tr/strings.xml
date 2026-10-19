@@ -263,10 +263,10 @@ E-posta: TR114512@qq.com</string>
     <string name="t123">Uygulama günlüğü</string>
     <string name="rule_prefix">Önek</string>
     <string name="rule_suffix">Son ek</string>
-    <string name="rule_rand_prefix">Rastgele önek (sabit)</string>
-    <string name="rule_rand_suffix">Rastgele son ek (sabit)</string>
-    <string name="rule_rand_prefix_once">Rastgele önek (sabit değil)</string>
-    <string name="rule_rand_suffix_once">Rastgele son ek (sabit değil)</string>
+    <string name="rule_rand_prefix">Rastgele önek (eşzamanlı)</string>
+    <string name="rule_rand_suffix">Rastgele sonek (eşzamanlı)</string>
+    <string name="rule_rand_prefix_once">Rastgele önek (dışlayıcı)</string>
+    <string name="rule_rand_suffix_once">Rastgele sonek (dışlayıcı)</string>
     <string name="rule_replace">Metni değiştir</string>
     <string name="notif_title">NekoType çalışıyor</string>
     <string name="notif_text">Yüzen düğme ekran kenarında kalıcıdır, dokununca metni değiştirip gönderir</string>
@@ -674,7 +674,14 @@ E-posta: TR114512@qq.com</string>
     <string name="shake_level_hard">Sert</string>
     <string name="mod_enter">Aç</string>
     <string name="st_autostart_title">Otomatik başlatma Shizuku gerektirir</string>
-    <string name="st_autostart_msg">Otomatik başlatma, Shizuku root olarak çalışırken kullanılabilir. Root yoksa açılıştan sonra hizmet otomatik başlatılamaz.\n\nŞimdilik açmadan bırakıp root çalışınca açabilirsiniz.</string>
+    <string name="st_autostart_msg">Otomatik başlatma, Shizuku root olarak çalışırken kullanılabilir. Root yoksa açılıştan sonra hizmet otomatik başlatılamaz.
+
+Ayrıca Shizuku otomatik başlatma (root) modülünü etkinleştirmeniz gerekir.
+
+Şimdilik açmadan bırakıp root çalışınca açabilirsiniz.</string>
     <string name="st_autostart_later">Şimdi değil</string>
     <string name="st_autostart_ok">Açık</string>
+    <string name="t_perm_check">İzin otomatik denetimi</string>
+    <string name="t_perm_check_desc">Her 5 dakikada erişilebilirlik, cihaz yöneticisi, pil izni, üstte görünme ve Shizuku kontrol edilir; kaybolursa tek dokunuşla yeniden verilir (Shizuku çalışıyor olmalı)</string>
+    <string name="t_perm_check_on">Açıldı: şimdi bir kez, sonra her 5 dakikada bir denetlenir</string>
 </resources>

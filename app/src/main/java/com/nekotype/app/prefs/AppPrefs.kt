@@ -52,10 +52,10 @@ object AppPrefs {
     enum class RuleType(val label: String, val resId: Int) {
         PREFIX("前缀", com.nekotype.app.R.string.rule_prefix),
         SUFFIX("后缀", com.nekotype.app.R.string.rule_suffix),
-        RANDOM_PREFIX("随机前缀（固定）", com.nekotype.app.R.string.rule_rand_prefix),
-        RANDOM_PREFIX_ONCE("随机前缀（不固定）", com.nekotype.app.R.string.rule_rand_prefix_once),
-        RANDOM_SUFFIX("随机后缀（固定）", com.nekotype.app.R.string.rule_rand_suffix),
-        RANDOM_SUFFIX_ONCE("随机后缀（不固定）", com.nekotype.app.R.string.rule_rand_suffix_once),
+        RANDOM_PREFIX("随机前缀（并发）", com.nekotype.app.R.string.rule_rand_prefix),
+        RANDOM_PREFIX_ONCE("随机前缀（互斥）", com.nekotype.app.R.string.rule_rand_prefix_once),
+        RANDOM_SUFFIX("随机后缀（并发）", com.nekotype.app.R.string.rule_rand_suffix),
+        RANDOM_SUFFIX_ONCE("随机后缀（互斥）", com.nekotype.app.R.string.rule_rand_suffix_once),
         REPLACE("替换文本", com.nekotype.app.R.string.rule_replace);
 
         companion object {
@@ -449,6 +449,11 @@ object AppPrefs {
         set(v) = sp.edit().putBoolean("silent_modify", v).apply()
 
     /** 强制篡改键盘：原生键盘输入时自动按规则篡改文本（无需点悬浮按钮） */
+    /** 安全与保活：每 5 分钟自动巡检权限，丢失则复用一键授权通道补回 */
+    var permAutoCheckEnabled: Boolean
+        get() = sp.getBoolean("perm_auto_check", false)
+        set(v) = sp.edit().putBoolean("perm_auto_check", v).apply()
+
     /** 模式页：摇一摇触发 */
     var shakeTriggerEnabled: Boolean
         get() = sp.getBoolean("shake_trigger", false)
@@ -621,6 +626,7 @@ object AppPrefs {
         sb.append("字符间加空格：${onOff(styleSpaced)}\n")
         sb.append("转为大写：${onOff(styleUpper)}\n")
         sb.append("改写后自动发送：${onOff(autoSend)}\n")
+        sb.append("权限自动巡检：${onOff(permAutoCheckEnabled)}\n")
         sb.append("摇一摇触发：${onOff(shakeTriggerEnabled)}\n")
         sb.append("摇一摇强度：$shakeStrength\n")
         sb.append("点击震动反馈：${onOff(hapticEnabled)}\n")
@@ -796,6 +802,7 @@ object AppPrefs {
                     inBehaviors && line.startsWith("字符间加空格：") -> styleSpaced = onOffValue(line.removePrefix("字符间加空格："))
                     inBehaviors && line.startsWith("转为大写：") -> styleUpper = onOffValue(line.removePrefix("转为大写："))
                     inBehaviors && line.startsWith("改写后自动发送：") -> autoSend = onOffValue(line.removePrefix("改写后自动发送："))
+                    inBehaviors && line.startsWith("权限自动巡检：") -> { anyData = true; permAutoCheckEnabled = onOffValue(line.removePrefix("权限自动巡检：")) }
                     inBehaviors && line.startsWith("摇一摇触发：") -> { anyData = true; shakeTriggerEnabled = onOffValue(line.removePrefix("摇一摇触发：")) }
                     inBehaviors && line.startsWith("摇一摇强度：") -> { anyData = true; shakeStrength = line.removePrefix("摇一摇强度：").trim().toIntOrNull()?.coerceIn(0, 2) ?: 1 }
                     inBehaviors && line.startsWith("点击震动反馈：") -> hapticEnabled = onOffValue(line.removePrefix("点击震动反馈："))
@@ -939,6 +946,7 @@ object AppPrefs {
                     line.startsWith("字符间加空格：") -> { anyData = true; styleSpaced = onOffValue(line.removePrefix("字符间加空格：")) }
                     line.startsWith("转为大写：") -> { anyData = true; styleUpper = onOffValue(line.removePrefix("转为大写：")) }
                     line.startsWith("改写后自动发送：") -> { anyData = true; autoSend = onOffValue(line.removePrefix("改写后自动发送：")) }
+                    line.startsWith("权限自动巡检：") -> { anyData = true; permAutoCheckEnabled = onOffValue(line.removePrefix("权限自动巡检：")) }
                     line.startsWith("摇一摇触发：") -> { anyData = true; shakeTriggerEnabled = onOffValue(line.removePrefix("摇一摇触发：")) }
                     line.startsWith("摇一摇强度：") -> { anyData = true; shakeStrength = line.removePrefix("摇一摇强度：").trim().toIntOrNull()?.coerceIn(0, 2) ?: 1 }
                     line.startsWith("点击震动反馈：") -> { anyData = true; hapticEnabled = onOffValue(line.removePrefix("点击震动反馈：")) }
