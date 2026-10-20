@@ -511,8 +511,11 @@ object SysPower {
 
     /** 通过 Root/Shizuku 直接写入电池优化白名单，无需弹窗（固定动作，无任意命令通道） */
     fun grantBatteryWhitelistPrivileged(): ExecResult {
-        val r = shizukuAction(NekoShellService.MSG_BATTERY_WHITELIST) ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
-        return ExecResult(true, r, lastChannelUsed)
+        val r = shizukuAction(NekoShellService.MSG_BATTERY_WHITELIST)
+            ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
+        // 成功标记用系统真实状态，不再写死 true（华为会忽略 AOSP 白名单，命令成功≠生效）
+        val ok = isIgnoringBatteryOptimizations()
+        return ExecResult(ok, r, if (ok) lastChannelUsed else "none")
     }
 
     /**
@@ -557,20 +560,26 @@ object SysPower {
 
     /** 通过 Shizuku 授予「显示在应用上层」权限（appops 直写，无需跳转设置页） */
     fun grantOverlayPrivileged(): ExecResult {
-        val r = shizukuAction(NekoShellService.MSG_GRANT_OVERLAY) ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
-        return ExecResult(true, r, lastChannelUsed)
+        val r = shizukuAction(NekoShellService.MSG_GRANT_OVERLAY)
+            ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
+        val ok = realOverlayOn()
+        return ExecResult(ok, r, if (ok) lastChannelUsed else "none")
     }
 
     /** 通过 Shizuku 开启无障碍服务（settings put secure，保留已有无障碍服务） */
     fun grantAccessibilityPrivileged(): ExecResult {
-        val r = shizukuAction(NekoShellService.MSG_GRANT_ACCESSIBILITY) ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
-        return ExecResult(true, r, lastChannelUsed)
+        val r = shizukuAction(NekoShellService.MSG_GRANT_ACCESSIBILITY)
+            ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
+        val ok = realAccessibilityOn()
+        return ExecResult(ok, r, if (ok) lastChannelUsed else "none")
     }
 
     /** 通过 Shizuku 激活设备管理员（dpm set-active-admin，shell 权限可直接执行） */
     fun grantDeviceAdminPrivileged(): ExecResult {
-        val r = shizukuAction(NekoShellService.MSG_GRANT_DEVICE_ADMIN) ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
-        return ExecResult(true, r, lastChannelUsed)
+        val r = shizukuAction(NekoShellService.MSG_GRANT_DEVICE_ADMIN)
+            ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
+        val ok = isDeviceAdminActive()
+        return ExecResult(ok, r, if (ok) lastChannelUsed else "none")
     }
 
     /** 本地真实状态：无障碍是否已启用本应用服务 */
