@@ -693,4 +693,10 @@
     <string name="t_perm_check_on">有効にしました：すぐに1回確認し、その後5分ごとに確認します</string>
     <string name="grant_battery_manual_hint">HUAWEI などのブランドでは、バッテリー最適化を手動でオフにする必要があります（Phone Manager → アプリ起動管理）</string>
     <string name="grant_battery_dialog_hint">システムの許可ダイアログが開きました。「許可」をタップしてください</string>
+    <string name="announce_285_title">お知らせ</string>
+    <string name="announce_285_body">近日、公式サイトを nekotype.cn に移転します。ご注目ください。
+
+[このお知らせは 2.8.5 の初回起動時のみ表示されます-オフラインのお知らせ-]</string>
+    <string name="announce_285_ok_countdown">了解（%1$d 秒）</string>
+    <string name="announce_285_ok">了解</string>
 </resources>

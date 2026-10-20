@@ -642,4 +642,10 @@
     <string name="t_perm_check_on">已開啟：會立即巡檢一次，之後每 5 分鐘一次</string>
     <string name="grant_battery_manual_hint">華為等品牌關閉省電優化需要手動開啟（手機管家 → 應用程式啟動管理）</string>
     <string name="grant_battery_dialog_hint">已彈出系統授權框，請點「允許」</string>
+    <string name="announce_285_title">公告</string>
+    <string name="announce_285_body">近日官網將轉移至nekotype.cn，請留意
+
+[該公告僅2.8.5首次彈出-離線公告-]</string>
+    <string name="announce_285_ok_countdown">知道了（%1$d 秒）</string>
+    <string name="announce_285_ok">知道了</string>
 </resources>
