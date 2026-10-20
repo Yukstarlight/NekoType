@@ -643,7 +643,7 @@ You can skip it for now and enable it once Shizuku runs as root.</string>
     <string name="grant_battery_manual_hint">On HUAWEI and similar brands, battery optimization must be disabled manually (Phone Manager > App launch)</string>
     <string name="grant_battery_dialog_hint">A system dialog was opened — tap Allow</string>
     <string name="announce_285_title">Announcement</string>
-    <string name="announce_285_body">The official website will move to nekotype.org soon. Please stay tuned.
+    <string name="announce_285_body">The official website will move to nekotype.top soon. Please stay tuned.
 
 [This notice appears only on the first launch of 2.8.5 — offline notice —]</string>
     <string name="announce_285_ok_countdown">Got it (%1$d)</string>
