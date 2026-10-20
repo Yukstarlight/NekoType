@@ -692,10 +692,7 @@
     <string name="t_perm_check_on">켜졌습니다: 지금 한 번 점검하고 이후 5분마다 점검합니다</string>
     <string name="grant_battery_manual_hint">HUAWEI 등 브랜드에서는 배터리 최적화를 수동으로 해제해야 합니다(휴대폰 관리자 → 앱 시작 관리)</string>
     <string name="grant_battery_dialog_hint">시스템 허용 창이 열렸습니다. 허용을 눌러 주세요</string>
-    <string name="announce_285_title">공지</string>
     <string name="announce_285_body">최근 공식 사이트가 nekotype.top 으로 이전됩니다. 참고해 주세요.
 
 [이 공지는 2.8.5 최초 실행 시 한 번만 표시됩니다-오프라인 공지-]</string>
-    <string name="announce_285_ok_countdown">확인(%1$d초)</string>
-    <string name="announce_285_ok">확인</string>
 </resources>

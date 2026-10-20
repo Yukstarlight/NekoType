@@ -142,7 +142,6 @@ class HomeActivity : AppCompatActivity() {
 
         // 免责声明：首次进入弹窗，同意后不再弹出；不同意直接退出
         showDisclaimerIfNeeded()
-        if (AppPrefs.disclaimerAccepted) showAnnouncement285IfNeeded()
     }
 
     /**
@@ -243,7 +242,6 @@ class HomeActivity : AppCompatActivity() {
             .setPositiveButton(getString(R.string.i50, 10)) { _, _ ->
                 AppPrefs.disclaimerAccepted = true
                 NekoLog.adjust("用户已同意免责声明")
-                showAnnouncement285IfNeeded()
             }
             .setNegativeButton(getString(R.string.i49)) { _, _ ->
                 NekoLog.warn("用户拒绝免责声明，退出应用")
@@ -262,34 +260,6 @@ class HomeActivity : AppCompatActivity() {
                 override fun onFinish() {
                     btn.isEnabled = true
                     btn.text = getString(R.string.i48)
-                }
-            }.start()
-        }
-        dialog.show()
-    }
-
-    /** 2.8.5 官网迁移公告：本版本首次进入弹一次，10 秒后才能点「知道了」（与免责声明同款倒计时） */
-    private fun showAnnouncement285IfNeeded() {
-        if (AppPrefs.announcement285Shown) return
-        val dialog = NekoDialog.builder(this)
-            .setTitle(getString(R.string.announce_285_title))
-            .setMessage(getString(R.string.announce_285_body))
-            .setPositiveButton(getString(R.string.announce_285_ok_countdown, 10)) { _, _ ->
-                AppPrefs.announcement285Shown = true
-                NekoLog.adjust("已阅读 2.8.5 官网迁移公告")
-            }
-            .setCancelable(false)
-            .create()
-        dialog.setOnShowListener {
-            val btn = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            btn.isEnabled = false
-            object : android.os.CountDownTimer(10_000L, 1_000L) {
-                override fun onTick(ms: Long) {
-                    btn.text = getString(R.string.announce_285_ok_countdown, (ms / 1000L).toInt())
-                }
-                override fun onFinish() {
-                    btn.isEnabled = true
-                    btn.text = getString(R.string.announce_285_ok)
                 }
             }.start()
         }

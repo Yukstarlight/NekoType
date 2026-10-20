@@ -1085,11 +1085,6 @@ object AppPrefs {
 
     /** 免责声明是否已同意（首次进入弹窗，同意后永久不再弹出）
      *  用 commit() 同步落盘：apply() 是异步写，进程被系统杀掉时可能丢失（EMUI 杀后台很凶）。 */
-    /** 2.8.5 官网迁移公告：只在本版本首次进入弹一次（离线公告） */
-    var announcement285Shown: Boolean
-        get() = sp.getBoolean("announce_285_shown", false)
-        set(v) = sp.edit().putBoolean("announce_285_shown", v).apply()
-
     var disclaimerAccepted: Boolean
         get() = sp.getBoolean("disclaimer_accepted", false)
         set(v) { sp.edit().putBoolean("disclaimer_accepted", v).commit() }

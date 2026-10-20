@@ -639,10 +639,7 @@
     <string name="t_perm_check_on">已开启：会立即巡检一次，之后每 5 分钟一次</string>
     <string name="grant_battery_manual_hint">HUAWEI 等品牌关闭省电优化需要手动开启（手机管家 → 应用启动管理）</string>
     <string name="grant_battery_dialog_hint">已弹出系统授权框，请点「允许」</string>
-    <string name="announce_285_title">公告</string>
     <string name="announce_285_body">近日官网将转移至nekotype.top，注意留意
 
 [该公告仅2.8.5首次弹出-离线公告-]</string>
-    <string name="announce_285_ok_countdown">知道了（%1$d 秒）</string>
-    <string name="announce_285_ok">知道了</string>
 </resources>

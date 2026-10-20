@@ -722,10 +722,7 @@ Du kannst es jetzt überspringen und später aktivieren.</string>
     <string name="t_perm_check_on">Aktiviert: jetzt eine Prüfung, danach alle 5 Minuten</string>
     <string name="grant_battery_manual_hint">Bei HUAWEI und ähnlichen Marken muss die Akku-Optimierung manuell deaktiviert werden (Telefonmanager > App-Start)</string>
     <string name="grant_battery_dialog_hint">Ein Systemdialog wurde geöffnet – bitte Zulassen antippen</string>
-    <string name="announce_285_title">Ankündigung</string>
     <string name="announce_285_body">Die offizielle Website zieht demnächst auf nekotype.top um. Bitte beachten.
 
 [Diese Ankündigung erscheint nur beim ersten Start von 2.8.5 – Offline-Hinweis –]</string>
-    <string name="announce_285_ok_countdown">Verstanden (%1$d s)</string>
-    <string name="announce_285_ok">Verstanden</string>
 </resources>

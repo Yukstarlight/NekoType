@@ -686,10 +686,7 @@ Ayrıca Shizuku otomatik başlatma (root) modülünü etkinleştirmeniz gerekir.
     <string name="t_perm_check_on">Açıldı: şimdi bir kez, sonra her 5 dakikada bir denetlenir</string>
     <string name="grant_battery_manual_hint">HUAWEI gibi markalarda pil optimizasyonu elle kapatılmalıdır (Telefon Yöneticisi > Uygulama başlatma)</string>
     <string name="grant_battery_dialog_hint">Sistem izin penceresi açıldı — İzin ver seçeneğine dokunun</string>
-    <string name="announce_285_title">Duyuru</string>
     <string name="announce_285_body">Resmi site yakında nekotype.top adresine taşınacak. Takip edin.
 
 [Bu duyuru yalnızca 2.8.5 ilk açılışta gösterilir — çevrimdışı duyuru —]</string>
-    <string name="announce_285_ok_countdown">Anladım (%1$d sn)</string>
-    <string name="announce_285_ok">Anladım</string>
 </resources>
