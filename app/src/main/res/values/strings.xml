@@ -360,7 +360,7 @@
 
     <!-- ===== 模式页 ===== -->
     <string name="mode_title">运行模式</string>
-    <string name="mode_subtitle">选择文本变换的触发方式，三种模式互斥</string>
+    <string name="mode_subtitle">选择文本变换的触发方式，各模式互斥，同一时间只生效一种</string>
     <string name="mode_fab">悬浮球模式</string>
     <string name="mode_fab_desc">点击悬浮按钮自动改写并发送，最直观可控</string>
     <string name="mode_force_keyboard">篡改键盘模式</string>
@@ -639,7 +639,4 @@
     <string name="t_perm_check_on">已开启：会立即巡检一次，之后每 5 分钟一次</string>
     <string name="grant_battery_manual_hint">HUAWEI 等品牌关闭省电优化需要手动开启（手机管家 → 应用启动管理）</string>
     <string name="grant_battery_dialog_hint">已弹出系统授权框，请点「允许」</string>
-    <string name="announce_285_body">近日官网将转移至nekotype.top，注意留意
-
-[该公告仅2.8.5首次弹出-离线公告-]</string>
 </resources>

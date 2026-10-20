@@ -361,7 +361,7 @@
 
     <!-- ===== 模式頁 ===== -->
     <string name="mode_title">運行模式</string>
-    <string name="mode_subtitle">選擇文字變換觸發方式，三種模式互斥</string>
+    <string name="mode_subtitle">選擇文字變換觸發方式，各模式互斥，同一時間只生效一種</string>
     <string name="mode_fab">懸浮球模式</string>
     <string name="mode_fab_desc">點擊懸浮球自動變換並發送，最直觀</string>
     <string name="mode_force_keyboard">篡改鍵盤模式</string>
@@ -642,7 +642,4 @@
     <string name="t_perm_check_on">已開啟：會立即巡檢一次，之後每 5 分鐘一次</string>
     <string name="grant_battery_manual_hint">華為等品牌關閉省電優化需要手動開啟（手機管家 → 應用程式啟動管理）</string>
     <string name="grant_battery_dialog_hint">已彈出系統授權框，請點「允許」</string>
-    <string name="announce_285_body">近日官網將轉移至nekotype.top，請留意
-
-[該公告僅2.8.5首次彈出-離線公告-]</string>
 </resources>
