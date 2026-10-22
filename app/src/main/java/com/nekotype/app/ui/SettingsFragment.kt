@@ -110,7 +110,6 @@ class SettingsFragment : Fragment() {
                 R.id.btnThemeStar to "star",
                 R.id.btnThemeNeko to "neko",
                 R.id.btnThemeCccp to "cccp",
-                R.id.btnThemeGray to "gray",
             )
             themeButtons.forEach { (id, mode) ->
                 view.findViewById<com.google.android.material.button.MaterialButton>(id)?.setOnClickListener {
@@ -450,7 +449,6 @@ class SettingsFragment : Fragment() {
             "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             "star" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             "cccp" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            "gray" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             "neko" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         }
@@ -464,10 +462,9 @@ class SettingsFragment : Fragment() {
             "star" -> R.id.btnThemeStar
             "neko" -> R.id.btnThemeNeko
             "cccp" -> R.id.btnThemeCccp
-            "gray" -> R.id.btnThemeGray
             else -> R.id.btnThemeSystem
         }
-        listOf(R.id.btnThemeSystem, R.id.btnThemeDark, R.id.btnThemeLight, R.id.btnThemeStar, R.id.btnThemeNeko, R.id.btnThemeCccp, R.id.btnThemeGray).forEach { id ->
+        listOf(R.id.btnThemeSystem, R.id.btnThemeDark, R.id.btnThemeLight, R.id.btnThemeStar, R.id.btnThemeNeko, R.id.btnThemeCccp).forEach { id ->
             view?.findViewById<com.google.android.material.button.MaterialButton>(id)?.isChecked = (id == selectedId)
         }
         binding.tvThemeHint.text = when (AppPrefs.themeMode) {
@@ -476,7 +473,6 @@ class SettingsFragment : Fragment() {
             "star" -> getString(R.string.theme_star_hint)
             "neko" -> getString(R.string.hc_theme_neko_toast)
             "cccp" -> getString(R.string.theme_cccp_hint)
-            "gray" -> getString(R.string.theme_gray_hint)
             else -> getString(R.string.u136)
         }
     }

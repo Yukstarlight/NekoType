@@ -114,15 +114,4 @@
     <color name="cccp_text">#F2E8D5</color>
     <color name="cccp_text_soft">#C9B99A</color>
     <!-- 灰色主题 -->
-    <color name="gray_primary">#B0B6BE</color>
-    <color name="gray_onPrimary">#121417</color>
-    <color name="gray_container">#2A2F36</color>
-    <color name="gray_onContainer">#E6E8EB</color>
-    <color name="gray_secondary">#8C939C</color>
-    <color name="gray_onSecondary">#0F1114</color>
-    <color name="gray_bg">#121417</color>
-    <color name="gray_surface">#1C1F24</color>
-    <color name="gray_fg0">#E6E8EB</color>
-    <color name="gray_fg1">#B4BAC2</color>
-    <color name="gray_border">#3A4048</color>
 </resources>

@@ -722,8 +722,6 @@ Du kannst es jetzt überspringen und später aktivieren.</string>
     <string name="t_perm_check_on">Aktiviert: jetzt eine Prüfung, danach alle 5 Minuten</string>
     <string name="grant_battery_manual_hint">Bei HUAWEI und ähnlichen Marken muss die Akku-Optimierung manuell deaktiviert werden (Telefonmanager > App-Start)</string>
     <string name="grant_battery_dialog_hint">Ein Systemdialog wurde geöffnet – bitte Zulassen antippen</string>
-    <string name="theme_gray">Grau</string>
-    <string name="theme_gray_hint">Graues Theme aktiv: neutrales Grau</string>
     <string name="hc_check_title">Diagnose</string>
     <string name="hc_check_again">Erneut prüfen</string>
     <string name="hc_check_a11y">Bedienungshilfen</string>

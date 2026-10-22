@@ -686,8 +686,6 @@ Ayrıca Shizuku otomatik başlatma (root) modülünü etkinleştirmeniz gerekir.
     <string name="t_perm_check_on">Açıldı: şimdi bir kez, sonra her 5 dakikada bir denetlenir</string>
     <string name="grant_battery_manual_hint">HUAWEI gibi markalarda pil optimizasyonu elle kapatılmalıdır (Telefon Yöneticisi > Uygulama başlatma)</string>
     <string name="grant_battery_dialog_hint">Sistem izin penceresi açıldı — İzin ver seçeneğine dokunun</string>
-    <string name="theme_gray">Gri</string>
-    <string name="theme_gray_hint">Gri tema etkin: nötr gri</string>
     <string name="hc_check_title">Tanılama</string>
     <string name="hc_check_again">Yeniden kontrol</string>
     <string name="hc_check_a11y">Erişilebilirlik</string>

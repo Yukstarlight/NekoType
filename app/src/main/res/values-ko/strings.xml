@@ -692,8 +692,6 @@
     <string name="t_perm_check_on">켜졌습니다: 지금 한 번 점검하고 이후 5분마다 점검합니다</string>
     <string name="grant_battery_manual_hint">HUAWEI 등 브랜드에서는 배터리 최적화를 수동으로 해제해야 합니다(휴대폰 관리자 → 앱 시작 관리)</string>
     <string name="grant_battery_dialog_hint">시스템 허용 창이 열렸습니다. 허용을 눌러 주세요</string>
-    <string name="theme_gray">회색</string>
-    <string name="theme_gray_hint">회색 테마가 활성화되었습니다: 중립 회색</string>
     <string name="hc_check_title">기능 점검</string>
     <string name="hc_check_again">다시 검사</string>
     <string name="hc_check_a11y">접근성 서비스</string>
