@@ -642,4 +642,6 @@ You can skip it for now and enable it once Shizuku runs as root.</string>
     <string name="t_perm_check_on">Enabled: one check now, then every 5 minutes</string>
     <string name="grant_battery_manual_hint">On HUAWEI and similar brands, battery optimization must be disabled manually (Phone Manager > App launch)</string>
     <string name="grant_battery_dialog_hint">A system dialog was opened — tap Allow</string>
+    <string name="theme_gray">Gray</string>
+    <string name="theme_gray_hint">Gray theme enabled: neutral, low saturation</string>
 </resources>

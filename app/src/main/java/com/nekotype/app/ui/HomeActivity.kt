@@ -18,6 +18,8 @@ import com.nekotype.app.databinding.ActivityHomeBinding
 import com.nekotype.app.overlay.FloatingButtonService
 import com.nekotype.app.prefs.AppPrefs
 import com.nekotype.app.sys.SysPower
+import android.view.MotionEvent
+import kotlin.math.abs
 import com.nekotype.app.util.BgUtils
 import com.nekotype.app.util.NekoLang
 import com.nekotype.app.util.NekoLog
@@ -268,6 +270,60 @@ class HomeActivity : AppCompatActivity() {
 
     /** 法律文档展示（隐私政策 / 第三方清单 / 开源许可） */
     private fun showLegalDoc(title: String, body: String) = NekoDialog.showDoc(this, title, body)
+
+    // ---- 导航栏左右滑动切页 ----
+    private var swipeDownX = 0f
+    private var swipeDownY = 0f
+    private var swipeArmed = false
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        when (ev.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                swipeDownX = ev.x
+                swipeDownY = ev.y
+                swipeArmed = false
+            }
+            MotionEvent.ACTION_MOVE -> {
+                if (!swipeArmed) {
+                    val dx = ev.x - swipeDownX
+                    val dy = ev.y - swipeDownY
+                    // 明确横向位移才武装，避免误抢列表的竖直滑动
+                    if (abs(dx) > 28f * resources.displayMetrics.density && abs(dx) > abs(dy) * 1.6f) {
+                        swipeArmed = true
+                    }
+                }
+            }
+            MotionEvent.ACTION_UP -> {
+                if (swipeArmed) {
+                    val dx = ev.x - swipeDownX
+                    if (abs(dx) > resources.displayMetrics.widthPixels * 0.22f) {
+                        swipeArmed = false
+                        switchTabBySwipe(if (dx < 0) 1 else -1)
+                        return true
+                    }
+                }
+                swipeArmed = false
+            }
+            MotionEvent.ACTION_CANCEL -> swipeArmed = false
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
+    /** 左右滑动切换底部 tab（终端项不是 tab，跳过） */
+    private fun switchTabBySwipe(dir: Int) {
+        try {
+            val menu = binding.bottomNav.menu
+            val curId = binding.bottomNav.selectedItemId
+            var cur = -1
+            for (i in 0 until menu.size()) if (menu.getItem(i).itemId == curId) cur = i
+            if (cur < 0) return
+            var target = cur + dir
+            while (target in 0 until menu.size() && menu.getItem(target).itemId == R.id.nav_terminal) target += dir
+            if (target !in 0 until menu.size()) return
+            binding.bottomNav.selectedItemId = menu.getItem(target).itemId
+        } catch (_: Throwable) {
+        }
+    }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)

@@ -693,4 +693,6 @@
     <string name="t_perm_check_on">有効にしました：すぐに1回確認し、その後5分ごとに確認します</string>
     <string name="grant_battery_manual_hint">HUAWEI などのブランドでは、バッテリー最適化を手動でオフにする必要があります（Phone Manager → アプリ起動管理）</string>
     <string name="grant_battery_dialog_hint">システムの許可ダイアログが開きました。「許可」をタップしてください</string>
+    <string name="theme_gray">グレー</string>
+    <string name="theme_gray_hint">グレーテーマを有効にしました：ニュートラルグレー</string>
 </resources>

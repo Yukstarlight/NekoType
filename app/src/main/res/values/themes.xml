@@ -104,4 +104,23 @@
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowAnimationStyle">@style/NekoWindowAnim</item>
     </style>
+    <!-- 灰色主题：中性灰，低饱和 -->
+    <style name="Theme.NekoType.Gray" parent="Theme.NekoType.Main">
+        <item name="colorPrimary">@color/gray_primary</item>
+        <item name="colorOnPrimary">@color/gray_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/gray_container</item>
+        <item name="colorOnPrimaryContainer">@color/gray_onContainer</item>
+        <item name="colorSecondary">@color/gray_secondary</item>
+        <item name="colorOnSecondary">@color/gray_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/gray_container</item>
+        <item name="colorOnSecondaryContainer">@color/gray_onContainer</item>
+        <item name="colorSurface">@color/gray_surface</item>
+        <item name="colorOnSurface">@color/gray_fg0</item>
+        <item name="colorOnSurfaceVariant">@color/gray_fg1</item>
+        <item name="colorOutlineVariant">@color/gray_border</item>
+        <item name="android:windowBackground">@color/gray_bg</item>
+        <item name="android:statusBarColor">@color/gray_bg</item>
+        <item name="android:navigationBarColor">@color/gray_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
 </resources>

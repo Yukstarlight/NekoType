@@ -201,10 +201,22 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="6dp"
+                        android:layout_marginEnd="6dp"
                         android:minHeight="44dp"
                         android:checkable="true"
                         android:textSize="@dimen/ts_14"
                         android:text="@string/theme_cccp"/>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnThemeGray"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:minHeight="44dp"
+                        android:checkable="true"
+                        android:textSize="@dimen/ts_14"
+                        android:text="@string/theme_gray"/>
                 </LinearLayout>
                 <TextView
                     android:id="@+id/tvThemeHint"
