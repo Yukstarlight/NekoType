@@ -1072,6 +1072,11 @@ object AppPrefs {
         set(v) = sp.edit().putLong("transform_count", v).apply()
 
     // ================= 服务状态 =================
+    /** 伪流畅滚动：缓出式 fling + 轻微吸附 */
+    var smoothScroll: Boolean
+        get() = sp.getBoolean("smooth_scroll", true)
+        set(v) { sp.edit().putBoolean("smooth_scroll", v).apply() }
+
     var serviceEnabled: Boolean
         get() = sp.getBoolean("service_enabled", false)
         set(v) {

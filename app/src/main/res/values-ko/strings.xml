@@ -694,4 +694,16 @@
     <string name="grant_battery_dialog_hint">시스템 허용 창이 열렸습니다. 허용을 눌러 주세요</string>
     <string name="theme_gray">회색</string>
     <string name="theme_gray_hint">회색 테마가 활성화되었습니다: 중립 회색</string>
+    <string name="hc_check_title">기능 점검</string>
+    <string name="hc_check_again">다시 검사</string>
+    <string name="hc_check_a11y">접근성 서비스</string>
+    <string name="hc_check_overlay">오버레이</string>
+    <string name="hc_check_notify">알림 권한</string>
+    <string name="hc_check_battery">배터리 최적화</string>
+    <string name="hc_check_shizuku">Shizuku</string>
+    <string name="hc_check_service">변환 서비스</string>
+    <string name="hc_check_ok">정상</string>
+    <string name="hc_check_go">켜기</string>
+    <string name="hc_check_result">결과: %1$d/%2$d 정상</string>
+    <string name="hc_check_service_tip">홈에서 서비스 시작을 누르세요</string>
 </resources>

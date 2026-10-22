@@ -688,4 +688,16 @@ Ayrıca Shizuku otomatik başlatma (root) modülünü etkinleştirmeniz gerekir.
     <string name="grant_battery_dialog_hint">Sistem izin penceresi açıldı — İzin ver seçeneğine dokunun</string>
     <string name="theme_gray">Gri</string>
     <string name="theme_gray_hint">Gri tema etkin: nötr gri</string>
+    <string name="hc_check_title">Tanılama</string>
+    <string name="hc_check_again">Yeniden kontrol</string>
+    <string name="hc_check_a11y">Erişilebilirlik</string>
+    <string name="hc_check_overlay">Üstte görünme</string>
+    <string name="hc_check_notify">Bildirim izni</string>
+    <string name="hc_check_battery">Pil optimizasyonu</string>
+    <string name="hc_check_shizuku">Shizuku</string>
+    <string name="hc_check_service">Dönüştürme hizmeti</string>
+    <string name="hc_check_ok">Tamam</string>
+    <string name="hc_check_go">Aç</string>
+    <string name="hc_check_result">Sonuç: %1$d/%2$d tamam</string>
+    <string name="hc_check_service_tip">Ana sayfada Hizmeti başlat seçeneğine dokunun</string>
 </resources>

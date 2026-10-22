@@ -641,4 +641,16 @@
     <string name="grant_battery_dialog_hint">已弹出系统授权框，请点「允许」</string>
     <string name="theme_gray">灰色</string>
     <string name="theme_gray_hint">已启用灰色主题：中性灰，低饱和</string>
+    <string name="hc_check_title">功能体检</string>
+    <string name="hc_check_again">重新检测</string>
+    <string name="hc_check_a11y">无障碍服务</string>
+    <string name="hc_check_overlay">悬浮窗</string>
+    <string name="hc_check_notify">通知权限</string>
+    <string name="hc_check_battery">电池优化</string>
+    <string name="hc_check_shizuku">Shizuku</string>
+    <string name="hc_check_service">改写服务</string>
+    <string name="hc_check_ok">正常</string>
+    <string name="hc_check_go">去开启</string>
+    <string name="hc_check_result">体检结果：%1$d/%2$d 项正常</string>
+    <string name="hc_check_service_tip">请在首页点「启动服务」</string>
 </resources>

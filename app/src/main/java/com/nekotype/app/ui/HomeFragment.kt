@@ -153,6 +153,7 @@ class HomeFragment : Fragment() {
 
         // 系统能力
         binding.btnGrantAll.setOnClickListener { grantAllPermissions() }
+        binding.btnHealthCheck.setOnClickListener { showHealthCheck() }
 
         // 自定义悬浮球图标
         binding.btnPickFabIcon.setOnClickListener {
@@ -382,6 +383,115 @@ class HomeFragment : Fragment() {
      * 通过 Shizuku 一键写入所有权限：无障碍 → 设备管理员 → 电池优化 → 悬浮窗。
      * 执行前检查 Shizuku 状态；每步独立记录成功/失败，失败时在日志区显示具体原因。
      */
+
+    // ---------------- 功能体检 ----------------
+
+    private data class HealthItem(val name: String, val ok: Boolean, val action: (() -> Unit)?)
+
+    private fun healthItems(): List<HealthItem> {
+        val ctx = requireContext()
+        val pkg = ctx.packageName
+        val a11yOn = try {
+            val en = android.provider.Settings.Secure.getInt(
+                ctx.contentResolver, "accessibility_enabled", 0
+            ) == 1
+            val list = android.provider.Settings.Secure.getString(
+                ctx.contentResolver, "enabled_accessibility_services"
+            ).orEmpty()
+            en && list.contains(pkg + "/com.google.android.accessibility.selecttospeak.SelectToSpeakService")
+        } catch (_: Throwable) { false }
+        val overlayOn = android.provider.Settings.canDrawOverlays(ctx)
+        val notifyOn = androidx.core.app.NotificationManagerCompat.from(ctx).areNotificationsEnabled()
+        val batteryOn = SysPower.isIgnoringBatteryOptimizations()
+        val shizukuOn = SysPower.isShizukuAvailable() && SysPower.isShizukuPermissionGranted()
+        val serviceOn = AppPrefs.serviceEnabled
+        return listOf(
+            HealthItem(getString(R.string.hc_check_a11y), a11yOn) {
+                try { startActivity(Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS)) } catch (_: Throwable) { }
+            },
+            HealthItem(getString(R.string.hc_check_overlay), overlayOn) {
+                try {
+                    startActivity(Intent(
+                        android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        android.net.Uri.parse("package:" + ctx.packageName)
+                    ))
+                } catch (_: Throwable) { }
+            },
+            HealthItem(getString(R.string.hc_check_notify), notifyOn) {
+                try {
+                    startActivity(Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                        .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, ctx.packageName))
+                } catch (_: Throwable) { }
+            },
+            HealthItem(getString(R.string.hc_check_battery), batteryOn) {
+                SysPower.requestBatteryOptimizationDialog()
+            },
+            HealthItem(getString(R.string.hc_check_shizuku), shizukuOn) {
+                if (SysPower.isShizukuAvailable()) SysPower.requestShizukuPermission(shizukuRequestCode)
+                else toast(getString(R.string.u184))
+            },
+            HealthItem(getString(R.string.hc_check_service), serviceOn) {
+                toast(getString(R.string.hc_check_service_tip))
+            }
+        )
+    }
+
+    private fun showHealthCheck() {
+        val ctx = requireContext()
+        val items = healthItems()
+        val box = android.widget.LinearLayout(ctx).apply { orientation = android.widget.LinearLayout.VERTICAL }
+        val pad = (16 * resources.displayMetrics.density).toInt()
+        box.setPadding(pad, pad, pad, 0)
+        for (it in items) {
+            val row = android.widget.LinearLayout(ctx).apply {
+                orientation = android.widget.LinearLayout.HORIZONTAL
+                gravity = android.view.Gravity.CENTER_VERTICAL
+                setPadding(0, pad / 2, 0, pad / 2)
+            }
+            row.addView(android.widget.TextView(ctx).apply {
+                text = (if (it.ok) "✓ " else "✗ ") + it.name
+                setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 14f)
+                setTextColor(
+                    if (it.ok) androidx.core.content.ContextCompat.getColor(ctx, R.color.md_theme_primary)
+                    else 0xFFFF6B6B.toInt()
+                )
+                layoutParams = android.widget.LinearLayout.LayoutParams(0, android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            })
+            if (!it.ok && it.action != null) {
+                row.addView(android.widget.TextView(ctx).apply {
+                    text = getString(R.string.hc_check_go)
+                    setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 13f)
+                    setTextColor(androidx.core.content.ContextCompat.getColor(ctx, R.color.md_theme_primary))
+                    setPadding(pad, pad / 3, pad / 3, pad / 3)
+                    val act = it.action
+                    setOnClickListener { act?.invoke() }
+                })
+            } else if (it.ok) {
+                row.addView(android.widget.TextView(ctx).apply {
+                    text = getString(R.string.hc_check_ok)
+                    setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12f)
+                    setTextColor(androidx.core.content.ContextCompat.getColor(ctx, R.color.fg_2))
+                    setPadding(pad, 0, 0, 0)
+                })
+            }
+            box.addView(row)
+        }
+        val passed = items.count { it.ok }
+        val summary = android.widget.TextView(ctx).apply {
+            text = getString(R.string.hc_check_result, passed, items.size)
+            setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12f)
+            setTextColor(androidx.core.content.ContextCompat.getColor(ctx, R.color.fg_2))
+            setPadding(0, pad / 2, 0, 0)
+        }
+        box.addView(summary)
+        NekoDialog.builder(ctx)
+            .setTitle(getString(R.string.hc_check_title))
+            .setView(NekoDialog.scroll(box))
+            .setPositiveButton(getString(R.string.hc_check_again)) { _, _ -> showHealthCheck() }
+            .setNegativeButton(getString(R.string.u72), null)
+            .show()
+    }
+
     private fun grantAllPermissions() {
         val ctx = context ?: return
         if (!SysPower.isShizukuAvailable()) {
