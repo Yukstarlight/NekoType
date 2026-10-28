@@ -24,7 +24,7 @@ import kotlin.concurrent.thread
  * 动作清单见 [FixedCommands.build]：
  * - MSG_BATTERY_WHITELIST / MSG_INJECT_SELECT_ALL / MSG_INJECT_TEXT / MSG_HIDE_SELF
  * - MSG_GRANT_OVERLAY / MSG_GRANT_ACCESSIBILITY / MSG_GRANT_DEVICE_ADMIN
- * - MSG_CLIPBOARD_SET / MSG_LOGCAT_DUMP / MSG_LOGCAT_CRASH
+ * - MSG_LOGCAT_DUMP / MSG_LOGCAT_CRASH
  */
 class NekoShellService : Service() {
 
@@ -37,7 +37,6 @@ class NekoShellService : Service() {
         const val MSG_GRANT_OVERLAY = 5
         const val MSG_GRANT_ACCESSIBILITY = 6
         const val MSG_GRANT_DEVICE_ADMIN = 7
-        const val MSG_CLIPBOARD_SET = 8
         // 开发者模式：抓取系统日志（logcat 主缓冲 / 崩溃缓冲；tag 为受限参数）
         const val MSG_LOGCAT_DUMP = 9
         const val MSG_LOGCAT_CRASH = 10

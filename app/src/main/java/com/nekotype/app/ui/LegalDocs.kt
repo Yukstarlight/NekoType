@@ -48,18 +48,14 @@ object LegalDocs {
             这些文本不会被记录、不会上传、不会离开本机。
             关闭无障碍服务后，本应用无法读取任何输入内容。
 
-            【三、剪贴板】
-            当目标应用拒绝直接写入文本时，本应用可能临时写入剪贴板以完成"粘贴"，
-            并在完成后恢复你原来的剪贴板内容。剪贴板内容不会被保存或上传。
-
-            【四、保存在本机的数据】
+            【三、保存在本机的数据】
             · 规则与预设、行为与样式设置
             · 悬浮按钮位置与外观、应用名单
             · 使用次数统计
             · 应用内日志（用于排查问题，可在设置中一键清空）
             以上全部保存在设备本地，卸载应用即全部删除。
 
-            【五、权限用途说明】
+            【四、权限用途说明】
             · 无障碍服务：读取并改写输入框文本、为悬浮按钮提供操作能力
             · 悬浮窗：显示悬浮按钮
             · 通知：显示常驻前台服务通知
@@ -70,10 +66,10 @@ object LegalDocs {
               （如关闭电池优化、隐藏桌面图标），只执行写死的固定命令，
               不提供任意命令通道
 
-            【六、未成年人】
+            【五、未成年人】
             未成年人请在监护人指导下使用本应用。
 
-            【七、变更与联系】
+            【六、变更与联系】
             本政策如有更新会在应用内展示。有任何疑问可通过项目主页反馈。
         """.trimIndent()
 
@@ -91,18 +87,14 @@ object LegalDocs {
             這些文字不會被記錄、不會上傳、不會離開本機。
             關閉無障礙服務後，本應用無法讀取任何輸入內容。
 
-            【三、剪貼簿】
-            當目標應用拒絕直接寫入文字時，本應用可能暫時寫入剪貼簿以完成「貼上」，
-            並在完成後還原你原本的剪貼簿內容。剪貼簿內容不會被儲存或上傳。
-
-            【四、保存在本機的資料】
+            【三、保存在本機的資料】
             · 規則與預設、行為與樣式設定
             · 懸浮按鈕位置與外觀、應用黑名單
             · 使用次數統計
             · 應用內日誌（用於排查問題，可在設定中一鍵清空）
             以上全部保存在裝置本機，解除安裝即全部刪除。
 
-            【五、權限用途說明】
+            【四、權限用途說明】
             · 無障礙服務：讀取並改寫輸入框文字、為懸浮按鈕提供操作能力
             · 懸浮窗：顯示懸浮按鈕
             · 通知：顯示常駐前景服務通知
@@ -113,10 +105,10 @@ object LegalDocs {
               （如關閉電池最佳化、隱藏桌面圖示），只執行寫死的固定指令，
               不提供任意指令通道
 
-            【六、未成年人】
+            【五、未成年人】
             未成年人請在監護人指導下使用本應用。
 
-            【七、變更與聯絡】
+            【六、變更與聯絡】
             本政策如有更新會在應用內顯示。有任何疑問可透過專案首頁回饋。
         """.trimIndent()
 
@@ -136,19 +128,14 @@ object LegalDocs {
             or sent off the device. With the accessibility service turned off, the app cannot read
             any input content.
 
-            [3. Clipboard]
-            If the target app refuses a direct write, the app may temporarily write to the
-            clipboard to perform a paste, then restore your previous clipboard content.
-            Clipboard content is never stored or uploaded.
-
-            [4. Data stored on your device]
+            [3. Data stored on your device]
             · Rules and presets, behaviour and style settings
             · Floating button position/appearance, app lists
             · Usage counters
             · In-app logs (for troubleshooting, clearable in Settings)
             All of it stays on the device and is deleted when you uninstall the app.
 
-            [5. Why each permission is used]
+            [4. Why each permission is used]
             · Accessibility service: read/rewrite input box text, drive the floating button
             · Display over other apps: show the floating button
             · Notifications: show the persistent foreground-service notification
@@ -159,10 +146,10 @@ object LegalDocs {
               explicitly trigger (e.g. battery whitelist, hiding the launcher icon) using fixed,
               hard-coded commands — never an arbitrary command channel
 
-            [6. Minors]
+            [5. Minors]
             Minors should use this app under guardian supervision.
 
-            [7. Changes and contact]
+            [6. Changes and contact]
             Updates to this policy will be shown in the app. Questions are welcome via the
             project page.
         """.trimIndent()

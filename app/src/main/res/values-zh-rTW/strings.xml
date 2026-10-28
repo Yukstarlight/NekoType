@@ -71,8 +71,6 @@
     <string name="t58">強制篡改時：輸入以標點（。！？,）結尾才篡改，打完一句才改（手動點送出不受限）</string>
     <string name="t59">隨機顏文字</string>
     <string name="t60">每則訊息自動追加隨機顏文字（含 NekoType 原創貓系顏文字；也可用「隨機顏文字」規則自訂池）</string>
-    <string name="st_wechat_exp">微信實驗性適配</string>
-    <string name="st_wechat_exp_desc">SET_TEXT 直寫 + 剪貼板貼上兜底，寫回更快；寫回異常時關閉此開關回退舊邏輯</string>
     <string name="t1001">刪除優化</string>
     <string name="t1002">刪除文字時暫不改寫，停手約 0.5 秒後恢復（避免後綴刪不掉／越刪越多）</string>
     <string name="t1003">語音輸入優化</string>

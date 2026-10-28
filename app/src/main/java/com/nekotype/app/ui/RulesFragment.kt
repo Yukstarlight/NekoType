@@ -119,10 +119,6 @@ class RulesFragment : Fragment() {
             AppPrefs.priorityGlobalEnabled = v
             NekoLog.adjust(if (v) "开启按等级全局执行规则" else "关闭按等级全局执行（改为类别内排序）")
         }
-        b.swWeChatExp.setOnCheckedChangeListener { _, v ->
-            AppPrefs.wechatExperimentalEnabled = v
-            NekoLog.adjust(if (v) "开启微信适配（实验）" else "关闭微信适配（实验），回退旧写回校验")
-        }
         b.btnAppPreset.setOnClickListener {
             startActivity(Intent(requireContext(), AppPresetActivity::class.java))
         }
@@ -439,7 +435,6 @@ class RulesFragment : Fragment() {
         b.swDeleteOptimize.isChecked = AppPrefs.deleteOptimizeEnabled
         b.swVoiceOptimize.isChecked = AppPrefs.voiceInputOptimizeEnabled
         b.swPriorityGlobal.isChecked = AppPrefs.priorityGlobalEnabled
-        b.swWeChatExp.isChecked = AppPrefs.wechatExperimentalEnabled
 
         val list = b.llRuleList
         list.removeAllViews()

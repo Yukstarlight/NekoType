@@ -52,8 +52,6 @@
     <string name="t59">랜덤 이모티콘</string>
     <string name="t100">앱 목록</string>
     <string name="t1000">모든 권한 한 번에 허용(Shizuku)</string>
-    <string name="st_wechat_exp">위챗 실험적 적용</string>
-    <string name="st_wechat_exp_desc">SET_TEXT 직접 쓰기 + 클립보드 붙여넣기 대체로 더 빠르게 씁니다. 문제 시 끄면 이전 로직으로 돌아갑니다</string>
     <string name="t1001">삭제 최적화</string>
     <string name="t1003">음성 입력 최적화</string>
     <string name="t1004">음성 입력 시 더 긴 멈춤(기본 1초) 뒤 변환합니다</string>

@@ -52,8 +52,6 @@
     <string name="t59">ランダム顔文字</string>
     <string name="t100">アプリリスト</string>
     <string name="t1000">全権限を一括許可（Shizuku）</string>
-    <string name="st_wechat_exp">WeChat実験的対応</string>
-    <string name="st_wechat_exp_desc">SET_TEXT直接書き込み＋クリップボード貼り付けフォールバックで高速化。問題がある場合はオフにすると旧ロジックに戻ります</string>
     <string name="t1001">削除の最適化</string>
     <string name="t1003">音声入力の最適化</string>
     <string name="t1004">音声入力時は長めの間（既定 1 秒）で書き換えます</string>

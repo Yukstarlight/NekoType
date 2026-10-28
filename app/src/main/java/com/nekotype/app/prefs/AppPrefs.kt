@@ -1249,11 +1249,6 @@ object AppPrefs {
         }
     }
 
-    /** 微信实验性适配：事件文本兜底 + 窗口根直查 + SET_TEXT 直写/剪贴板兜底（NyaNote 同款），默认关；开启后生效 */
-    var wechatExperimentalEnabled: Boolean
-        get() = sp.getBoolean("wechat_experimental", false)
-        set(v) = sp.edit().putBoolean("wechat_experimental", v).apply()
-
     /** Shizuku 隐藏：隐藏模式用 Shizuku pm hide（图标即时消失）；关闭则用普通方式（alias） */
     var shizukuHideEnabled: Boolean
         get() = sp.getBoolean("shizuku_hide", false)

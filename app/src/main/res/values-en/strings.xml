@@ -71,8 +71,6 @@
     <string name="t58">Only tampers when input ends with punctuation (。！？,); manual send is not limited</string>
     <string name="t59">Random Kaomoji</string>
     <string name="t60">Automatically append a random kaomoji to every message (includes NekoType original cat kaomoji)</string>
-    <string name="st_wechat_exp">Experimental WeChat adaptation</string>
-    <string name="st_wechat_exp_desc">Direct SET_TEXT with clipboard-paste fallback for faster write-back; turn off to restore the old verification logic</string>
     <string name="t1001">Delete Optimization</string>
     <string name="t1002">Skip rewriting while you are deleting text; resume about 0.5s after you stop (avoids the suffix coming back)</string>
     <string name="t1003">Voice Input Optimization</string>

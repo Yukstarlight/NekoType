@@ -70,8 +70,6 @@
     <string name="t58">强制篡改时：输入以标点（。！？,）结尾才篡改，打完一句才改（手动点发送不受限）</string>
     <string name="t59">随机颜文字</string>
     <string name="t60">每条消息自动追加随机颜文字（含 NekoType 原创猫系颜文字；也可用「随机颜文字」规则自定义池）</string>
-    <string name="st_wechat_exp">微信实验性适配</string>
-    <string name="st_wechat_exp_desc">SET_TEXT 直写 + 剪贴板粘贴兜底，写回更快；写回异常时关闭此开关回退旧逻辑</string>
     <string name="t1001">删除优化</string>
     <string name="t1002">删除文字时暂不改写，停手约 0.5 秒后恢复（避免后缀删不掉／越删越多）</string>
     <string name="t1003">语音输入优化</string>

@@ -481,7 +481,6 @@ class FloatingMenuPanel(private val service: FloatingButtonService) {
         host.addView(toggleRow(str(R.string.t1001), AppPrefs.deleteOptimizeEnabled) { AppPrefs.deleteOptimizeEnabled = it })
         host.addView(toggleRow(str(R.string.t1003), AppPrefs.voiceInputOptimizeEnabled) { AppPrefs.voiceInputOptimizeEnabled = it })
         host.addView(toggleRow(str(R.string.i43), AppPrefs.priorityGlobalEnabled) { AppPrefs.priorityGlobalEnabled = it })
-        host.addView(toggleRow(str(R.string.st_wechat_exp), AppPrefs.wechatExperimentalEnabled) { AppPrefs.wechatExperimentalEnabled = it })
     }
 
     // ---------- 行组件 ----------

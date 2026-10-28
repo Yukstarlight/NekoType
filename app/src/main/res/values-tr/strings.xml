@@ -52,8 +52,6 @@
     <string name="t59">Rastgele emoji/kaomoji</string>
     <string name="t100">Uygulama listeleri</string>
     <string name="t1000">Tüm izinleri tek dokunuşla ver (Shizuku)</string>
-    <string name="st_wechat_exp">Deneysel WeChat uyarlaması</string>
-    <string name="st_wechat_exp_desc">Daha hızlı yazma için doğrudan SET_TEXT + pano yapıştırma yedeği; sorun olursa eski mantık için kapatın</string>
     <string name="t1001">Silme iyileştirmesi</string>
     <string name="t1003">Sesli giriş iyileştirmesi</string>
     <string name="t1004">Sesli girişte daha uzun duraklama bekler (varsayılan 1 sn)</string>

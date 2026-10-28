@@ -906,7 +906,7 @@ object SysPower {
         }
         val out = shizukuAction(NekoShellService.MSG_INJECT_KEYS, Bundle().apply {
             putString("text", text)
-            putString("apk", injectorApkPathIfEnabled())
+            putString("apk", injectorApkPath())
         })
             ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
         return ExecResult(true, out, lastChannelUsed)
@@ -922,32 +922,16 @@ object SysPower {
         shizukuAction(NekoShellService.MSG_INJECT_MOVE_END)
         val out = shizukuAction(NekoShellService.MSG_INJECT_KEYS, Bundle().apply {
             putString("text", text)
-            putString("apk", injectorApkPathIfEnabled())
+            putString("apk", injectorApkPath())
         })
             ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
         return ExecResult(true, out, lastChannelUsed)
     }
 
-    /**
-     * app_process 注入器的 CLASSPATH：仅在「微信适配（实验）」开启时提供。
-     * 开关关闭时返回空串 → FixedCommands 不生成注入器命令 → 完全回退旧行为。
-     */
-    private fun injectorApkPathIfEnabled(): String = try {
-        if (!AppPrefs.wechatExperimentalEnabled) ""
-        else NekoTypeApp.instance.applicationInfo.sourceDir ?: ""
+    /** app_process 注入器的 CLASSPATH（注入器代码在本 APK 内，始终提供）。 */
+    private fun injectorApkPath(): String = try {
+        NekoTypeApp.instance.applicationInfo.sourceDir ?: ""
     } catch (_: Throwable) { "" }
-
-    /**
-     * 通过 Shizuku 写入系统剪贴板（支持中文/Unicode）。
-     * 注：v2.7.9 起中文注入已改用按键注入（[shizukuInjectText]），剪贴板路径仅在
-     * 需要由无障碍端显式 ACTION_PASTE 的少数场景使用。
-     */
-    fun shizukuSetClipboard(text: String): ExecResult {
-        if (text.isEmpty()) return ExecResult(false, "empty", "none")
-        val out = shizukuAction(NekoShellService.MSG_CLIPBOARD_SET, Bundle().apply { putString("text", text) })
-            ?: return ExecResult(false, NekoTypeApp.instance.getString(R.string.u173), "none")
-        return ExecResult(true, out, lastChannelUsed)
-    }
 
     // ---------- 开发者模式 ----------
 

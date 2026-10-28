@@ -74,8 +74,6 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
         /** 微信发送键文本（部分版本发送键是带文字的 TextView） */
         private val WECHAT_SEND_TEXTS = listOf("发送", "Send")
 
-        /** 粘贴菜单文字（长按粘贴兜底用） */
-        private val PASTE_TEXTS = listOf("粘贴", "粘貼", "Paste")
     }
 
         /**
@@ -255,9 +253,6 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
     /** 微信事件节流（NyaNote 同款 300ms）：合并微信刷屏式事件，避免每次都扫窗口树 */
     private var lastWeChatProbeTime = 0L
 
-    /** 最近一次微信事件携带的文本（事件里的 EditText 内容，节点读空时的原文来源） */
-    @Volatile private var lastWeChatEventText = ""
-
     /**
      * 微信事件统一入口（NyaNote 同款架构）：
      * **完全不依赖 event.source**（本机型上微信事件 source 常为 null，依赖它 = 静默全灭），
@@ -310,8 +305,6 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
         val now = System.currentTimeMillis()
         if (now - lastWeChatProbeTime < 300L) return
         lastWeChatProbeTime = now
-        // 首选：事件自带节点（微信屏蔽控件树时这是唯一能拿到输入框的途径）
-        lastWeChatEventText = try { event.text?.joinToString("").orEmpty() } catch (_: Throwable) { "" }
         val srcNode = try { event.source } catch (_: Throwable) { null }
         // NyaNote 同款：在事件回调内【同步】从活动窗口根找输入框——回调上下文的窗口树访问
         // 最可靠（协程延迟后再取会拿到 systemui 空壳根）；事件节点只读不出内容时以树节点为准
@@ -519,46 +512,17 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             val result = TextTransformEngine.transform(current)
             val transformed = result.text
 
-            // 写回文本：五级兜底（微信等自研输入框会拒绝大部分无障碍写文本动作）
-            // ① ACTION_SET_TEXT + 光标置尾
-            // ② 剪贴板粘贴（聚焦 + 全选 + ACTION_PASTE）——微信首选
-            // ③ Shizuku 静默注入
-            // ④ 再试一次剪贴板粘贴
-            // ⑤ 长按输入框 → 点击弹菜单里的「粘贴」
+            // 写回文本：① ACTION_SET_TEXT + 光标置尾 ② Shizuku 按键注入（不占用剪贴板）
             var writeOk = setTextAndCursor(node, transformed)
             android.util.Log.e("NekoA11y", "写①SET_TEXT ok=$writeOk")
             delay(150)
             if (!writeOk || !verifyWritten(node, transformed)) {
-                // 第 2 级：Shizuku 按键注入（不占用剪贴板，优先）
                 if (SysPower.privilegedChannelReady()) {
                     val s2 = injectShizukuKeys(node, transformed)
                     android.util.Log.e("NekoA11y", "写②Shizuku注入 ok=$s2")
                     if (s2) {
                         delay(200)
                         writeOk = verifyWritten(node, transformed)
-                    }
-                }
-                // 第 3 级：剪贴板粘贴 —— 仅在特权通道不可用时才用（避免占用/覆盖用户剪贴板 + 系统"已复制"提示）
-                if (!writeOk && !SysPower.privilegedChannelReady()) {
-                    val p3 = pasteViaClipboard(node, transformed)
-                    android.util.Log.e("NekoA11y", "写③剪贴板粘贴 pasted=$p3 verify=${verifyWritten(node, transformed)}")
-                    if (p3) {
-                        delay(200)
-                        writeOk = verifyWritten(node, transformed)
-                    }
-                    // 第 4 级：剪贴板粘贴重试
-                    if (!writeOk) {
-                        val p4 = pasteViaClipboard(node, transformed)
-                        android.util.Log.e("NekoA11y", "写④剪贴板重试 pasted=$p4 verify=${verifyWritten(node, transformed)}")
-                        delay(250)
-                        writeOk = verifyWritten(node, transformed)
-                    }
-                    // 第 5 级：长按粘贴菜单兜底
-                    if (!writeOk) {
-                        android.util.Log.e("NekoA11y", "写⑤长按粘贴兜底")
-                        longPressPaste(node, transformed)
-                        delay(400)
-                        writeOk = true
                     }
                 }
             }
@@ -778,65 +742,6 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
         }
     }
 
-    /**
-     * 剪贴板粘贴兜底：复制文本到剪贴板 → 全选输入框 → 执行粘贴。
-     * 用于微信等不支持 ACTION_SET_TEXT 的自定义输入框，兼容性最强。
-     * 仅在 SET_TEXT 失败时走这里（正常路径不碰剪贴板）。
-     */
-    private fun pasteViaClipboard(node: AccessibilityNodeInfo, text: String): Boolean {
-        return try {
-            val clipboard = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
-            val oldClip = clipboard.primaryClip
-            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("nekotype", text))
-            // 先聚焦输入框
-            node.performAction(AccessibilityNodeInfo.ACTION_FOCUS)
-            // 全选：关键！微信读不到 node.text（长度 0），必须用 10000 兜底，
-            // 否则 SET_SELECTION(0,0) 等于没选中 → 粘贴变成"插入"而不是"替换"
-            val len = node.text?.length?.takeIf { it > 0 } ?: 10000
-            val sel = Bundle().apply {
-                putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT, 0)
-                putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_END_INT, len)
-            }
-            node.performAction(AccessibilityNodeInfo.ACTION_SET_SELECTION, sel)
-            // 执行粘贴
-            val pasted = node.performAction(AccessibilityNodeInfo.ACTION_PASTE)
-            // 还原剪贴板：Android 10+ 后台应用读不到剪贴板内容（primaryClip == null），
-            // 这种情况下**绝不能 clear** —— 否则会把用户自己的剪贴板内容抹掉。读得到才还原。
-            try {
-                if (oldClip != null) clipboard.setPrimaryClip(oldClip)
-            } catch (_: Throwable) { }
-            pasted
-        } catch (_: Throwable) {
-            false
-        }
-    }
-
-    /**
-     * 剪贴板区间替换：选中 [selStart, selEnd) → PASTE 覆盖为 pasteText。
-     * 只触碰选中区间——@提及等富文本 span 只要不在区间内就分毫不动（保住 [@小白 ] 结构）。
-     * selStart == selEnd 时为纯插入。
-     */
-    private fun pasteReplaceRange(
-        node: AccessibilityNodeInfo, selStart: Int, selEnd: Int, pasteText: String
-    ): Boolean {
-        return try {
-            val clipboard = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
-            val oldClip = clipboard.primaryClip
-            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("nekotype", pasteText))
-            node.performAction(AccessibilityNodeInfo.ACTION_FOCUS)
-            val sel = Bundle().apply {
-                putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT, selStart)
-                putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_END_INT, selEnd)
-            }
-            node.performAction(AccessibilityNodeInfo.ACTION_SET_SELECTION, sel)
-            val ok = node.performAction(AccessibilityNodeInfo.ACTION_PASTE)
-            try { if (oldClip != null) clipboard.setPrimaryClip(oldClip) } catch (_: Throwable) { }
-            ok
-        } catch (_: Throwable) {
-            false
-        }
-    }
-
     /** 写回校验：读得到文本就比对；读不到（微信）视为成功，交由后续发送验证 */
     private fun verifyWritten(node: AccessibilityNodeInfo, expected: String): Boolean {
         return try {
@@ -846,48 +751,6 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
         } catch (_: Throwable) {
             false
         }
-    }
-
-    /**
-     * 第五级兜底：手势长按输入框 → 在所有窗口（含系统弹窗）里找「粘贴」并点击。
-     * 用于微信等既拒绝 SET_TEXT 又拒绝 ACTION_PASTE 的版本。
-     */
-    private suspend fun longPressPaste(node: AccessibilityNodeInfo, text: String) {
-        try {
-            val clipboard = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
-            val oldClip = clipboard.primaryClip
-            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("nekotype", text))
-            val bounds = Rect().also { node.getBoundsInScreen(it) }
-            if (bounds.isEmpty) return
-            val path = Path().apply { moveTo(bounds.centerX().toFloat(), bounds.centerY().toFloat()) }
-            val stroke = GestureDescription.StrokeDescription(path, 0, 700)
-            dispatchGesture(GestureDescription.Builder().addStroke(stroke).build(), null, null)
-            delay(480)
-            val target = findNodeByTextInAllWindows(PASTE_TEXTS)
-            if (target != null) {
-                if (!target.performAction(AccessibilityNodeInfo.ACTION_CLICK)) tapNode(target)
-                NekoLog.info("长按粘贴菜单兜底已执行")
-            } else {
-                NekoLog.warn("长按粘贴兜底：所有窗口中均未找到「粘贴」菜单项")
-            }
-            try {
-                if (oldClip != null) clipboard.setPrimaryClip(oldClip)
-            } catch (_: Throwable) { }
-        } catch (_: Throwable) { }
-    }
-
-    /** 在所有窗口（含系统弹窗/浮层）里按文本查找节点 */
-    private fun findNodeByTextInAllWindows(texts: List<String>): AccessibilityNodeInfo? {
-        try {
-            getBestRoot()?.let { r -> findNodeByText(r, texts)?.let { return it } }
-        } catch (_: Throwable) { }
-        try {
-            for (w in windows) {
-                val r = w.root ?: continue
-                findNodeByText(r, texts)?.let { return it }
-            }
-        } catch (_: Throwable) { }
-        return null
     }
 
     /** 在节点树里按文本/描述精确匹配查找（用于粘贴菜单等系统弹窗） */
@@ -1052,39 +915,8 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             android.util.Log.e("NekoA11y", "自动篡改读取: pkg=$pkg len=${trim.length} text=${trim.take(20)}")
             if (trim.isEmpty()) {
                 // 微信等自定义输入框读不到文本 → 盲操作：只追加后缀类规则产物
-                // @提及保护期内同样不改（读不到文本时沿用最近一次判定，避免打断选人弹窗）
-                // NyaNote 同款兜底（实验）：节点读空 ≠ 没内容——
-                // ① 事件文本兜底：微信事件自带 EditText 当前内容，直接当原文
-                // ② 窗口根重找输入框再读（NyaNote 实测可读全文并 SET_TEXT 写回成功）
-                // ③ 全部落空才盲注入
-                if (isWeChat && AppPrefs.wechatExperimentalEnabled) {
-                    if (lastWeChatEventText.isNotEmpty()) {
-                        trim = lastWeChatEventText.trim()
-                        android.util.Log.e("NekoA11y", "节点读空，改用事件文本: len=${trim.length} text=${trim.take(20)}")
-                    }
-                    if (trim.isEmpty()) {
-                        val root = getBestRoot(WECHAT_PKG)
-                        if (root == null) {
-                            android.util.Log.e("NekoA11y", "重找框: 窗口根不可用 |${windowsSummary()}")
-                        } else {
-                            val alt = findWeChatEditById(root) ?: findEditableNode()
-                            if (alt == null) {
-                                android.util.Log.e("NekoA11y", "重找框: 找框失败 root=${pkgOf(root)} cc=${root.childCount}")
-                            } else {
-                                val t2 = alt.text?.toString()?.trim().orEmpty()
-                                android.util.Log.e("NekoA11y", "重找框读取: len=${t2.length} text=${t2.take(20)}")
-                                if (t2.isNotEmpty()) {
-                                    trim = t2
-                                    node = alt
-                                }
-                            }
-                        }
-                    }
-                }
-                if (trim.isEmpty()) {
-                    blindAppendSuffix(node, fromSendFallback)
-                    return
-                }
+                blindAppendSuffix(node, fromSendFallback)
+                return
             }
             // 标点触发模式：文本以标点结尾才篡改（打完一句才改）；
             // 发送兜底不受此限制（用户点发送必然处理）
@@ -1222,92 +1054,44 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
     // ---------- 静默修改（Shizuku 注入） ----------
 
     /**
-     * 六级兜底写回（篡改键盘模式专用）：逐级尝试、每级都校验，成功率远高于单一通道。
+     * 多级兜底写回（篡改键盘模式专用）：逐级尝试、每级都校验。
      *
-     * ① 无障碍 ACTION_SET_TEXT + 光标置尾（最快，绝大多数应用够用）
-     * ② Shizuku 直注 `input text`（全选 + 注入；ASCII；**newProcess 通道优先**，无绑定等待）
-     * ③ Shizuku 写系统剪贴板 + 全选 + 无障碍 PASTE（中文/Unicode；同样 newProcess 优先）
-     * ④ 应用内剪贴板粘贴（聚焦 + 全选 + PASTE）
-     * ⑤ 应用内剪贴板粘贴重试（应对焦点抖动 / 时序问题）
-     * ⑥ 长按输入框 → 点击弹菜单「粘贴」（微信等同时拒绝以上所有通道时）
+     * ① 无障碍 ACTION_SET_TEXT + 光标置尾 + 读回校验
+     * ② Shizuku 按键注入 + 读回校验
+     * ③ Shizuku 按键注入重试
      *
-     * 说明：本路径的 Shizuku 注入**不需要用户开启任何开关**（只要 Shizuku 可用且已授权），
-     * 目的是把"改不进去"的概率压到最低；Shizuku 不可用时自动跳过 ②③，不影响 ①④⑤⑥。
+     * 注：剪贴板通道已移除（会覆盖/污染用户剪贴板）。
      */
     private suspend fun writeBackSixLevel(node: AccessibilityNodeInfo, text: String): Boolean {
         val t0 = android.os.SystemClock.elapsedRealtime()
         fun stamp(stage: String) = android.util.Log.i("NekoWrite",
             "$stage +" + (android.os.SystemClock.elapsedRealtime() - t0) + "ms text=" + text.take(12))
-        val isWeChat = pkgOf(node) == WECHAT_PKG
-        // 微信实验适配（NyaNote 同款语义）：
-        // ① SET_TEXT 返回 true 即成功，不做读回校验（微信自研输入框 refresh/读回经常失败，
-        //    旧逻辑会把它误判成失败而掉进 Shizuku 注入（newProcess 起 sh 进程 ≈2s）——
-        //    这就是"改个字等两秒"的元凶）；
-        // ①.5 SET_TEXT 被拒时立即走剪贴板粘贴（免起进程，比 Shizuku 快）；
-        // ②⑥ Shizuku 注入仍在剪贴板之后兜底。开关关闭时全部回退旧校验逻辑。
-        val wechatExp = isWeChat && AppPrefs.wechatExperimentalEnabled
         var ok = setTextAndCursor(node, text)
         if (ok) {
-            if (wechatExp) {
-                stamp("写回①SET_TEXT 成功（微信信任返回值，不校验）")
-                return true
-            }
             delay(150)
             if (verifyWritten(node, text)) {
                 stamp("写回①SET_TEXT 成功")
                 return true
             }
         }
-        if (wechatExp && pasteViaClipboard(node, text)) {
-            stamp("写回①.5 剪贴板粘贴 成功（实验）")
-            return true
-        }
         if (SysPower.privilegedChannelReady()) {
             if (injectShizukuKeys(node, text)) {
                 delay(200)
-                if (wechatExp || verifyWritten(node, text)) {
+                if (verifyWritten(node, text)) {
                     stamp("写回②Shizuku 按键注入 成功")
                     return true
                 }
             }
-        }
-        // 剪贴板路径：仅在特权通道不可用时使用。
-        // 有 Shizuku 时按键注入已能完成，不必再占用/覆盖用户剪贴板（Android 10+ 还读不到旧内容，
-        // 会连"还原"都做不到 → 用户剪贴板被消息内容顶掉 + 系统弹"已复制"）。
-        if (!SysPower.privilegedChannelReady()) {
-            if (pasteViaClipboard(node, text)) {
-                delay(200)
-                if (verifyWritten(node, text)) {
-                    stamp("写回③剪贴板粘贴 成功")
-                    return true
-                }
-            }
-            if (pasteViaClipboard(node, text)) {
-                delay(250)
-                if (verifyWritten(node, text)) {
-                    stamp("写回④剪贴板重试 成功")
-                    return true
-                }
-            }
-            stamp("写回⑤长按粘贴兜底")
-            longPressPaste(node, text)
-            delay(400)
-            if (verifyWritten(node, text)) {
-                stamp("写回⑤长按粘贴 成功")
-                return true
-            }
-        }
-        if (SysPower.privilegedChannelReady()) {
             delay(300)
             if (injectShizukuKeys(node, text)) {
                 delay(200)
-                if (wechatExp || verifyWritten(node, text)) {
-                    stamp("写回⑥Shizuku 注入重试 成功")
+                if (verifyWritten(node, text)) {
+                    stamp("写回③Shizuku 注入重试 成功")
                     return true
                 }
             }
         }
-        stamp("写回六级全部失败，交给发送前校验")
+        stamp("写回全部失败，交给发送前校验")
         return true
     }
 

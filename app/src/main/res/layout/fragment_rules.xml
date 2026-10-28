@@ -512,31 +512,6 @@
 
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant"/>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingTop="6dp"
-                    android:paddingBottom="6dp">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/st_wechat_exp"
-                        android:textSize="@dimen/ts_15"
-                        android:textColor="?attr/colorOnSurface"/>
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/swWeChatExp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
-                </LinearLayout>
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/st_wechat_exp_desc"
-                    android:textSize="@dimen/ts_11"
-                    android:textColor="?attr/colorOnSurfaceVariant"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

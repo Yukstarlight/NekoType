@@ -52,8 +52,6 @@
     <string name="t59">Zufällige Emoticons</string>
     <string name="t100">App-Listen</string>
     <string name="t1000">Alle Berechtigungen mit einem Tipp (Shizuku)</string>
-    <string name="st_wechat_exp">Experimentelle WeChat-Adaption</string>
-    <string name="st_wechat_exp_desc">Direktes SET_TEXT mit Zwischenablage-Einfügen als Fallback für schnelleres Zurückschreiben; zum Zurücksetzen der alten Logik deaktivieren</string>
     <string name="t1001">Lösch-Optimierung</string>
     <string name="t1003">Spracheingabe-Optimierung</string>
     <string name="t1004">Bei Spracheingabe längere Pause (Standard 1 s) abwarten</string>
