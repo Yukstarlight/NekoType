@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 基础深空渐变 -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#05060D"
+                android:centerColor="#0A0E1E"
+                android:endColor="#11162D"
+                android:angle="135"/>
+        </shape>
+    </item>
+    <!-- 紫色极光光斑（左上） -->
+    <item>
+        <shape android:shape="oval">
+            <gradient
+                android:startColor="#336D4FFF"
+                android:centerColor="#1A6D4FFF"
+                android:endColor="#006D4FFF"
+                android:gradientRadius="280dp"
+                android:type="radial"/>
+            <size android:width="400dp" android:height="400dp"/>
+        </shape>
+    </item>
+    <!-- 蓝色极光光斑（右上） -->
+    <item android:left="180dp" android:top="80dp">
+        <shape android:shape="oval">
+            <gradient
+                android:startColor="#2A4A7DFF"
+                android:centerColor="#154A7DFF"
+                android:endColor="#004A7DFF"
+                android:gradientRadius="260dp"
+                android:type="radial"/>
+            <size android:width="380dp" android:height="380dp"/>
+        </shape>
+    </item>
+    <!-- 粉色极光光斑（底部） -->
+    <item android:top="380dp" android:left="60dp">
+        <shape android:shape="oval">
+            <gradient
+                android:startColor="#22FF7FBE"
+                android:centerColor="#11FF7FBE"
+                android:endColor="#00FF7FBE"
+                android:gradientRadius="240dp"
+                android:type="radial"/>
+            <size android:width="360dp" android:height="360dp"/>
+        </shape>
+    </item>
+    <!-- 金色微光（右下角点缀） -->
+    <item android:top="500dp" android:left="220dp">
+        <shape android:shape="oval">
+            <gradient
+                android:startColor="#18F5B042"
+                android:centerColor="#0CF5B042"
+                android:endColor="#00F5B042"
+                android:gradientRadius="180dp"
+                android:type="radial"/>
+            <size android:width="280dp" android:height="280dp"/>
+        </shape>
+    </item>
+</layer-list>

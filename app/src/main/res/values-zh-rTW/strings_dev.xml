@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 開發者模式文案（繁體中文） -->
+<resources>
+    <string name="dev_title">開發者模式</string>
+    <string name="dev_refresh_info">重新整理資訊</string>
+    <string name="dev_copy_diag">複製診斷資訊（資訊 + 最近日誌）</string>
+    <string name="dev_copy_config">複製目前設定（可傳給別人匯入）</string>
+
+    <string name="dev_log_hint">有 Shizuku 抓全系統日誌，沒有 Shizuku 時自動退回本應用程式行程日誌。</string>
+    <string name="dev_log_filter">過濾 tag（可留空，如 NekoA11y）</string>
+    <string name="dev_grab_sys">抓系統日誌</string>
+    <string name="dev_grab_crash">抓崩潰日誌</string>
+    <string name="dev_app_log">檢視應用內日誌</string>
+    <string name="dev_clear_log">清空應用內日誌</string>
+
+    <string name="dev_bl_title">應用程式黑名單 · 模糊搜尋</string>
+    <string name="dev_bl_hint">支援多關鍵字（以空格分隔）、名稱/套件名子字串與子序列模糊比對，並依相關度排序；點擊結果即可加入或移出黑名單。</string>
+    <string name="dev_bl_query">搜尋應用程式（名稱 / 套件名 / 簡寫）</string>
+    <string name="dev_bl_search">搜尋並管理黑名單</string>
+    <string name="dev_bl_only">只看已加入黑名單</string>
+    <string name="dev_bl_summary">共 %1$d 個可見應用程式，已加入黑名單 %2$d 個</string>
+    <string name="dev_bl_matched">符合 %1$d 個應用程式（點下方按鈕開啟清單管理）</string>
+    <string name="dev_bl_result_title">搜尋結果（%1$d）</string>
+    <string name="dev_bl_only_title">已加入黑名單（%1$d）</string>
+    <string name="dev_bl_added">已加入黑名單：%1$s</string>
+    <string name="dev_bl_removed">已移出黑名單：%1$s</string>
+    <string name="dev_bl_empty">黑名單裡還沒有應用程式</string>
+    <string name="dev_bl_nomatch">沒有符合的應用程式</string>
+
+    <string name="dev_maint_title">維護與重設</string>
+    <string name="dev_reload_fab">重新載入懸浮球（立即重建按鈕）</string>
+    <string name="dev_trace">檢視 Shizuku 通道追蹤</string>
+    <string name="dev_trace_title">Shizuku 通道追蹤</string>
+    <string name="dev_rebind">重設並重新綁定 Shizuku 通道</string>
+    <string name="dev_rebind_title">重新綁定 Shizuku</string>
+    <string name="dev_reset_disclaimer">重設免責聲明（下次啟動重新彈出）</string>
+    <string name="dev_clear_rules">清空目前預設的所有規則</string>
+    <string name="dev_restart">重新啟動應用程式</string>
+
+    <string name="dev_toast_log_cleared">應用內日誌已清空</string>
+    <string name="dev_toast_reloaded">已要求重新載入懸浮球</string>
+    <string name="dev_toast_disclaimer_reset">已重設：下次啟動會重新顯示免責聲明彈窗</string>
+    <string name="dev_restarting">正在重新啟動…</string>
+    <string name="dev_restart_failed">重新啟動失敗: %1$s</string>
+    <string name="dev_confirm_title">清空目前預設規則</string>
+    <string name="dev_confirm_msg">將刪除「%1$s」裡的全部 %2$d 條規則，且無法復原。\n\n確定繼續？</string>
+    <string name="dev_confirm_ok">清空</string>
+    <string name="dev_cleared">已清空 %1$d 條規則</string>
+    <string name="dev_no_rules">目前預設沒有規則</string>
+    <string name="dev_copy_done">%1$s 已複製（%2$d 字元）</string>
+    <string name="dev_share">分享</string>
+    <string name="dev_copy">複製</string>
+    <string name="dev_grab_failed">抓取失敗: %1$s</string>
+    <string name="dev_source_shizuku">Shizuku（全系統）</string>
+    <string name="dev_source_local">本行程退回（無 Shizuku）</string>
+    <string name="dev_source_label">來源: %1$s</string>
+    <string name="dev_filter_label">過濾: %1$s</string>
+    <string name="dev_filter_none">無</string>
+    <string name="dev_logcat_title">系統日誌（logcat）</string>
+    <string name="dev_crash_title">崩潰日誌（crash buffer）</string>
+    <string name="dev_applog_title">應用內日誌（%1$d 條）</string>
+    <string name="dev_applog_empty">（尚無應用內日誌）</string>
+    <string name="dev_diag_what">診斷資訊</string>
+    <string name="dev_config_what">目前設定</string>
+    <string name="dev_recent_logs">---------- 最近日誌 ----------</string>
+    <string name="dev_clipboard_title">剪貼簿</string>
+    <string name="dev_tools_title">偵錯工具</string>
+    <string name="dev_tree">無障礙節點樹快照（目前視窗）</string>
+    <string name="dev_tree_title">節點樹快照</string>
+    <string name="dev_perf">規則效能基準（200 次轉換計時）</string>
+    <string name="dev_perf_title">規則效能基準</string>
+    <string name="dev_reset_factory">恢復原廠設定（清空全部資料）</string>
+    <string name="dev_factory_title">恢復原廠設定</string>
+    <string name="dev_factory_msg">將清空全部本機資料：規則與預設、行為與樣式、密碼鎖定、應用程式黑名單、使用統計、應用內日誌。\n\n目前設定會先複製到剪貼簿作為備份。此操作無法復原。\n\n確定繼續？</string>
+    <string name="dev_factory_confirm_title">最後確認</string>
+    <string name="dev_factory_confirm_msg">真的要清空全部資料嗎？\n\n清空後應用程式會立即重新啟動，所有設定回復預設。</string>
+    <string name="dev_factory_ok">清空全部資料</string>
+    <string name="dev_factory_done">已恢復原廠設定，正在重新啟動…</string></resources>

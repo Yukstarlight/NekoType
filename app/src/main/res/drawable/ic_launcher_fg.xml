@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 自适应图标前景：CTW 图标居中缩进，避免被圆形蒙版裁掉边缘 -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:inset="14dp">
+    <bitmap
+        android:src="@drawable/ctw_icon"
+        android:gravity="center"/>
+</inset>

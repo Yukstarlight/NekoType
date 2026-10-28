@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 背景（星空模式）：深蓝紫夜空渐变 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:startColor="@color/star_bg0"
+        android:endColor="@color/star_bg1"
+        android:angle="270"/>
+</shape>

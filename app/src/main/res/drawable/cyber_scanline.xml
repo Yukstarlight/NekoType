@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 赛博朋克扫描线：从上到下移动的霓虹亮线 -->
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android"
+    android:oneshot="false">
+    <item android:duration="50">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="0"
+                android:startColor="#0000FFFF"
+                android:centerColor="#4000FFFF"
+                android:endColor="#0000FFFF"/>
+        </shape>
+    </item>
+    <item android:duration="50">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="0"
+                android:startColor="#00FF00FF"
+                android:centerColor="#40FF00FF"
+                android:endColor="#00FF00FF"/>
+        </shape>
+    </item>
+</animation-list>

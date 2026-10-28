@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 终端快捷命令按钮样式 -->
+    <style name="TerminalQuickCmd">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">32dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">#C0D0F0</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:background">@drawable/bg_quick_cmd</item>
+        <item name="android:foreground">?attr/selectableItemBackground</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:layout_marginEnd">6dp</item>
+    </style>
+</resources>

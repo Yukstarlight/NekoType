@@ -1,0 +1,20 @@
+# 绛惧悕鍑嵁 (鍒囧嬁鎻愪氦)
+*.keystore
+keystore.properties
+
+# 鏋勫缓浜х墿
+build/
+app/build/
+.gradle/
+local.properties
+dist/
+.tools/
+
+# IDE
+.idea/
+*.iml
+captures/
+
+# 构建日志（勿提交）
+build_*.txt
+build_*.log

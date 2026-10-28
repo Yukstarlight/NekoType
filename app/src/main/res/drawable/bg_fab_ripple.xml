@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 悬浮按钮：圆形渐变底 + 点击水波纹 -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="#40FFFFFF">
+    <item>
+        <shape android:shape="oval">
+            <gradient
+                android:startColor="#7AA8FF"
+                android:endColor="#C8A2FF"
+                android:angle="45"/>
+            <stroke android:width="1.5dp" android:color="#33FFFFFF"/>
+        </shape>
+    </item>
+</ripple>

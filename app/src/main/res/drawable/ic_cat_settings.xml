@@ -1,0 +1,29 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- 左耳 -->
+    <path android:fillColor="#81C784" android:pathData="M5,9 L6.5,3.5 L10,8 Z"/>
+    <path android:fillColor="#A5D6A7" android:pathData="M6.5,7.5 L7.2,5 L8.8,7 Z"/>
+    <!-- 右耳 -->
+    <path android:fillColor="#81C784" android:pathData="M19,9 L17.5,3.5 L14,8 Z"/>
+    <path android:fillColor="#A5D6A7" android:pathData="M17.5,7.5 L16.8,5 L15.2,7 Z"/>
+    <!-- 脸 -->
+    <path android:fillColor="#81C784" android:pathData="M5,13.5 A7,7 0 1,0 19,13.5 A7,7 0 1,0 5,13.5"/>
+    <!-- 眼镜框 -->
+    <path android:strokeColor="#2E7D32" android:strokeWidth="1" android:fillColor="@android:color/transparent"
+        android:pathData="M7.7,12.5 A1.8,1.8 0 1,0 11.3,12.5 A1.8,1.8 0 1,0 7.7,12.5"/>
+    <path android:strokeColor="#2E7D32" android:strokeWidth="1" android:fillColor="@android:color/transparent"
+        android:pathData="M12.7,12.5 A1.8,1.8 0 1,0 16.3,12.5 A1.8,1.8 0 1,0 12.7,12.5"/>
+    <!-- 眼镜鼻梁 -->
+    <path android:strokeColor="#2E7D32" android:strokeWidth="1" android:fillColor="@android:color/transparent"
+        android:pathData="M11.3,12.5 L12.7,12.5"/>
+    <!-- 眼睛（眼镜后面的小点） -->
+    <path android:fillColor="#2E7D32" android:pathData="M8.8,12.5 A0.7,0.7 0 1,0 10.2,12.5 A0.7,0.7 0 1,0 8.8,12.5"/>
+    <path android:fillColor="#2E7D32" android:pathData="M13.8,12.5 A0.7,0.7 0 1,0 15.2,12.5 A0.7,0.7 0 1,0 13.8,12.5"/>
+    <!-- 鼻子 -->
+    <path android:fillColor="#388E3C" android:pathData="M11.3,14.5 L12.7,14.5 L12,15.3 Z"/>
+    <!-- 小o嘴 -->
+    <path android:fillColor="#2E7D32" android:pathData="M11.4,16.3 A0.6,0.6 0 1,0 12.6,16.3 A0.6,0.6 0 1,0 11.4,16.3"/>
+</vector>

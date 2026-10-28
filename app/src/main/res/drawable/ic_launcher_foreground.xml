@@ -1,0 +1,13 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- Centered cat face silhouette for adaptive icon foreground -->
+    <group android:translateX="30" android:translateY="30">
+        <path android:fillColor="#FFFFFF" android:pathData="M24,6 C14,6 8,13.4 8,21 V30 C8,37.7 15.2,44 24,44 C32.8,44 40,37.7 40,30 V21 C40,13.4 34,6 24,6 Z"/>
+        <path android:fillColor="#7C5CFF" android:pathData="M18,22 m-2.4,0 a2.4,2.8 0 1,0 4.8,0 a2.4,2.8 0 1,0 -4.8,0"/>
+        <path android:fillColor="#7C5CFF" android:pathData="M30,22 m-2.4,0 a2.4,2.8 0 1,0 4.8,0 a2.4,2.8 0 1,0 -4.8,0"/>
+        <path android:fillColor="#7C5CFF" android:pathData="M24,29 C22.4,29 21,30.4 21,32 C21,33.6 22.4,35 24,35 C25.6,35 27,33.6 27,32 C27,30.4 25.6,29 24,29 Z"/>
+        <path android:fillColor="#FFFFFF" android:pathData="M17,10 L12,4 L15.6,14 Z"/>
+        <path android:fillColor="#FFFFFF" android:pathData="M31,10 L36,4 L32.4,14 Z"/>
+    </group>
+</vector>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 浅色主题（Day 模式） -->
+<resources>
+    <color name="bg_0">#F5F5F7</color>
+    <color name="bg_1">#FFFFFF</color>
+    <color name="bg_2">#F0F0F4</color>
+    <color name="hero_card_bg">#66FFFFFF</color>
+
+    <color name="fg_0">#1A1A1A</color>
+    <color name="fg_1">#5C5C66</color>
+    <color name="fg_2">#9A9AA3</color>
+
+    <color name="accent_blue">#4A7DFF</color>
+    <color name="accent_purple">#9B6CFF</color>
+    <color name="accent_pink">#FF7FBE</color>
+    <color name="glow_green">#2E9E5B</color>
+
+    <color name="glass">#FFFFFF</color>
+    <color name="glass_strong">#F7F7FA</color>
+    <!-- 浅色主题描边：近白，消除卡片上的"灰色方框"观感 -->
+    <color name="border_glass">#F2F2F5</color>
+
+    <color name="brand">@color/accent_blue</color>
+    <color name="brand_dark">#FFFFFF</color>
+    <color name="brand_light">@color/bg_2</color>
+    <color name="accent">@color/accent_purple</color>
+    <color name="accent_dark">@color/fg_0</color>
+    <color name="accent_light">@color/bg_2</color>
+    <color name="hero_start">@color/accent_blue</color>
+    <color name="hero_end">@color/accent_purple</color>
+    <color name="hero_text">@color/fg_0</color>
+    <color name="hero_text_soft">@color/fg_1</color>
+    <color name="surface_bg">@color/bg_0</color>
+    <color name="surface_card">@color/bg_1</color>
+    <color name="surface_card_glass">@color/bg_1</color>
+    <color name="text_primary">@color/fg_0</color>
+    <color name="text_secondary">@color/fg_1</color>
+    <color name="divider">@color/border_glass</color>
+    <color name="bg_grad_start">@color/bg_0</color>
+    <color name="bg_grad_end">@color/bg_1</color>
+    <color name="fab_start">@color/accent_blue</color>
+    <color name="fab_end">@color/accent_purple</color>
+    <color name="ok_green">@color/glow_green</color>
+    <color name="ok_green_light">#DCF3E5</color>
+    <color name="warn_amber">#B26A00</color>
+    <color name="log_error">#D93025</color>
+    <color name="log_nav">#00A8C8</color>
+    <color name="log_adjust">#9B6CFF</color>
+    <color name="log_rule">#FF9800</color>
+
+    <color name="bubble_in">#E8F0FF</color>
+    <color name="bubble_out">#F0E9FF</color>
+
+    <color name="md_theme_primary">@color/accent_blue</color>
+    <color name="md_theme_onPrimary">#FFFFFF</color>
+    <color name="md_theme_surface">@color/bg_1</color>
+    <color name="md_theme_onSurface">@color/fg_0</color>
+    <color name="md_theme_onSurfaceVariant">@color/fg_1</color>
+    <color name="fab_bg">@color/accent_blue</color>
+    <color name="ic_bg">#E8E8EE</color>
+
+    <!-- 星空模式（深色夜空版：深蓝紫夜空 + 紫金星光，抄自 Yukstarlight-blog 配色） -->
+    <color name="star_primary">#C8A2FF</color>
+    <color name="star_onPrimary">#0A0E1E</color>
+    <color name="star_container">#1E2440</color>
+    <color name="star_onContainer">#E8ECFF</color>
+    <color name="star_secondary">#F5B042</color>
+    <color name="star_onSecondary">#05060D</color>
+    <color name="star_bg0">#0A0E1E</color>
+    <color name="star_bg1">#11162D</color>
+    <color name="star_bg2">#05060D</color>
+    <color name="star_fg0">#E8ECFF</color>
+    <color name="star_fg1">#A8B2D1</color>
+    <color name="star_fg2">#6C7795</color>
+    <color name="star_border">#28C8A2FF</color>
+    <color name="star_hero_start">#0A0E1E</color>
+    <color name="star_hero_end">#1E2440</color>
+    <color name="star_hero_text">#E8ECFF</color>
+    <color name="star_hero_text_soft">#A8B2D1</color>
+    <color name="star_glass">#11162D</color>
+    <color name="star_glass_strong">#1E2440</color>
+
+    <!-- 赛博朋克霓虹色 -->
+    <color name="cyber_cyan">#00FFFF</color>
+    <color name="cyber_magenta">#FF00FF</color>
+    <color name="cyber_yellow">#FFFF00</color>
+    <color name="cyber_blue">#0088FF</color>
+    <color name="cyber_purple">#8800FF</color>
+    <color name="cyber_dark">#0A0A12</color>
+    <color name="cyber_dark_glass">#1A1A2E</color>
+
+    <!-- ===== 猫娘主题配色 ===== -->
+    <color name="neko_primary">#E888C0</color>
+    <color name="neko_primary_dark">#D060A0</color>
+    <color name="neko_primary_light">#FFB0D8</color>
+    <color name="neko_secondary">#FFC8E0</color>
+    <color name="neko_accent">#FF80B0</color>
+    <color name="neko_bg_light">#FFF5FA</color>
+    <color name="neko_bg_dark">#2A1525</color>
+    <color name="neko_surface_light">#FFF0F8</color>
+    <color name="neko_surface_dark">#352035</color>
+    <color name="neko_text_light">#6A3050</color>
+    <color name="neko_text_dark">#F0D0E8</color>
+    <color name="neko_text_soft_light">#9A6080</color>
+    <color name="neko_text_soft_dark">#C090B0</color>
+    <color name="neko_border">#F0C0E0</color>
+    <color name="neko_onPrimary">#FFFFFF</color>
+    <!-- 前苏联主题（CCCP）：红旗红 + 鎏金 + 深褐底 -->
+    <color name="cccp_red">#C8102E</color>
+    <color name="cccp_red_dark">#8E0B20</color>
+    <color name="cccp_gold">#E8C36A</color>
+    <color name="cccp_bg">#1A1512</color>
+    <color name="cccp_surface">#241E19</color>
+    <color name="cccp_text">#F2E8D5</color>
+    <color name="cccp_text_soft">#C9B99A</color>
+    <!-- 灰色主题 -->
+</resources>

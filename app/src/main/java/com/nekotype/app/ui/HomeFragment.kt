@@ -1,0 +1,701 @@
+package com.nekotype.app.ui
+
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.os.Bundle
+import android.provider.Settings
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import com.nekotype.app.R
+import com.nekotype.app.accessibility.NekoTypeAccessibilityBridge
+import com.nekotype.app.accessibility.NekoTypeAccessibilityService
+import com.nekotype.app.databinding.FragmentHomeBinding
+import com.nekotype.app.overlay.FloatingButtonService
+import com.nekotype.app.prefs.AppPrefs
+import com.nekotype.app.sys.SysPower
+import com.nekotype.app.util.BgUtils
+import com.nekotype.app.util.NekoLang
+import com.nekotype.app.util.NekoLog
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import rikka.shizuku.Shizuku
+import java.io.File
+
+/**
+ * 首页（启动页）：服务状态总览 + 权限引导五步 + 系统能力。
+ * 从 MainActivity 权限页逻辑迁移而来，保留全部功能。
+ */
+class HomeFragment : Fragment() {
+
+    private var _binding: FragmentHomeBinding? = null
+    private var titleRolled = false
+    private val binding get() = _binding!!
+
+    private val shizukuRequestCode = 1001
+
+    /** 启用软件时申请的权限：发送消息 + 读取已安装应用列表 */
+    private val servicePermCode = 300
+    private var servicePermAsked = false
+
+    private val shizukuListener = Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
+        if (requestCode == shizukuRequestCode) {
+            if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                toast(getString(R.string.u60))
+                // 权限授权成功后，自动触发 UserService 绑定探测
+                probeShizukuChannel()
+                // 并立刻继续跑一键授权（否则用户还要再点一次）
+                try { grantAllPermissions() } catch (_: Throwable) { }
+            } else {
+                toast(getString(R.string.u61))
+                binding.tvPrivLog.text = "Shizuku API 权限被拒绝，UserService 绑定可能失败。\n请在 Shizuku 应用 → 应用管理 → 开启 NekoType 后重试。"
+            }
+            refreshStatus()
+        }
+    }
+
+    private var overlayPending = false
+    private val overlayLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        overlayPending = false
+        refreshStatus()
+    }
+
+    /** 自定义悬浮球图标选择器 */
+    private val fabIconPicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            try {
+                val out = File(requireContext().filesDir, "custom_fab_icon.png")
+                requireContext().contentResolver.openInputStream(uri)?.use { input ->
+                    out.outputStream().use { input.copyTo(it) }
+                }
+                AppPrefs.customFabIconPath = out.absolutePath
+                updateFabIconPreview()
+                restartFabIfRunning()
+                toast(getString(R.string.hc_fab_icon_updated))
+            } catch (_: Throwable) {
+                toast(getString(R.string.hc_image_save_fail))
+            }
+        }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        // inflate 兜底：布局加载失败返回空视图，绝不闪退
+        _binding = try {
+            FragmentHomeBinding.inflate(inflater, container, false)
+        } catch (e: Throwable) {
+            NekoLog.error("首页布局加载失败：${e.javaClass.simpleName}")
+            return android.widget.FrameLayout(inflater.context).apply {
+                addView(android.widget.TextView(context).apply {
+                    text = getString(R.string.hc_load_fail_home)
+                    gravity = android.view.Gravity.CENTER
+                })
+            }
+        }
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        BgUtils.apply(binding.root)
+
+        try { Shizuku.addRequestPermissionResultListener(shizukuListener) } catch (_: Throwable) { }
+
+        binding.btnToggleService.setOnClickListener { toggleService() }
+
+        // 开发者模式入口（DEV 徽标，开发者模式开启后显示在 NekoType 标题旁）
+        binding.btnDev.setOnClickListener {
+            NekoLog.nav("首页 DEV 入口：进入开发者模式")
+            startActivity(Intent(requireContext(), DevActivity::class.java))
+        }
+
+        // 语言切换（全局 UI 语言：简体中文 / 繁體中文 / English）
+        binding.btnLanguage.setOnClickListener { showLanguageDialog() }
+
+        // 权限引导
+        binding.btnStep1.setOnClickListener {
+            NekoLog.info("前往开启无障碍服务")
+            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+        }
+        binding.btnStep2.setOnClickListener {
+            NekoLog.info("请求激活设备管理员")
+            activity?.let { SysPower.requestDeviceAdmin(it) }
+        }
+        binding.btnStep3.setOnClickListener {
+            NekoLog.info("请求关闭省电优化")
+            SysPower.requestBatteryOptimizationDialog()
+        }
+        binding.btnStep4.setOnClickListener {
+            NekoLog.nav("打开悬浮窗授权页")
+            openOverlaySettings()
+        }
+        binding.btnStep5Shizuku.setOnClickListener { handleShizuku() }
+        // 自启动保活：vivo/iQOO(OriginOS)、小米、OPPO、华为等国内 ROM 必开，否则后台被冻结
+        binding.btnStep6.setOnClickListener {
+            NekoLog.adjust("前往开启自启动权限")
+            SysPower.openAutoStartSettings(requireContext())
+        }
+
+        // 系统能力
+        binding.btnGrantAll.setOnClickListener { grantAllPermissions() }
+        binding.btnHealthCheck.setOnClickListener { showHealthCheck() }
+
+        // 自定义悬浮球图标
+        binding.btnPickFabIcon.setOnClickListener {
+            try { fabIconPicker.launch("image/*") } catch (_: Throwable) { toast(getString(R.string.hc_no_image_picker)) }
+        }
+        binding.btnResetFabIcon.setOnClickListener {
+            AppPrefs.customFabIconPath = ""
+            updateFabIconPreview()
+            restartFabIfRunning()
+            toast(getString(R.string.hc_icon_restored))
+        }
+        updateFabIconPreview()
+
+        requestNotificationPermission()
+        if (!servicePermAsked) {
+            servicePermAsked = true
+            ensureServicePermissions()
+        }
+        refreshStatus()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        BgUtils.apply(binding.root)
+        NekoLang.apply(binding.root)
+        if (!titleRolled) {
+            titleRolled = true
+            if (kotlin.random.Random.nextInt(50) == 0) binding.tvAppTitle.text = "TeokNyep"
+        }
+        refreshStatus()
+        // 悬浮窗授权返回后自动启动服务
+        if (AppPrefs.serviceEnabled && context?.let { Settings.canDrawOverlays(it) } == true) {
+            context?.let { FloatingButtonService.start(it) }
+            if (overlayPending) {
+                overlayPending = false
+                NekoLog.ok("悬浮窗权限已授予，服务自动启动")
+            }
+        }
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        // 底部导航用 hide/show 切换，onResume 不会触发；
+        // 这里刷新保证"从设置页开启开发者模式后切回首页，DEV 徽标立即出现"
+        if (!hidden && _binding != null) {
+            try {
+                BgUtils.apply(binding.root)
+                refreshStatus()
+            } catch (_: Throwable) { }
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        try { Shizuku.removeRequestPermissionResultListener(shizukuListener) } catch (_: Throwable) { }
+        _binding = null
+    }
+
+    // ---------- 语言切换 ----------
+
+    /** 全局 UI 语言切换：跟随系统（默认）/ 简体中文 / 繁體中文 / English */
+    private fun showLanguageDialog() {
+        val tags = arrayOf("", "zh", "zh-TW", "en", "tr", "ja", "ko", "de")
+        val langs = arrayOf(getString(R.string.hc_follow_system), "简体中文", "繁體中文", "English", "Türkçe", "日本語", "한국어", "Deutsch")
+        val checked = when (androidx.appcompat.app.AppCompatDelegate.getApplicationLocales().toLanguageTags()) {
+            "zh" -> 1
+            "zh-TW" -> 2
+            "en" -> 3
+            "tr" -> 4
+            "ja" -> 5
+            "ko" -> 6
+            "de" -> 7
+            else -> 0 // 空 = 跟随系统（默认）
+        }
+        var chosen = checked
+        NekoDialog.builder(requireContext())
+            .setTitle(getString(R.string.u52))
+            .setSingleChoiceItems(langs, checked) { _, which ->
+                chosen = which
+            }
+            .setPositiveButton(getString(R.string.u71)) { _, _ ->
+                try {
+                    // 跟随系统 = 清空应用级语言覆盖（getEmptyLocaleList）
+                    val list = if (chosen == 0) {
+                        androidx.core.os.LocaleListCompat.getEmptyLocaleList()
+                    } else {
+                        androidx.core.os.LocaleListCompat.forLanguageTags(tags[chosen])
+                    }
+                    androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(list)
+                    com.nekotype.app.prefs.AppPrefs.appLangTag = tags[chosen]
+                    NekoLog.adjust("语言切换为：${langs[chosen]}")
+                } catch (_: Throwable) {
+                    toast(getString(R.string.u14))
+                }
+            }
+            .setNegativeButton(getString(R.string.u72), null)
+            .show()
+    }
+
+    // ---------- 服务开关 ----------
+
+    private fun toggleService() {
+        val enabled = !AppPrefs.serviceEnabled
+        if (!enabled && AppPrefs.lockEnabled) {
+            showVerifyLockPasswordDialog(getString(R.string.u68)) { doToggleService(false) }
+            return
+        }
+        doToggleService(enabled)
+    }
+
+    private fun doToggleService(enabled: Boolean) {
+        val ctx = context ?: return
+        AppPrefs.serviceEnabled = enabled
+        if (enabled) {
+            ensureServicePermissions()
+            if (Settings.canDrawOverlays(ctx)) {
+                FloatingButtonService.start(ctx)
+                NekoLog.info("用户启动服务")
+                toast(getString(R.string.u13))
+            } else {
+                NekoLog.warn("启动服务失败：未授予悬浮窗权限")
+                toast(getString(R.string.u5))
+                openOverlaySettings()
+            }
+        } else {
+            FloatingButtonService.stop(ctx)
+            NekoLog.info("用户停止服务")
+        }
+        refreshStatus()
+    }
+
+    // ---------- 密码锁定验证（停止服务时） ----------
+
+    private fun showVerifyLockPasswordDialog(title: String, onOk: () -> Unit) {
+        val et = android.widget.EditText(requireContext()).apply {
+            hint = getString(R.string.u75)
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+        }
+        val box = android.widget.LinearLayout(requireContext()).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(48, 16, 48, 8)
+            addView(et)
+        }
+        val dialog = NekoDialog.builder(requireContext())
+            .setTitle(title)
+            .setView(box)
+            .setPositiveButton(getString(R.string.u71), null)
+            .setNegativeButton(getString(R.string.u72), null)
+            .create()
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                if (AppPrefs.verifyLockPassword(et.text.toString())) {
+                    dialog.dismiss()
+                    onOk()
+                } else {
+                    toast(getString(R.string.u25))
+                    et.text.clear()
+                }
+            }
+        }
+        dialog.show()
+    }
+
+    // ---------- 悬浮窗授权 ----------
+
+    private fun openOverlaySettings() {
+        overlayPending = true
+        try {
+            overlayLauncher.launch(
+                Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:${requireContext().packageName}")
+                )
+            )
+        } catch (_: Throwable) {
+            overlayPending = false
+            startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION))
+        }
+    }
+
+    // ---------- Shizuku ----------
+
+    private fun handleShizuku() {
+        when {
+            !SysPower.isShizukuAvailable() -> {
+                NekoLog.warn("Shizuku：未检测到服务")
+                toast(getString(R.string.u26))
+            }
+            !SysPower.isShizukuPermissionGranted() -> {
+                // Shizuku 13.x：UserService 绑定前需先获取 API 权限，否则静默拒绝
+                binding.tvPrivLog.text = getString(R.string.hc_shizuku_requesting)
+                try {
+                    SysPower.requestShizukuPermission(shizukuRequestCode)
+                } catch (t: Throwable) {
+                    binding.tvPrivLog.text = getString(R.string.hc_shizuku_req_fail, t.javaClass.simpleName, t.message)
+                }
+            }
+            else -> {
+                probeShizukuChannel()
+            }
+        }
+        refreshStatus()
+    }
+
+    /** 绑定 UserService 探测通道（API 权限已获取后调用） */
+    private fun probeShizukuChannel() {
+        binding.tvPrivLog.text = getString(R.string.hc_shizuku_binding)
+        lifecycleScope.launch {
+            val r = withContext(Dispatchers.IO) { SysPower.execIdForStatus() }
+            if (r.success) {
+                binding.tvPrivLog.text = getString(R.string.u76, r.channel, r.output)
+                NekoLog.ok("Shizuku 已授权，通道 ${r.channel}")
+                toast(getString(R.string.u3))
+            } else {
+                val diag = withContext(Dispatchers.IO) { SysPower.diagnoseShizuku() }
+                binding.tvPrivLog.text = getString(R.string.hc_shizuku_probe_fail, diag)
+                NekoLog.warn(getString(R.string.hc_shizuku_probe_fail, diag))
+                toast(getString(R.string.hc_shizuku_bind_fail))
+            }
+            refreshStatus()
+        }
+    }
+
+    // ---------- 一键授权所有权限 ----------
+
+    /**
+     * 通过 Shizuku 一键写入所有权限：无障碍 → 设备管理员 → 电池优化 → 悬浮窗。
+     * 执行前检查 Shizuku 状态；每步独立记录成功/失败，失败时在日志区显示具体原因。
+     */
+
+    // ---------------- 功能体检 ----------------
+
+    private data class HealthItem(val name: String, val ok: Boolean, val action: (() -> Unit)?)
+
+    private fun healthItems(): List<HealthItem> {
+        val ctx = requireContext()
+        val pkg = ctx.packageName
+        val a11yOn = try {
+            val en = android.provider.Settings.Secure.getInt(
+                ctx.contentResolver, "accessibility_enabled", 0
+            ) == 1
+            val list = android.provider.Settings.Secure.getString(
+                ctx.contentResolver, "enabled_accessibility_services"
+            ).orEmpty()
+            en && list.contains(pkg + "/com.google.android.accessibility.selecttospeak.SelectToSpeakService")
+        } catch (_: Throwable) { false }
+        val overlayOn = android.provider.Settings.canDrawOverlays(ctx)
+        val notifyOn = androidx.core.app.NotificationManagerCompat.from(ctx).areNotificationsEnabled()
+        val batteryOn = SysPower.isIgnoringBatteryOptimizations()
+        val shizukuOn = SysPower.isShizukuAvailable() && SysPower.isShizukuPermissionGranted()
+        val serviceOn = AppPrefs.serviceEnabled
+        return listOf(
+            HealthItem(getString(R.string.hc_check_a11y), a11yOn) {
+                try { startActivity(Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS)) } catch (_: Throwable) { }
+            },
+            HealthItem(getString(R.string.hc_check_overlay), overlayOn) {
+                try {
+                    startActivity(Intent(
+                        android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        android.net.Uri.parse("package:" + ctx.packageName)
+                    ))
+                } catch (_: Throwable) { }
+            },
+            HealthItem(getString(R.string.hc_check_notify), notifyOn) {
+                try {
+                    startActivity(Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                        .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, ctx.packageName))
+                } catch (_: Throwable) { }
+            },
+            HealthItem(getString(R.string.hc_check_battery), batteryOn) {
+                SysPower.requestBatteryOptimizationDialog()
+            },
+            HealthItem(getString(R.string.hc_check_shizuku), shizukuOn) {
+                if (SysPower.isShizukuAvailable()) SysPower.requestShizukuPermission(shizukuRequestCode)
+                else toast(getString(R.string.u184))
+            },
+            HealthItem(getString(R.string.hc_check_service), serviceOn) {
+                toast(getString(R.string.hc_check_service_tip))
+            }
+        )
+    }
+
+    private fun showHealthCheck() {
+        val ctx = requireContext()
+        val items = healthItems()
+        val box = android.widget.LinearLayout(ctx).apply { orientation = android.widget.LinearLayout.VERTICAL }
+        val pad = (16 * resources.displayMetrics.density).toInt()
+        box.setPadding(pad, pad, pad, 0)
+        for (it in items) {
+            val row = android.widget.LinearLayout(ctx).apply {
+                orientation = android.widget.LinearLayout.HORIZONTAL
+                gravity = android.view.Gravity.CENTER_VERTICAL
+                setPadding(0, pad / 2, 0, pad / 2)
+            }
+            row.addView(android.widget.TextView(ctx).apply {
+                text = (if (it.ok) "✓ " else "✗ ") + it.name
+                setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 14f)
+                setTextColor(
+                    if (it.ok) androidx.core.content.ContextCompat.getColor(ctx, R.color.md_theme_primary)
+                    else 0xFFFF6B6B.toInt()
+                )
+                layoutParams = android.widget.LinearLayout.LayoutParams(0, android.view.ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            })
+            if (!it.ok && it.action != null) {
+                row.addView(android.widget.TextView(ctx).apply {
+                    text = getString(R.string.hc_check_go)
+                    setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 13f)
+                    setTextColor(androidx.core.content.ContextCompat.getColor(ctx, R.color.md_theme_primary))
+                    setPadding(pad, pad / 3, pad / 3, pad / 3)
+                    val act = it.action
+                    setOnClickListener { act?.invoke() }
+                })
+            } else if (it.ok) {
+                row.addView(android.widget.TextView(ctx).apply {
+                    text = getString(R.string.hc_check_ok)
+                    setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12f)
+                    setTextColor(androidx.core.content.ContextCompat.getColor(ctx, R.color.fg_2))
+                    setPadding(pad, 0, 0, 0)
+                })
+            }
+            box.addView(row)
+        }
+        val passed = items.count { it.ok }
+        val summary = android.widget.TextView(ctx).apply {
+            text = getString(R.string.hc_check_result, passed, items.size)
+            setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12f)
+            setTextColor(androidx.core.content.ContextCompat.getColor(ctx, R.color.fg_2))
+            setPadding(0, pad / 2, 0, 0)
+        }
+        box.addView(summary)
+        NekoDialog.builder(ctx)
+            .setTitle(getString(R.string.hc_check_title))
+            .setView(NekoDialog.scroll(box))
+            .setPositiveButton(getString(R.string.hc_check_again)) { _, _ -> showHealthCheck() }
+            .setNegativeButton(getString(R.string.u72), null)
+            .show()
+    }
+
+    private fun grantAllPermissions() {
+        val ctx = context ?: return
+        if (!SysPower.isShizukuAvailable()) {
+            NekoLog.warn("一键授权失败：未检测到 Shizuku 服务")
+            binding.tvPrivLog.text = getString(R.string.u184)
+            toast(getString(R.string.u26))
+            return
+        }
+        // Shizuku 11+：UserService 绑定前必须先获得 API 权限，否则所有步骤必然失败
+        if (!SysPower.isShizukuPermissionGranted()) {
+            binding.tvPrivLog.text = getString(R.string.hc_shizuku_requesting2)
+            try {
+                SysPower.requestShizukuPermission(shizukuRequestCode)
+            } catch (t: Throwable) {
+                binding.tvPrivLog.text = getString(R.string.hc_shizuku_req_fail, t.javaClass.simpleName, t.message)
+            }
+            return
+        }
+
+        binding.btnGrantAll.isEnabled = false
+        binding.btnGrantAll.text = getString(R.string.u186)
+        binding.tvPrivLog.text = getString(R.string.u187)
+
+        lifecycleScope.launch {
+            val steps = withContext(Dispatchers.IO) { SysPower.grantAllPermissions() }
+            // 构建详细日志：每步显示 ✓/✗ + 名称 + 输出
+            val sb = StringBuilder()
+            var successCount = 0
+            var failCount = 0
+            steps.forEachIndexed { i, step ->
+                val mark = if (step.success) "✓" else "✗"
+                if (step.success) successCount++ else failCount++
+                sb.appendLine("${i + 1}. $mark ${step.name}  [${step.channel}]")
+                if (step.output.isNotEmpty()) {
+                    step.output.lineSequence().forEach { line ->
+                        if (line.isNotBlank()) sb.appendLine("   $line")
+                    }
+                }
+                sb.appendLine()
+            }
+            sb.appendLine(getString(R.string.u188, successCount, failCount))
+            sb.appendLine(getString(R.string.grant_battery_manual_hint))
+            // 电池白名单在华为等 ROM 上 shell 写入可能被忽略：直接弹系统授权框让用户点「允许」
+            val batteryStep = steps.getOrNull(2)
+            if (batteryStep != null && !batteryStep.success) {
+                try {
+                    SysPower.requestBatteryOptimizationDialog()
+                    sb.appendLine(getString(R.string.grant_battery_dialog_hint))
+                } catch (_: Throwable) { }
+            }
+            // 失败时额外提示
+            if (failCount > 0) {
+                sb.appendLine()
+                sb.appendLine(getString(R.string.u189))
+                sb.appendLine(getString(R.string.u190))
+            }
+            binding.tvPrivLog.text = sb.toString()
+
+            // 记录日志
+            if (failCount == 0) {
+                NekoLog.ok("一键授权全部成功（$successCount 项）")
+                toast(getString(R.string.u191, successCount))
+            } else {
+                NekoLog.error("一键授权完成：成功 $successCount 项，失败 $failCount 项")
+                toast(getString(R.string.u192, successCount, failCount))
+            }
+
+            binding.btnGrantAll.isEnabled = true
+            binding.btnGrantAll.text = getString(R.string.t1000)
+            refreshStatus()
+        }
+    }
+
+    // ---------- 状态刷新 ----------
+
+    private fun refreshStatus() {
+        val ctx = context ?: return
+        val running = AppPrefs.serviceEnabled
+        // 开发者模式入口：仅开启时显示（NekoType 标题旁 DEV 徽标）
+        binding.btnDev.visibility = if (AppPrefs.devModeEnabled) View.VISIBLE else View.GONE
+        binding.tvStatus.text = if (running) getString(R.string.u97) else getString(R.string.u98)
+        binding.tvStatus.setTextColor(
+            ContextCompat.getColor(ctx, if (running) R.color.md_theme_primary else R.color.md_theme_onSurfaceVariant)
+        )
+        binding.btnToggleService.text = if (running) getString(R.string.u99) else getString(R.string.u100)
+        binding.tvStats.text = getString(R.string.u101, AppPrefs.transformCount)
+
+        binding.chipOverlay.isChecked = Settings.canDrawOverlays(ctx)
+        binding.chipAccessibility.isChecked = isAccessibilityEnabled()
+        binding.chipBattery.isChecked = SysPower.isIgnoringBatteryOptimizations()
+        binding.chipShizuku.isChecked = SysPower.isShizukuAvailable()
+        binding.chipAdmin.isChecked = SysPower.isDeviceAdminActive()
+
+        setStep(binding.tvStep1Status, isAccessibilityEnabled(), getString(R.string.u102), getString(R.string.u103))
+        setStep(binding.tvStep2Status, SysPower.isDeviceAdminActive(), getString(R.string.u104), getString(R.string.u105))
+        setStep(binding.tvStep3Status, SysPower.isIgnoringBatteryOptimizations(), getString(R.string.u106), getString(R.string.u107))
+        setStep(binding.tvStep4Status, Settings.canDrawOverlays(ctx), getString(R.string.u108), getString(R.string.u109))
+        setStep(binding.tvStep5Status, SysPower.isShizukuAvailable(), getString(R.string.u110), getString(R.string.u109))
+        // 自启动状态系统无法查询 → 固定提示（vivo/iQOO 等不手动开会被冻结）
+        binding.tvStep6Status.text = getString(R.string.i53)
+
+        val done = isAccessibilityEnabled() && Settings.canDrawOverlays(ctx)
+        binding.tvWizardDone.text = if (done) getString(R.string.u111) else ""
+    }
+
+    private fun setStep(tv: TextView, ok: Boolean, failText: String, okText: String) {
+        tv.text = if (ok) "✓ $okText" else failText
+        tv.setTextColor(
+            ContextCompat.getColor(requireContext(), if (ok) R.color.ok_green else R.color.warn_amber)
+        )
+    }
+
+    private fun isAccessibilityEnabled(): Boolean {
+        val ctx = context ?: return false
+        val cmp = "${ctx.packageName}/${com.google.android.accessibility.selecttospeak.SelectToSpeakService::class.java.name}"
+        val enabled = Settings.Secure.getString(
+            ctx.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ).orEmpty()
+        return enabled.split(":").any { it.equals(cmp, ignoreCase = true) }
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= 33 &&
+            requireContext().checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 200)
+        }
+    }
+
+    /**
+     * 启用软件时检查并申请：发送消息（SEND_SMS）与读取已安装应用列表（QUERY_ALL_PACKAGES）。
+     * 缺哪个申请哪个；被永久拒绝时引导到应用详情页手动开启。
+     */
+    private fun ensureServicePermissions() {
+        try {
+            val missing = mutableListOf<String>()
+            if (requireContext().checkSelfPermission(Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+                missing += Manifest.permission.SEND_SMS
+            }
+            if (requireContext().checkSelfPermission(Manifest.permission.QUERY_ALL_PACKAGES) != PackageManager.PERMISSION_GRANTED) {
+                missing += Manifest.permission.QUERY_ALL_PACKAGES
+            }
+            if (missing.isEmpty()) return
+            NekoLog.info("申请权限：${missing.joinToString()}")
+            requestPermissions(missing.toTypedArray(), servicePermCode)
+        } catch (t: Throwable) {
+            NekoLog.error("权限检查失败：${t.javaClass.simpleName}: ${t.message}")
+        }
+    }
+
+    /** 打开本应用的系统详情页（用于手动开启被拒绝的权限） */
+    private fun openAppDetailsSettings() {
+        try {
+            startActivity(Intent(
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.parse("package:${requireContext().packageName}")
+            ))
+        } catch (t: Throwable) {
+            NekoLog.error("应用详情页打不开：${t.javaClass.simpleName}")
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode != servicePermCode) return
+        val denied = permissions.filterIndexed { i, _ ->
+            grantResults.getOrNull(i) != PackageManager.PERMISSION_GRANTED
+        }
+        if (denied.isEmpty()) {
+            NekoLog.ok("权限已全部授予")
+        } else {
+            NekoLog.warn("权限被拒绝：${denied.joinToString()}")
+            toast(getString(R.string.u209))
+            openAppDetailsSettings()
+        }
+    }
+
+    /** 更新悬浮球图标预览 */
+    private fun updateFabIconPreview() {
+        val path = AppPrefs.customFabIconPath
+        if (path.isNotEmpty() && File(path).exists()) {
+            try {
+                val bmp = android.graphics.BitmapFactory.decodeFile(path)
+                binding.ivFabIconPreview.setImageBitmap(bmp)
+            } catch (_: Throwable) {
+                binding.ivFabIconPreview.setImageResource(R.drawable.ctw_icon)
+            }
+        } else {
+            binding.ivFabIconPreview.setImageResource(R.drawable.ctw_icon)
+        }
+    }
+
+    /** 悬浮球正在运行时重建按钮，让新图标立刻生效 */
+    private fun restartFabIfRunning() {
+        try {
+            if (FloatingButtonService.isRunning()) {
+                FloatingButtonService.reload()
+            }
+        } catch (_: Throwable) { }
+    }
+
+    private fun toast(msg: String) {
+        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+    }
+}

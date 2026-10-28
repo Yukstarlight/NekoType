@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 开发者模式文案（简中） -->
+<resources>
+    <string name="dev_title">开发者模式</string>
+    <string name="dev_refresh_info">刷新信息</string>
+    <string name="dev_copy_diag">复制诊断信息（信息 + 最近日志）</string>
+    <string name="dev_copy_config">复制当前配置（可发给别人导入）</string>
+
+    <string name="dev_log_hint">有 Shizuku 抓全系统日志，无 Shizuku 自动退回本应用进程日志。</string>
+    <string name="dev_log_filter">过滤 tag（可空，如 NekoA11y）</string>
+    <string name="dev_grab_sys">抓系统日志</string>
+    <string name="dev_grab_crash">抓崩溃日志</string>
+    <string name="dev_app_log">查看应用内日志</string>
+    <string name="dev_clear_log">清空应用内日志</string>
+
+    <string name="dev_bl_title">应用黑名单 · 模糊搜索</string>
+    <string name="dev_bl_hint">支持多关键词（空格分隔）、名称/包名子串、子序列模糊匹配，并按相关度排序；点击结果即可加入或移出黑名单。</string>
+    <string name="dev_bl_query">搜索应用（名称 / 包名 / 简写）</string>
+    <string name="dev_bl_search">搜索并管理黑名单</string>
+    <string name="dev_bl_only">只看已加入黑名单</string>
+    <string name="dev_bl_summary">共 %1$d 个可见应用，已加入黑名单 %2$d 个</string>
+    <string name="dev_bl_matched">匹配 %1$d 个应用（点击下方按钮打开列表管理）</string>
+    <string name="dev_bl_result_title">搜索结果（%1$d）</string>
+    <string name="dev_bl_only_title">已加入黑名单（%1$d）</string>
+    <string name="dev_bl_added">已加入黑名单：%1$s</string>
+    <string name="dev_bl_removed">已移出黑名单：%1$s</string>
+    <string name="dev_bl_empty">黑名单里还没有应用</string>
+    <string name="dev_bl_nomatch">没有匹配的应用</string>
+
+    <string name="dev_maint_title">维护与重置</string>
+    <string name="dev_reload_fab">重载悬浮球（立即重建按钮）</string>
+    <string name="dev_trace">查看 Shizuku 通道追踪</string>
+    <string name="dev_trace_title">Shizuku 通道追踪</string>
+    <string name="dev_rebind">重置并重绑 Shizuku 通道</string>
+    <string name="dev_rebind_title">重绑 Shizuku</string>
+    <string name="dev_reset_disclaimer">重置免责声明（下次启动重新弹）</string>
+    <string name="dev_clear_rules">清空当前预设的所有规则</string>
+    <string name="dev_restart">重启应用</string>
+
+    <string name="dev_toast_log_cleared">应用内日志已清空</string>
+    <string name="dev_toast_reloaded">已请求重载悬浮球</string>
+    <string name="dev_toast_disclaimer_reset">已重置：下次启动会重新显示免责声明弹窗</string>
+    <string name="dev_restarting">正在重启应用…</string>
+    <string name="dev_restart_failed">重启失败: %1$s</string>
+    <string name="dev_confirm_title">清空当前预设规则</string>
+    <string name="dev_confirm_msg">将删除「%1$s」里的全部 %2$d 条规则，且不可撤销。\n\n确定继续？</string>
+    <string name="dev_confirm_ok">清空</string>
+    <string name="dev_cleared">已清空 %1$d 条规则</string>
+    <string name="dev_no_rules">当前预设没有规则</string>
+    <string name="dev_copy_done">%1$s 已复制（%2$d 字符）</string>
+    <string name="dev_share">分享</string>
+    <string name="dev_copy">复制</string>
+    <string name="dev_grab_failed">抓取失败: %1$s</string>
+    <string name="dev_source_shizuku">Shizuku（全系统）</string>
+    <string name="dev_source_local">本进程兜底（无 Shizuku）</string>
+    <string name="dev_source_label">来源: %1$s</string>
+    <string name="dev_filter_label">过滤: %1$s</string>
+    <string name="dev_filter_none">无</string>
+    <string name="dev_logcat_title">系统日志（logcat）</string>
+    <string name="dev_crash_title">崩溃日志（crash buffer）</string>
+    <string name="dev_applog_title">应用内日志（%1$d 条）</string>
+    <string name="dev_applog_empty">（暂无应用内日志）</string>
+    <string name="dev_diag_what">诊断信息</string>
+    <string name="dev_config_what">当前配置</string>
+    <string name="dev_recent_logs">---------- 最近日志 ----------</string>
+    <string name="dev_clipboard_title">剪贴板</string>
+    <string name="dev_tools_title">调试工具</string>
+    <string name="dev_tree">无障碍节点树快照（当前窗口）</string>
+    <string name="dev_tree_title">节点树快照</string>
+    <string name="dev_perf">规则性能基准（200 次变换计时）</string>
+    <string name="dev_perf_title">规则性能基准</string>
+    <string name="dev_reset_factory">恢复出厂设置（清空全部数据）</string>
+    <string name="dev_factory_title">恢复出厂设置</string>
+    <string name="dev_factory_msg">将清空全部本地数据：规则与预设、行为与样式、密码锁定、应用黑名单、使用统计、应用内日志。\n\n当前配置会先复制到剪贴板作为备份。此操作不可撤销。\n\n确定继续？</string>
+    <string name="dev_factory_confirm_title">最后确认</string>
+    <string name="dev_factory_confirm_msg">真的要清空全部数据吗？\n\n清空后应用会立即重启，所有设置恢复默认。</string>
+    <string name="dev_factory_ok">清空全部数据</string>
+    <string name="dev_factory_done">已恢复出厂设置，正在重启…</string></resources>

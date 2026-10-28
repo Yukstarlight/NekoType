@@ -1,0 +1,732 @@
+package com.nekotype.app.overlay
+
+import android.app.AlarmManager
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
+import android.content.Context
+import android.content.Intent
+import android.graphics.Outline
+import android.graphics.PixelFormat
+import android.os.Build
+import android.os.IBinder
+import android.util.Log
+import android.view.Gravity
+import android.view.HapticFeedbackConstants
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewConfiguration
+import android.view.ViewOutlineProvider
+import android.view.WindowManager
+import android.widget.ImageView
+import android.widget.Toast
+import androidx.core.app.NotificationCompat
+import com.nekotype.app.R
+import com.nekotype.app.accessibility.NekoTypeAccessibilityBridge
+import com.nekotype.app.prefs.AppPrefs
+import com.nekotype.app.ui.HomeActivity
+import com.nekotype.app.util.NekoLog
+import kotlin.math.abs
+
+/**
+ * 悬浮按钮前台服务（永久常驻）。
+ *
+ * - 服务运行时按钮**一直显示**在屏幕边缘（默认右侧居中），与输入法无关；
+ * - 单击 = 读取当前输入框 → 文本变换 → 自动发送；
+ * - 按住拖动 = 自由摆放，松手记忆位置，可开启边缘吸附；
+ * - 液态玻璃外观：渐变 + 半透明 + Android 12+ 背景模糊（毛玻璃）。
+ */
+class FloatingButtonService : Service() {
+
+    companion object {
+        const val CHANNEL_ID = "nekotype_fg"
+        const val NOTIF_ID = 1001
+        private const val TAG = "NekoFab"
+
+        @Volatile private var instance: FloatingButtonService? = null
+
+        private const val PERM_CHECK_INTERVAL_MS = 5 * 60 * 1000L
+
+        /** 开关打开时立刻巡检一次（后台线程，不阻塞 UI） */
+        fun runPermCheckOnce() {
+            try {
+                if (!AppPrefs.serviceEnabled || !AppPrefs.permAutoCheckEnabled) return
+                if (!com.nekotype.app.sys.SysPower.isShizukuAvailable()) return
+                if (!com.nekotype.app.sys.SysPower.isShizukuPermissionGranted()) return
+                Thread {
+                    try {
+                        val steps = com.nekotype.app.sys.SysPower.grantAllPermissions()
+                        val bad = steps.filterNot { it.success }
+                        if (bad.isEmpty()) com.nekotype.app.util.NekoLog.ok("权限巡检：全部正常")
+                        else com.nekotype.app.util.NekoLog.warn("权限巡检：${bad.size} 项未通过")
+                    } catch (_: Throwable) {
+                    }
+                }.start()
+            } catch (_: Throwable) {
+            }
+        }
+
+        fun start(context: Context) {
+            try {
+                val intent = Intent(context, FloatingButtonService::class.java)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    context.startForegroundService(intent)
+                } else {
+                    context.startService(intent)
+                }
+            } catch (_: Throwable) {
+                // Android 12+ 后台启动前台服务受限时降级为普通启动（服务已在前台时也能生效）
+                try {
+                    context.startService(Intent(context, FloatingButtonService::class.java))
+                } catch (_: Throwable) { /* 系统级限制（如华为应用启动管理），App 无法绕过 */ }
+            }
+        }
+
+        fun stop(context: Context) {
+            context.stopService(Intent(context, FloatingButtonService::class.java))
+        }
+
+        /** 服务是否正在运行 */
+        fun isRunning(): Boolean = instance != null
+
+        /** 设置页调整大小/透明度后调用：立即重建悬浮按钮 */
+        fun reload() {
+            instance?.let {
+                try { it.menuPanel?.dismiss() } catch (_: Throwable) { }
+                it.hideButton()
+                it.button = null
+                it.params = null
+                it.showButton()
+            }
+        }
+
+        /** 关闭快捷菜单（若已显示）——设置页关闭「长按弹出菜单」开关时调用 */
+        fun dismissMenu() {
+            instance?.let { try { it.menuPanel?.dismiss() } catch (_: Throwable) { } }
+        }
+
+        /** 取消心跳闹钟（关闭心跳保活开关时调用） */
+        fun cancelHeartbeatGlobal(context: Context) {
+            try {
+                val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                val pi = PendingIntent.getService(
+                    context, 1001,
+                    Intent(context, FloatingButtonService::class.java).apply {
+                        action = "${context.packageName}.action.HEARTBEAT"
+                    },
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                am.cancel(pi)
+            } catch (_: Throwable) { }
+        }
+
+        /** 实时应用大小/透明度（不重建，避免滑块拖动时抖动） */
+        fun applyStyle(sizeDp: Int, opacity: Int) {
+            instance?.applyStyleInternal(sizeDp, opacity)
+        }
+    }
+
+    private lateinit var wm: WindowManager
+    private var button: ImageView? = null
+    private var params: WindowManager.LayoutParams? = null
+    private var buttonAdded = false
+
+    // ---------- 长按快捷菜单 ----------
+    private var menuPanel: FloatingMenuPanel? = null
+
+    // ---------- 收起成小圆点 ----------
+    private var collapsed = false
+    private var expandOnlyNextClick = false
+    private val collapseDelay = 5000L
+    private val collapseRunnable = Runnable { collapseToDot() }
+
+    private fun scheduleCollapse() {
+        val b = button ?: return
+        if (!AppPrefs.fabCollapseEnabled) return
+        b.removeCallbacks(collapseRunnable)
+        b.postDelayed(collapseRunnable, collapseDelay)
+    }
+
+    private fun collapseToDot() {
+        val b = button ?: return
+        if (collapsed) return
+        collapsed = true
+        val p = params ?: return
+        val old = p.width
+        val dot = (28 * resources.displayMetrics.density).toInt()
+        p.width = dot
+        p.height = dot
+        p.x += (old - dot) / 2
+        p.y += (old - dot) / 2
+        try { wm.updateViewLayout(b, p) } catch (_: Throwable) { }
+    }
+
+    private fun expandFromDot() {
+        val b = button ?: return
+        if (!collapsed) return
+        collapsed = false
+        val p = params ?: return
+        val old = p.width
+        val full = (AppPrefs.fabSizeDp * resources.displayMetrics.density).toInt()
+        p.width = full
+        p.height = full
+        p.x -= (full - old) / 2
+        p.y -= (full - old) / 2
+        try { wm.updateViewLayout(b, p) } catch (_: Throwable) { }
+    }
+
+    /** 实时应用大小/透明度（不重建按钮，避免抖动） */
+    private fun applyStyleInternal(sizeDp: Int, opacity: Int) {
+        val b = button ?: return
+        val p = params ?: return
+        // 透明度实时生效
+        b.alpha = opacity / 100f
+        // 大小：收起状态不调整（展开时按最新大小）
+        if (!collapsed) {
+            val newSize = (sizeDp * resources.displayMetrics.density).toInt()
+            if (p.width != newSize) {
+                val old = p.width
+                p.width = newSize
+                p.height = newSize
+                p.x += (old - newSize) / 2
+                p.y += (old - newSize) / 2
+                try { wm.updateViewLayout(b, p) } catch (_: Throwable) { }
+            }
+        }
+    }
+
+    override fun onCreate() {
+        try { startPermCheckLoop() } catch (_: Throwable) { }
+        super.onCreate()
+        instance = this
+        wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        createNotificationChannel()
+        startForeground(NOTIF_ID, buildNotification())
+        // 心跳保活（用户开关控制）：每 60 秒闹钟唤醒检查，服务被系统杀了也能自动拉活
+        startHeartbeat()
+        NekoLog.ok("悬浮服务已启动，按钮常驻屏幕边缘")
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // 防篡改：签名被改 / Hook 框架 → 拒绝运行
+        if (AppPrefs.tampered) {
+            AppPrefs.serviceEnabled = false
+            NekoLog.warn("检测到篡改，悬浮服务拒绝运行")
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        // 心跳唤醒：确认服务还活着，按钮显示（若因被系统清理而重建）
+        if (intent?.action == ACTION_HEARTBEAT) {
+            if (AppPrefs.heartbeatEnabled && AppPrefs.serviceEnabled) {
+                showButton()
+                scheduleNextHeartbeat()
+            } else {
+                stopSelf()
+                return START_NOT_STICKY
+            }
+            return START_STICKY
+        }
+        if (intent?.action == ACTION_STOP) {
+            // 密码锁定：通知栏停止入口也需验证，拉起主界面弹密码框
+            if (AppPrefs.lockEnabled) {
+                NekoLog.warn("密码锁定：停止服务需在应用内验证密码")
+                try {
+                    val i = Intent(this, com.nekotype.app.ui.HomeActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        putExtra(com.nekotype.app.ui.HomeActivity.EXTRA_STOP_REQUEST, true)
+                    }
+                    startActivity(i)
+                } catch (_: Throwable) { }
+                return START_STICKY
+            }
+            AppPrefs.serviceEnabled = false
+            NekoLog.info("服务已停止")
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        // 永久显示：服务运行期间按钮常驻（无需输入法触发）
+        showButton()
+        return START_STICKY
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    /**
+     * 防杀后台：任务被从最近任务划掉时，若开启了密码锁定或隐藏模式则延时重启服务，
+     * 配合隐藏模式让 NekoType 划掉后自动复活（部分 ROM 限制立即重启，延时 1.5s；
+     * 用前台服务拉起，Android 12 对 FGS 的后台启动豁免更多）。
+     */
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        if (AppPrefs.lockEnabled || AppPrefs.hiddenModeEnabled) {
+            NekoLog.ok("检测到任务被划掉，防杀后台：延时自动重启服务")
+            android.os.Handler(mainLooper).postDelayed({
+                try {
+                    val i = Intent(this, FloatingButtonService::class.java)
+                    i.action = ACTION_RESTART
+                    if (Build.VERSION.SDK_INT >= 26) {
+                        startForegroundService(i)
+                    } else {
+                        startService(i)
+                    }
+                } catch (_: Throwable) {
+                    try {
+                        startService(Intent(this, FloatingButtonService::class.java).apply { action = ACTION_RESTART })
+                    } catch (_: Throwable) { }
+                }
+            }, 1500)
+        }
+    }
+
+    override fun onDestroy() {
+        try { permHandler.removeCallbacks(permCheckRunnable) } catch (_: Throwable) { }
+        cancelHeartbeat()
+        try { menuPanel?.dismiss() } catch (_: Throwable) { }
+        menuPanel = null
+        hideButton()
+        instance = null
+        super.onDestroy()
+    }
+
+    // 注意：不能在属性初始化时用 packageName（服务构造期间 Context 尚未挂载会 NPE），
+    // 必须惰性取值
+    private val ACTION_STOP by lazy { "$packageName.action.STOP_FLOATING" }
+    private val ACTION_RESTART by lazy { "$packageName.action.RESTART_FLOATING" }
+    private val ACTION_HEARTBEAT by lazy { "$packageName.action.HEARTBEAT" }
+
+    // ---------- 心跳保活（用户开关控制） ----------
+
+    private val HEARTBEAT_INTERVAL_MS = 60_000L
+
+    private val permHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var permLoopStarted = false
+
+    private val permCheckRunnable = object : Runnable {
+        override fun run() {
+            runPermCheckNow()
+            permHandler.postDelayed(this, PERM_CHECK_INTERVAL_MS)
+        }
+    }
+
+    private fun runPermCheckNow() {
+        try {
+            if (!AppPrefs.serviceEnabled || !AppPrefs.permAutoCheckEnabled) return
+            if (!com.nekotype.app.sys.SysPower.isShizukuAvailable()) return
+            if (!com.nekotype.app.sys.SysPower.isShizukuPermissionGranted()) return
+            Thread {
+                try {
+                    val steps = com.nekotype.app.sys.SysPower.grantAllPermissions()
+                    val bad = steps.filterNot { it.success }
+                    if (bad.isEmpty()) com.nekotype.app.util.NekoLog.ok("权限巡检：全部正常")
+                    else com.nekotype.app.util.NekoLog.warn("权限巡检：${bad.size} 项未通过（${bad.joinToString { it.name }}）")
+                } catch (t: Throwable) {
+                    com.nekotype.app.util.NekoLog.warn("权限巡检异常：${t.javaClass.simpleName}")
+                }
+            }.start()
+        } catch (_: Throwable) {
+        }
+    }
+
+    private fun startPermCheckLoop() {
+        if (permLoopStarted) return
+        permLoopStarted = true
+        permHandler.postDelayed(permCheckRunnable, PERM_CHECK_INTERVAL_MS)
+    }
+
+    private fun startHeartbeat() {
+        if (AppPrefs.heartbeatEnabled && AppPrefs.serviceEnabled) {
+            scheduleNextHeartbeat()
+        }
+    }
+
+    private fun scheduleNextHeartbeat() {
+        try {
+            val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            // 用 getForegroundService：Android 12 允许精确闹钟触发前台服务启动（豁免场景），
+            // 华为等 ROM 拦截后台启动的概率更低
+            val pi = if (Build.VERSION.SDK_INT >= 26) {
+                PendingIntent.getForegroundService(
+                    this, 1001,
+                    Intent(this, FloatingButtonService::class.java).apply { action = ACTION_HEARTBEAT },
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+            } else {
+                PendingIntent.getService(
+                    this, 1001,
+                    Intent(this, FloatingButtonService::class.java).apply { action = ACTION_HEARTBEAT },
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+            }
+            // 精确闹钟 + 允许待机唤醒（省电模式下也能触发）
+            am.setExactAndAllowWhileIdle(AlarmManager.RTC, System.currentTimeMillis() + HEARTBEAT_INTERVAL_MS, pi)
+        } catch (_: Throwable) {
+            // 部分 ROM 禁精确闹钟 → 回退普通闹钟
+            try {
+                val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                val pi = PendingIntent.getService(
+                    this, 1001,
+                    Intent(this, FloatingButtonService::class.java).apply { action = ACTION_HEARTBEAT },
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                am.set(AlarmManager.RTC, System.currentTimeMillis() + HEARTBEAT_INTERVAL_MS, pi)
+            } catch (_: Throwable) { }
+        }
+    }
+
+    private fun cancelHeartbeat() {
+        try {
+            val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val pi = PendingIntent.getService(
+                this, 1001,
+                Intent(this, FloatingButtonService::class.java).apply { action = ACTION_HEARTBEAT },
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            am.cancel(pi)
+        } catch (_: Throwable) { }
+    }
+
+    // ---------- 通知 ----------
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val mgr = getSystemService(NotificationManager::class.java)
+            if (mgr.getNotificationChannel(CHANNEL_ID) == null) {
+                val ch = NotificationChannel(
+                    CHANNEL_ID, getString(R.string.u166),
+                    NotificationManager.IMPORTANCE_LOW
+                ).apply { description = getString(R.string.u167) }
+                mgr.createNotificationChannel(ch)
+            }
+        }
+    }
+
+    private fun buildNotification(): Notification {
+        val open = Intent(this, HomeActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+        val openPi = PendingIntent.getActivity(
+            this, 0, open,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        // 停止按钮直接拉起 HomeActivity（点通知启动 Activity 有后台豁免权；
+        // 不能从服务 startActivity —— Android 12 会拦截后台启动）。
+        // 密码锁定开启时在 App 内验证后才真正停止。
+        val stopIntent = Intent(this, HomeActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            putExtra(HomeActivity.EXTRA_STOP_REQUEST, true)
+        }
+        val stopPi = PendingIntent.getActivity(
+            this, 1, stopIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle(getString(R.string.notif_title))
+            .setContentText(getString(R.string.notif_text))
+            .setSmallIcon(R.drawable.ic_neko)
+            .setContentIntent(openPi)
+            .addAction(0, getString(R.string.notif_stop), stopPi)
+            .setOngoing(true)
+            .build()
+    }
+
+    // ---------- 悬浮按钮 ----------
+
+    private fun showButton() {
+        // 悬浮球只在「悬浮球模式」显示：强制篡改 / 摇一摇模式下隐藏（服务 + 通知保留）
+        if (AppPrefs.forceKeyboardEnabled || AppPrefs.shakeTriggerEnabled) {
+            hideButton()
+            return
+        }
+        collapsed = false
+        if (button == null) {
+            addButton()
+        } else if (!buttonAdded) {
+            try {
+                wm.addView(button, params)
+                buttonAdded = true
+            } catch (_: Throwable) { /* 悬浮窗权限未授予 */ }
+        }
+        scheduleCollapse()
+    }
+
+    private fun hideButton() {
+        button?.removeCallbacks(collapseRunnable)
+        if (button != null && buttonAdded) {
+            try {
+                wm.removeView(button)
+            } catch (_: Throwable) { }
+            buttonAdded = false
+        }
+    }
+
+    private fun addButton() {
+        val density = resources.displayMetrics.density
+        val size = (AppPrefs.fabSizeDp * density).toInt()
+        val p = WindowManager.LayoutParams(
+            size,
+            size,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                    or WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.TOP or Gravity.START
+            if (AppPrefs.buttonX >= 0 && AppPrefs.buttonY >= 0) {
+                x = AppPrefs.buttonX
+                y = AppPrefs.buttonY
+            } else {
+                // 默认位置：屏幕右侧垂直居中
+                val out = android.graphics.Point()
+                @Suppress("DEPRECATION")
+                wm.defaultDisplay.getSize(out)
+                x = out.x - size - 28
+                y = out.y / 2 - size / 2
+            }
+            // 注意：不再使用 FLAG_BLUR_BEHIND / setBlurBehindRadius ——
+            // 部分 ROM（如 MIUI/HyperOS）会因此把模糊层盖满整个屏幕（含系统设置），已移除
+        }
+
+        val btn = ImageView(this).apply {
+            // 自定义图标优先，否则用默认
+            val customIcon = AppPrefs.customFabIconPath
+            if (customIcon.isNotEmpty() && java.io.File(customIcon).exists()) {
+                try { setImageBitmap(android.graphics.BitmapFactory.decodeFile(customIcon)) }
+                catch (_: Throwable) { setImageResource(R.drawable.ctw_icon) }
+            } else {
+                setImageResource(R.drawable.ctw_icon)
+            }
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            // 按键反馈：柔光玻璃（可选）或渐变底 + 点击水波纹；图片按圆形裁剪
+            background = getDrawable(
+                if (AppPrefs.fabGlassEnabled) R.drawable.bg_fab_glass else R.drawable.bg_fab_ripple
+            )
+            clipToOutline = true
+            outlineProvider = object : ViewOutlineProvider() {
+                override fun getOutline(view: View, outline: Outline) {
+                    outline.setOval(0, 0, view.width, view.height)
+                }
+            }
+            // 柔光玻璃：图标更透，让玻璃质感可见
+            val glass = AppPrefs.fabGlassEnabled
+            setPadding(6, 6, 6, 6)
+            // 透明度（用户可调）
+            alpha = AppPrefs.fabOpacity / 100f
+            if (glass) setImageAlpha(204)
+            setOnClickListener { onNekoButtonClick() }
+            setOnTouchListener(DragTouchListener(p))
+            contentDescription = getString(R.string.u168)
+        }
+        params = p
+        button = btn
+        try {
+            wm.addView(btn, p)
+            buttonAdded = true
+        } catch (_: Throwable) {
+            // 悬浮窗权限未授予：按钮暂不显示
+        }
+    }
+
+    private inner class DragTouchListener(private val p: WindowManager.LayoutParams) :
+        View.OnTouchListener {
+
+        private val slop = ViewConfiguration.get(this@FloatingButtonService).scaledTouchSlop
+        // 以按下点为原点计算累计位移，避免"慢拖被误判为点击"或"轻点被误判为拖拽"
+        private var originX = 0f
+        private var originY = 0f
+        private var originParamX = 0
+        private var originParamY = 0
+        private var moved = false
+        // 长按快捷菜单：按下后达到系统长按超时（约 500ms）且未移动则触发
+        private var longPressFired = false
+        // 本次按下时是否处于「收起成小圆点」状态（抬手时据此决定是否只展开）
+        private var wasCollapsed = false
+        private val longPressTimeout = ViewConfiguration.getLongPressTimeout().toLong()
+        private val longPressRunnable = Runnable { triggerLongPress() }
+
+        private fun triggerLongPress() {
+            longPressFired = true
+            Log.i(TAG, "long press fired -> show menu")
+            NekoLog.info("悬浮球长按：弹出快捷菜单")
+            // 收起状态先展开：此时长按已判定完成，改窗口尺寸不会再影响本次手势
+            try { if (collapsed) expandFromDot() } catch (t: Throwable) { Log.w(TAG, "expand failed", t) }
+            this@FloatingButtonService.showLongPressMenu()
+        }
+
+        override fun onTouch(v: View, event: MotionEvent): Boolean {
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    originX = event.rawX
+                    originY = event.rawY
+                    originParamX = p.x
+                    originParamY = p.y
+                    moved = false
+                    longPressFired = false
+                    wasCollapsed = collapsed
+                    expandOnlyNextClick = false
+                    // 注意：收起状态下**不在按下时展开**。
+                    // 手势进行中调用 updateViewLayout 改窗口尺寸会导致触摸序列被系统取消
+                    // （收到 ACTION_CANCEL），长按回调随之被移除 → 菜单永远弹不出来。
+                    // 改为抬手时展开（ACTION_UP），长按则在 triggerLongPress 里展开。
+                    v.removeCallbacks(collapseRunnable)
+                    // 长按快捷菜单：监听长按（用户可在设置关闭）
+                    if (AppPrefs.fabLongPressMenu) {
+                        v.removeCallbacks(longPressRunnable)
+                        v.postDelayed(longPressRunnable, longPressTimeout)
+                    }
+                    // 按压反馈：按下变暗
+                    v.alpha = 0.8f
+                    return true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val totalDx = event.rawX - originX
+                    val totalDy = event.rawY - originY
+                    if (!moved && (abs(totalDx) > slop || abs(totalDy) > slop)) {
+                        moved = true
+                        // 一旦判定为拖动，取消长按
+                        v.removeCallbacks(longPressRunnable)
+                    }
+                    if (moved) {
+                        p.x = originParamX + totalDx.toInt()
+                        p.y = originParamY + totalDy.toInt()
+                        try { wm.updateViewLayout(v, p) } catch (_: Throwable) { }
+                    }
+                    return true
+                }
+                MotionEvent.ACTION_UP -> {
+                    v.removeCallbacks(longPressRunnable)
+                    v.alpha = 1f
+                    // 长按已触发菜单：本次抬手不再执行点击（避免误触发变换）
+                    if (longPressFired) {
+                        scheduleCollapse()
+                        return true
+                    }
+                    if (!moved) {
+                        // 收起状态下单击 = 只展开，本次不触发变换
+                        if (wasCollapsed) {
+                            expandFromDot()
+                            scheduleCollapse()
+                            return true
+                        }
+                        v.performClick()
+                        return true
+                    }
+                    if (AppPrefs.snapEdges) snapToEdge(v)
+                    AppPrefs.buttonX = p.x
+                    AppPrefs.buttonY = p.y
+                    scheduleCollapse()
+                    return true
+                }
+                MotionEvent.ACTION_CANCEL -> {
+                    v.removeCallbacks(longPressRunnable)
+                    v.alpha = 1f
+                    scheduleCollapse()
+                    return true
+                }
+            }
+            return false
+        }
+
+        private fun snapToEdge(v: View) {
+            try {
+                val out = android.graphics.Point()
+                @Suppress("DEPRECATION")
+                wm.defaultDisplay.getSize(out)
+                val leftDist = p.x
+                val rightDist = out.x - p.x - v.width
+                p.x = if (leftDist < rightDist) 0 else out.x - v.width
+            } catch (_: Throwable) { }
+        }
+    }
+
+    // ---------- 长按快捷菜单 ----------
+
+    /** 长按悬浮球：弹出快捷菜单（回到应用 / 规则预设 / 其他功能） */
+    private fun showLongPressMenu() {
+        val b = button
+        if (b == null) {
+            Log.w(TAG, "showLongPressMenu: button is null")
+            return
+        }
+        Log.i(TAG, "showLongPressMenu: collapsed=$collapsed enabled=${AppPrefs.fabLongPressMenu}")
+        // 长按触感
+        if (AppPrefs.hapticEnabled) {
+            try { b.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS) } catch (_: Throwable) { }
+        }
+        // 首次提示：告诉用户长按可随时再次打开此菜单
+        if (!AppPrefs.fabLongPressHintShown) {
+            AppPrefs.fabLongPressHintShown = true
+            try { Toast.makeText(this, getString(R.string.fm_hint_long_press), Toast.LENGTH_SHORT).show() } catch (_: Throwable) { }
+        }
+        val loc = IntArray(2)
+        try { b.getLocationOnScreen(loc) } catch (_: Throwable) {
+            loc[0] = params?.x ?: 0
+            loc[1] = params?.y ?: 0
+        }
+        try {
+            if (menuPanel == null) menuPanel = FloatingMenuPanel(this)
+            menuPanel?.show(loc[0], loc[1], b.width, b.height)
+        } catch (t: Throwable) {
+            // 不再静默吞异常：记录到 logcat 与应用内日志
+            Log.e(TAG, "showLongPressMenu failed", t)
+            NekoLog.error("悬浮菜单弹出异常：${t.javaClass.simpleName}: ${t.message}")
+            try {
+                Toast.makeText(this, "菜单弹出异常：${t.javaClass.simpleName}", Toast.LENGTH_SHORT).show()
+            } catch (_: Throwable) { }
+        }
+    }
+
+    /** 立即执行一次「读取输入框 → 变换 → 发送」（供快捷菜单调用） */
+    fun performTransformNow() {
+        val b = button
+        if (AppPrefs.hapticEnabled && b != null) {
+            try { b.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP) } catch (_: Throwable) { }
+        }
+        when {
+            !NekoTypeAccessibilityBridge.isServiceReady() -> {
+                NekoLog.warn("快捷菜单：无障碍服务未开启")
+                Toast.makeText(this, getString(R.string.u169), Toast.LENGTH_SHORT).show()
+            }
+            !NekoTypeAccessibilityBridge.hasActiveNode() -> {
+                NekoLog.warn("快捷菜单：未检测到输入框焦点")
+                Toast.makeText(this, getString(R.string.u170), Toast.LENGTH_SHORT).show()
+            }
+            else -> {
+                NekoTypeAccessibilityBridge.requestTransformAndSend()
+                Toast.makeText(this, getString(R.string.u171), Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // ---------- 核心：变换 + 发送 ----------
+
+    private fun onNekoButtonClick() {
+        // 收起状态下点击 = 只展开，不触发变换
+        if (expandOnlyNextClick) {
+            expandOnlyNextClick = false
+            scheduleCollapse()
+            return
+        }
+        val b = button
+        if (AppPrefs.hapticEnabled && b != null) {
+            try { b.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP) } catch (_: Throwable) { }
+        }
+        when {
+            !NekoTypeAccessibilityBridge.isServiceReady() -> {
+                NekoLog.warn("点击按钮：无障碍服务未开启")
+                Toast.makeText(this, getString(R.string.u169), Toast.LENGTH_SHORT).show()
+            }
+            !NekoTypeAccessibilityBridge.hasActiveNode() -> {
+                NekoLog.warn("点击按钮：未检测到输入框焦点")
+                Toast.makeText(this, getString(R.string.u170), Toast.LENGTH_SHORT).show()
+            }
+            else -> {
+                // 委托给无障碍服务桥接层：读取当前输入框 → 变换 → 写入 → 发送
+                NekoTypeAccessibilityBridge.requestTransformAndSend()
+                Toast.makeText(this, getString(R.string.u171), Toast.LENGTH_SHORT).show()
+            }
+        }
+        scheduleCollapse()
+    }
+}
