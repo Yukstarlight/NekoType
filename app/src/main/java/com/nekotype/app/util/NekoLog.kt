@@ -55,15 +55,6 @@ object NekoLog {
             ERROR -> "Error：$msg"
             else -> msg
         }
-        // 同时镜像到 logcat（tag=NekoLog）：应用内日志文件无法被外部工具读取，
-        // 排查隐藏模式等系统交互问题时靠它抓现场
-        try {
-            when (level) {
-                ERROR -> android.util.Log.e("NekoLog", text)
-                WARN -> android.util.Log.w("NekoLog", text)
-                else -> android.util.Log.i("NekoLog", text)
-            }
-        } catch (_: Throwable) { }
         cache.add(Entry(System.currentTimeMillis(), level, text))
         while (cache.size > MAX_ENTRIES) cache.removeAt(0)
         // 异步批量落盘（合并高频调用，不阻塞调用线程）

@@ -384,9 +384,6 @@ class ModeFragment : Fragment() {
 
     private fun applyHiddenMode(enabled: Boolean) {
         val ctx = context ?: return
-        android.util.Log.i("NekoHide", "applyHiddenMode enabled=$enabled service=${AppPrefs.serviceEnabled} " +
-            "overlay=${android.provider.Settings.canDrawOverlays(ctx)} admin=${SysPower.isDeviceAdminActive()} " +
-            "shizukuReady=${SysPower.privilegedChannelReady()} shizukuRoot=${SysPower.isShizukuRoot()}")
         if (enabled) {
             if (!AppPrefs.serviceEnabled || !android.provider.Settings.canDrawOverlays(ctx)) {
                 toast(getString(R.string.u2))
@@ -412,7 +409,6 @@ class ModeFragment : Fragment() {
             if (SysPower.isShizukuRoot()) {
                 lifecycleScope.launch {
                     val r = withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(true) }
-                    android.util.Log.i("NekoHide", "pm hide success=${r.success} out=${r.output.take(120)}")
                     NekoLog.info("隐藏模式：pm hide " + (if (r.success) "成功" else "失败 ${r.output.take(60)}"))
                     if (!aliasOk && !r.success) toast(getString(R.string.u54))
                 }
@@ -424,6 +420,13 @@ class ModeFragment : Fragment() {
                 NekoLog.warn("隐藏模式：入口禁用失败且 Shizuku 不可用")
                 toast(getString(R.string.hid_alias_fail))
             }
+            // 把当前应用从最近任务列表移除（后台隐藏）
+            try {
+                val am = ctx.getSystemService(android.content.Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+                for (task in am.appTasks) {
+                    try { task.finishAndRemoveTask() } catch (_: Throwable) { }
+                }
+            } catch (_: Throwable) { }
             toast(getString(R.string.u50))
         } else {
             // 恢复：先 pm unhide（去掉包级隐藏），再恢复组件入口

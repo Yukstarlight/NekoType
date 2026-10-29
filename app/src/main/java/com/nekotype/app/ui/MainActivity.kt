@@ -419,7 +419,6 @@ class MainActivity : AppCompatActivity() {
             if (SysPower.isShizukuRoot()) {
                 lifecycleScope.launch {
                     val r = withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(true) }
-                    android.util.Log.i("NekoHide", "pm hide success=${r.success} out=${r.output.take(120)}")
                     NekoLog.info("隐藏模式：pm hide " + (if (r.success) "成功" else "失败 ${r.output.take(60)}"))
                     if (!aliasOk && !r.success) toast(getString(R.string.u54))
                 }
@@ -430,6 +429,13 @@ class MainActivity : AppCompatActivity() {
                 NekoLog.warn("隐藏模式：入口禁用失败且 Shizuku 不可用")
                 toast(getString(R.string.hid_alias_fail))
             }
+            // 移出最近任务（后台隐藏）
+            try {
+                val am = getSystemService(android.content.Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+                for (task in am.appTasks) {
+                    try { task.finishAndRemoveTask() } catch (_: Throwable) { }
+                }
+            } catch (_: Throwable) { }
             NekoLog.adjust("开启隐藏模式：桌面图标已隐藏")
             toast(getString(R.string.u50))
         } else {

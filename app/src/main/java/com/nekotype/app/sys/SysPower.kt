@@ -1016,38 +1016,31 @@ object SysPower {
     fun setHiddenMode(hidden: Boolean): Boolean {
         return try {
             val pm = NekoTypeApp.instance.packageManager
-            val real = ComponentName(NekoTypeApp.instance, "com.nekotype.app.MainActivityAlias")
-            val fake = ComponentName(NekoTypeApp.instance, "com.nekotype.app.CalculatorAlias")
-            // 先切伪装入口、再切真入口：新增一个 LAUNCHER 组件会让桌面重建应用条目，
-            // 顺带把真图标从缓存里刷掉（华为桌面只认这种变更，单纯禁用常常留残影）
-            pm.setComponentEnabledSetting(
-                fake,
-                if (hidden) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-                else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                PackageManager.DONT_KILL_APP
-            )
-            pm.setComponentEnabledSetting(
-                real,
-                if (hidden) PackageManager.COMPONENT_ENABLED_STATE_DISABLED
-                else PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                PackageManager.DONT_KILL_APP
-            )
-            val realNow = try { pm.getComponentEnabledSetting(real) } catch (_: Throwable) { -1 }
-            val fakeNow = try { pm.getComponentEnabledSetting(fake) } catch (_: Throwable) { -1 }
-            val ok = if (hidden) realNow == PackageManager.COMPONENT_ENABLED_STATE_DISABLED
-            else realNow == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-            android.util.Log.i(
-                "NekoHide",
-                "setHiddenMode hidden=$hidden real=$realNow fake=$fakeNow ok=$ok"
-            )
+            val alias = ComponentName(NekoTypeApp.instance, "com.nekotype.app.MainActivityAlias")
+            val want = if (hidden) PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+            else PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+            pm.setComponentEnabledSetting(alias, want, PackageManager.DONT_KILL_APP)
+            // 回读校验：部分 ROM 会吞掉组件状态变更（或桌面缓存不刷新），不校验等于盲改
+            val now = try { pm.getComponentEnabledSetting(alias) } catch (_: Throwable) { -1 }
+            val ok = now == want
             if (ok) {
-                NekoLog.info(if (hidden) "隐藏模式：桌面图标已替换为伪装入口" else "隐藏模式：桌面图标已恢复")
+                NekoLog.info(if (hidden) "隐藏模式：桌面入口已禁用" else "隐藏模式：桌面入口已恢复")
             } else {
-                NekoLog.warn("隐藏模式：入口切换未生效（real=$realNow fake=$fakeNow）")
+                NekoLog.warn("隐藏模式：桌面入口切换未生效（期望=$want 实际=$now），尝试再用 Shizuku 处理")
             }
+            // 部分桌面（如华为）不主动刷新图标缓存，主动广播通知刷新，
+            // 避免残留图标点击后跳「应用信息」
+            try {
+                val i = Intent(
+                    Intent.ACTION_PACKAGE_CHANGED,
+                    android.net.Uri.parse("package:${NekoTypeApp.instance.packageName}")
+                )
+                i.putExtra(Intent.EXTRA_CHANGED_COMPONENT_NAME, alias.flattenToString())
+                NekoTypeApp.instance.sendBroadcast(i)
+            } catch (_: Throwable) { }
             ok
         } catch (t: Throwable) {
-            NekoLog.warn("隐藏模式：入口切换异常 ${t.javaClass.simpleName}: ${t.message}")
+            NekoLog.warn("隐藏模式：桌面入口切换异常 ${t.javaClass.simpleName}: ${t.message}")
             false
         }
     }

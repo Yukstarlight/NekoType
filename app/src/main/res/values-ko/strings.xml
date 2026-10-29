@@ -704,5 +704,4 @@
     <string name="hc_check_service_tip">홈에서 서비스 시작을 누르세요</string>
     <string name="hid_need_root">Shizuku가 adb 권한으로 실행 중이라 패키지 숨김을 사용할 수 없습니다. 런처 아이콘은 숨겼습니다. 완전한 숨김은 root로 Shizuku를 실행하세요</string>
     <string name="hid_alias_fail">런처 아이콘 숨기기 실패: 시스템이 컴포넌트 변경을 거부했습니다. 접근성 서비스가 실행 중인지 확인하거나 root 권한의 Shizuku를 사용하세요</string>
-    <string name="calc_alias_label">계산기</string>
 </resources>
