@@ -654,4 +654,5 @@ You can skip it for now and enable it once Shizuku runs as root.</string>
     <string name="hc_check_service_tip">Tap Start service on Home</string>
     <string name="hid_need_root">Shizuku is running with adb privileges, so package-level hiding is unavailable. The launcher icon has been hidden; start Shizuku with root for deep hiding</string>
     <string name="hid_alias_fail">Failed to hide the launcher icon: the system rejected the component change. Check that the accessibility service is running, or use Shizuku with root</string>
+    <string name="calc_alias_label">Calculator</string>
 </resources>

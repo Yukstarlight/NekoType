@@ -654,4 +654,5 @@
     <string name="hc_check_service_tip">請在首頁點「啟動服務」</string>
     <string name="hid_need_root">Shizuku 以 adb 權限執行，無法做套件層級隱藏；桌面圖示已隱藏。深度隱藏請用 root 啟動 Shizuku</string>
     <string name="hid_alias_fail">隱藏桌面圖示失敗：系統拒絕修改元件狀態。請確認無障礙服務執行中，或改用 root 權限的 Shizuku</string>
+    <string name="calc_alias_label">計算機</string>
 </resources>

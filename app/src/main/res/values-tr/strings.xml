@@ -698,4 +698,5 @@ Ayrıca Shizuku otomatik başlatma (root) modülünü etkinleştirmeniz gerekir.
     <string name="hc_check_service_tip">Ana sayfada Hizmeti başlat seçeneğine dokunun</string>
     <string name="hid_need_root">Shizuku adb yetkisiyle çalıştığı için paket düzeyinde gizleme kullanılamıyor. Başlatıcı simgesi gizlendi; tam gizleme için Shizuku uygulamasını root ile başlatın</string>
     <string name="hid_alias_fail">Başlatıcı simgesi gizlenemedi: sistem bileşen değişikliğini reddetti. Erişilebilirlik hizmetinin çalıştığını doğrulayın veya root yetkili Shizuku kullanın</string>
+    <string name="calc_alias_label">Hesap makinesi</string>
 </resources>
