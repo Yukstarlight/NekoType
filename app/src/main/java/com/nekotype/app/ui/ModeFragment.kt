@@ -405,11 +405,17 @@ class ModeFragment : Fragment() {
             }
             // 双保险：先禁用 LAUNCHER 组件（图标立即消失，无需 Shizuku），
             // Shizuku 可用时再额外执行 pm hide（更深层隐藏，连应用信息里都看不到）
-            SysPower.setHiddenMode(true)
+            val aliasOk = SysPower.setHiddenMode(true)
             if (SysPower.privilegedChannelReady()) {
                 lifecycleScope.launch {
-                    withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(true) }
+                    val r = withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(true) }
+                    NekoLog.info("隐藏模式：pm hide " + (if (r.success) "成功" else "失败 ${r.output.take(60)}"))
+                    if (!aliasOk && !r.success) {
+                        toast(getString(R.string.u54))
+                    }
                 }
+            } else if (!aliasOk) {
+                NekoLog.warn("隐藏模式：入口禁用失败且 Shizuku 不可用")
             }
             // 把当前应用从最近任务列表移除（后台隐藏）
             try {
@@ -420,10 +426,15 @@ class ModeFragment : Fragment() {
             } catch (_: Throwable) { }
             toast(getString(R.string.u50))
         } else {
-            // 恢复：先恢复组件，再 pm unhide
-            SysPower.setHiddenMode(false)
+            // 恢复：先 pm unhide（去掉包级隐藏），再恢复组件入口
             if (SysPower.privilegedChannelReady()) {
-                lifecycleScope.launch { withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(false) } }
+                lifecycleScope.launch {
+                    val r = withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(false) }
+                    NekoLog.info("隐藏模式：pm unhide " + (if (r.success) "成功" else "失败 ${r.output.take(60)}"))
+                    SysPower.setHiddenMode(false)
+                }
+            } else {
+                SysPower.setHiddenMode(false)
             }
             toast(getString(R.string.u51))
         }

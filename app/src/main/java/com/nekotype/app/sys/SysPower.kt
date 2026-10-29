@@ -1001,16 +1001,21 @@ object SysPower {
      * 无需 Shizuku/设备管理员——应用可禁用自身组件）。
      * 隐藏后桌面图标消失，但 MainActivity 仍可被显式 Intent（通知栏/磁贴）拉起。
      */
-    fun setHiddenMode(hidden: Boolean) {
-        try {
+    fun setHiddenMode(hidden: Boolean): Boolean {
+        return try {
             val pm = NekoTypeApp.instance.packageManager
             val alias = ComponentName(NekoTypeApp.instance, "com.nekotype.app.MainActivityAlias")
-            pm.setComponentEnabledSetting(
-                alias,
-                if (hidden) PackageManager.COMPONENT_ENABLED_STATE_DISABLED
-                else PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                PackageManager.DONT_KILL_APP
-            )
+            val want = if (hidden) PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+            else PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+            pm.setComponentEnabledSetting(alias, want, PackageManager.DONT_KILL_APP)
+            // 回读校验：部分 ROM 会吞掉组件状态变更（或桌面缓存不刷新），不校验等于盲改
+            val now = try { pm.getComponentEnabledSetting(alias) } catch (_: Throwable) { -1 }
+            val ok = now == want
+            if (ok) {
+                NekoLog.info(if (hidden) "隐藏模式：桌面入口已禁用" else "隐藏模式：桌面入口已恢复")
+            } else {
+                NekoLog.warn("隐藏模式：桌面入口切换未生效（期望=$want 实际=$now），尝试再用 Shizuku 处理")
+            }
             // 部分桌面（如华为）不主动刷新图标缓存，主动广播通知刷新，
             // 避免残留图标点击后跳「应用信息」
             try {
@@ -1021,7 +1026,11 @@ object SysPower {
                 i.putExtra(Intent.EXTRA_CHANGED_COMPONENT_NAME, alias.flattenToString())
                 NekoTypeApp.instance.sendBroadcast(i)
             } catch (_: Throwable) { }
-        } catch (_: Throwable) { }
+            ok
+        } catch (t: Throwable) {
+            NekoLog.warn("隐藏模式：桌面入口切换异常 ${t.javaClass.simpleName}: ${t.message}")
+            false
+        }
     }
 
     /**

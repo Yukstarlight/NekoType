@@ -214,43 +214,10 @@ class HomeFragment : Fragment() {
 
     // ---------- 语言切换 ----------
 
-    /** 全局 UI 语言切换：跟随系统（默认）/ 简体中文 / 繁體中文 / English */
+    /** 全局 UI 语言切换：跟随系统 / 各语言（与系统「应用语言」语义一致） */
     private fun showLanguageDialog() {
-        val tags = arrayOf("", "zh", "zh-TW", "en", "tr", "ja", "ko", "de")
-        val langs = arrayOf(getString(R.string.hc_follow_system), "简体中文", "繁體中文", "English", "Türkçe", "日本語", "한국어", "Deutsch")
-        val checked = when (androidx.appcompat.app.AppCompatDelegate.getApplicationLocales().toLanguageTags()) {
-            "zh" -> 1
-            "zh-TW" -> 2
-            "en" -> 3
-            "tr" -> 4
-            "ja" -> 5
-            "ko" -> 6
-            "de" -> 7
-            else -> 0 // 空 = 跟随系统（默认）
-        }
-        var chosen = checked
-        NekoDialog.builder(requireContext())
-            .setTitle(getString(R.string.u52))
-            .setSingleChoiceItems(langs, checked) { _, which ->
-                chosen = which
-            }
-            .setPositiveButton(getString(R.string.u71)) { _, _ ->
-                try {
-                    // 跟随系统 = 清空应用级语言覆盖（getEmptyLocaleList）
-                    val list = if (chosen == 0) {
-                        androidx.core.os.LocaleListCompat.getEmptyLocaleList()
-                    } else {
-                        androidx.core.os.LocaleListCompat.forLanguageTags(tags[chosen])
-                    }
-                    androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(list)
-                    com.nekotype.app.prefs.AppPrefs.appLangTag = tags[chosen]
-                    NekoLog.adjust("语言切换为：${langs[chosen]}")
-                } catch (_: Throwable) {
-                    toast(getString(R.string.u14))
-                }
-            }
-            .setNegativeButton(getString(R.string.u72), null)
-            .show()
+        com.nekotype.app.ui.LanguagePicker.show(requireContext())
+        NekoLog.adjust("打开语言选择：当前 " + com.nekotype.app.ui.LanguagePicker.currentTag().ifEmpty { "跟随系统" })
     }
 
     // ---------- 服务开关 ----------

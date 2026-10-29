@@ -1447,7 +1447,11 @@ object AppPrefs {
      * 这里自行持久化，并在 NekoTypeApp.onCreate 启动时重新应用。
      */
     var appLangTag: String
-        get() = sp.getString("app_lang_tag", "") ?: ""
+        get() = when (val t = sp.getString("app_lang_tag", "") ?: "") {
+            "zh", "zh-CN", "zh-rCN" -> "zh-Hans"
+            "zh-TW", "zh-rTW" -> "zh-Hant"
+            else -> t
+        }
         set(v) { sp.edit().putString("app_lang_tag", v).commit() }
 
     /** 应用启动次数（进程启动即 +1），用于里程碑赞助提醒 */
