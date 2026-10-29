@@ -257,6 +257,8 @@ object LegalDocs {
             · Shizuku API / Provider 13.1.5（作者 Rikka）
             · argon2kt 1.5.0（作者 lambdapioneer）
             许可全文：https://www.apache.org/licenses/LICENSE-2.0
+            说明：应用内语言选择（跟随系统语义、语言名称的双语展示与资源标签对应）
+                  参考 Shizuku 管理器的实现思路。
 
             【GNU General Public License v3.0】
             · Termux 终端模拟器代码（com.termux.terminal 包下的终端实现）
@@ -268,7 +270,9 @@ object LegalDocs {
               来源：https://github.com/aistra0528/Hail
               许可全文：https://www.gnu.org/licenses/gpl-3.0.html
             说明：本应用的 Shizuku 特权通道（经 moe.shizuku.server.IShizukuService
-                  直连 newProcess 起 shell 进程执行固定动作）参考其实现思路。
+                  直连 newProcess 起 shell 进程执行固定动作）与隐藏模式中的
+                  「Shizuku 隐藏」工作模式（包级隐藏需 root、以 adb 权限运行时明确提示）
+                  参考其实现思路与行为定义。
 
             【GNU Lesser General Public License v3.0】
             · Operit AI —— Android 端 AI 助手
@@ -305,6 +309,8 @@ object LegalDocs {
             · Shizuku API / Provider 13.1.5（作者 Rikka）
             · argon2kt 1.5.0（作者 lambdapioneer）
             授權全文：https://www.apache.org/licenses/LICENSE-2.0
+            說明：應用內語言選擇（跟隨系統語意、語言名稱的雙語顯示與資源標籤對應）
+                  參考 Shizuku 管理器的實作思路。
 
             【GNU General Public License v3.0】
             · Termux 終端機模擬器程式碼（com.termux.terminal 套件下的終端機實作）
@@ -316,7 +322,9 @@ object LegalDocs {
               來源：https://github.com/aistra0528/Hail
               授權全文：https://www.gnu.org/licenses/gpl-3.0.html
             說明：本應用的 Shizuku 特權通道（經 moe.shizuku.server.IShizukuService
-                  直連 newProcess 起 shell 行程執行固定動作）參考其實作思路。
+                  直連 newProcess 起 shell 行程執行固定動作）與隱藏模式中的
+                  「Shizuku 隱藏」工作模式（套件層級隱藏需 root、以 adb 權限執行時明確提示）
+                  參考其實作思路與行為定義。
 
             【GNU Lesser General Public License v3.0】
             · Operit AI —— Android 端 AI 助手
@@ -354,6 +362,8 @@ object LegalDocs {
             · Shizuku API / Provider 13.1.5 (by Rikka)
             · argon2kt 1.5.0 (by lambdapioneer)
             Full text: https://www.apache.org/licenses/LICENSE-2.0
+            Note: the in-app language picker (follow-system semantics, bilingual locale
+                  names and resource tag mapping) follows the approach of Shizuku Manager.
 
             [GNU General Public License v3.0]
             · Termux terminal emulator code (the terminal implementation under com.termux.terminal)
@@ -367,7 +377,9 @@ object LegalDocs {
               Full text: https://www.gnu.org/licenses/gpl-3.0.html
             Note: this app's Shizuku privileged channel (directly calling
                   moe.shizuku.server.IShizukuService#newProcess to run fixed actions in a
-                  shell process) follows its implementation approach.
+                  shell process) and the "Shizuku - Hide" working mode of hidden mode
+                  (package-level hiding needs root; an explicit hint is shown when Shizuku
+                  runs with adb privileges) follow its implementation approach and behaviour.
 
             [GNU Lesser General Public License v3.0]
             · Operit AI - Android AI assistant

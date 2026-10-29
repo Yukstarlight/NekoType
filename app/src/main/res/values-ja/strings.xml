@@ -703,4 +703,6 @@
     <string name="hc_check_go">有効にする</string>
     <string name="hc_check_result">結果：%1$d/%2$d 正常</string>
     <string name="hc_check_service_tip">ホームで「サービス開始」をタップしてください</string>
+    <string name="hid_need_root">Shizuku は adb 権限で動作中のため、パッケージ単位の非表示はできません。ランチャーのアイコンは非表示にしました。完全な非表示には root で Shizuku を起動してください</string>
+    <string name="hid_alias_fail">ランチャーアイコンの非表示に失敗しました。システムがコンポーネントの変更を拒否しました。アクセシビリティサービスの動作を確認するか、root 権限の Shizuku を使用してください</string>
 </resources>

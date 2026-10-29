@@ -732,4 +732,6 @@ Du kannst es jetzt überspringen und später aktivieren.</string>
     <string name="hc_check_go">Aktivieren</string>
     <string name="hc_check_result">Ergebnis: %1$d/%2$d OK</string>
     <string name="hc_check_service_tip">Tippe auf der Startseite auf Dienst starten</string>
+    <string name="hid_need_root">Shizuku läuft mit adb-Rechten, daher ist paketweites Ausblenden nicht möglich. Das Startbildschirm-Symbol wurde ausgeblendet; für vollständiges Ausblenden Shizuku mit Root starten</string>
+    <string name="hid_alias_fail">Startbildschirm-Symbol konnte nicht ausgeblendet werden: Das System hat die Komponentenänderung abgelehnt. Prüfe den Bedienungshilfen-Dienst oder nutze Shizuku mit Root-Rechten</string>
 </resources>

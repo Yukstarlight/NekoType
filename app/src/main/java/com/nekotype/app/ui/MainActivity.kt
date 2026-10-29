@@ -416,14 +416,18 @@ class MainActivity : AppCompatActivity() {
             // 双保险：先禁用 LAUNCHER 组件（图标立即消失，无需 Shizuku），
             // Shizuku 可用时再额外执行 pm hide（更深层隐藏）
             val aliasOk = SysPower.setHiddenMode(true)
-            if (SysPower.privilegedChannelReady()) {
+            if (SysPower.isShizukuRoot()) {
                 lifecycleScope.launch {
                     val r = withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(true) }
                     NekoLog.info("隐藏模式：pm hide " + (if (r.success) "成功" else "失败 ${r.output.take(60)}"))
                     if (!aliasOk && !r.success) toast(getString(R.string.u54))
                 }
+            } else if (SysPower.privilegedChannelReady()) {
+                NekoLog.info("隐藏模式：Shizuku 为 adb 权限，跳过包级隐藏（需 root）")
+                toast(getString(R.string.hid_need_root))
             } else if (!aliasOk) {
                 NekoLog.warn("隐藏模式：入口禁用失败且 Shizuku 不可用")
+                toast(getString(R.string.hid_alias_fail))
             }
             // 移出最近任务（后台隐藏）
             try {

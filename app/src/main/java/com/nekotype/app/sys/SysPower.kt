@@ -982,6 +982,18 @@ object SysPower {
         }
     }
 
+    /**
+     * Shizuku 是否以 root 身份运行。
+     *
+     * 包级隐藏（pm hide / setApplicationHiddenSettingAsUser）需要 root；
+     * Shizuku 以 adb 权限运行时该动作必然失败，继续尝试只会静默失败。
+     */
+    fun isShizukuRoot(): Boolean = try {
+        privilegedChannelReady() && Shizuku.getUid() == 0
+    } catch (_: Throwable) {
+        false
+    }
+
     // ---------- 隐藏模式（隐藏桌面图标） ----------
 
     /**
