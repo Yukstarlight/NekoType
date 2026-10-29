@@ -428,6 +428,8 @@ class ModeFragment : Fragment() {
                 }
             }
             toast(getString(R.string.u50))
+            // 关键：先把应用退到后台，让桌面回到前台，桌面才会处理组件变更并重建图标列表
+            try { activity?.finishAffinity() } catch (_: Throwable) { }
         } else {
             // 恢复：先 pm unhide（去掉包级隐藏），再恢复组件入口
             if (SysPower.isShizukuRoot()) {
