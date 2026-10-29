@@ -1023,6 +1023,7 @@ object SysPower {
             // 回读校验：部分 ROM 会吞掉组件状态变更（或桌面缓存不刷新），不校验等于盲改
             val now = try { pm.getComponentEnabledSetting(alias) } catch (_: Throwable) { -1 }
             val ok = now == want
+            android.util.Log.i("NekoHide", "setHiddenMode hidden=$hidden want=$want now=$now ok=$ok")
             if (ok) {
                 NekoLog.info(if (hidden) "隐藏模式：桌面入口已禁用" else "隐藏模式：桌面入口已恢复")
             } else {

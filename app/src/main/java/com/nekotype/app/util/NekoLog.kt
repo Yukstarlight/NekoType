@@ -55,6 +55,13 @@ object NekoLog {
             ERROR -> "Error：$msg"
             else -> msg
         }
+        try {
+            when (level) {
+                ERROR -> android.util.Log.e("NekoLog", text)
+                WARN -> android.util.Log.w("NekoLog", text)
+                else -> android.util.Log.i("NekoLog", text)
+            }
+        } catch (_: Throwable) { }
         cache.add(Entry(System.currentTimeMillis(), level, text))
         while (cache.size > MAX_ENTRIES) cache.removeAt(0)
         // 异步批量落盘（合并高频调用，不阻塞调用线程）

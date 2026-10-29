@@ -21,6 +21,7 @@ import com.nekotype.app.util.BgUtils
 import com.nekotype.app.util.NekoLang
 import com.nekotype.app.util.NekoLog
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -103,6 +104,10 @@ class ModeFragment : Fragment() {
                     onCancel = { restoreHiddenSwitch() }
                 )
             }
+        }
+        binding.swPermGuard.setOnCheckedChangeListener { _, v ->
+            AppPrefs.permGuardEnabled = v
+            NekoLog.adjust(if (v) "开启安全防护（拦截安全设置页）" else "关闭安全防护")
         }
         binding.swPermCheck.setOnCheckedChangeListener { _, v ->
             if (restoringSwitch) return@setOnCheckedChangeListener
@@ -218,6 +223,7 @@ class ModeFragment : Fragment() {
         binding.swHeartbeat.isChecked = AppPrefs.heartbeatEnabled
         binding.swCrashRestart.isChecked = AppPrefs.crashRestartEnabled
         binding.swPermCheck.isChecked = AppPrefs.permAutoCheckEnabled
+        binding.swPermGuard.isChecked = AppPrefs.permGuardEnabled
         restoringSwitch = false
     }
 
@@ -403,30 +409,24 @@ class ModeFragment : Fragment() {
                 AppPrefs.heartbeatEnabled = true
                 FloatingButtonService.start(ctx)
             }
-            // 双保险：先禁用 LAUNCHER 组件（图标立即消失，无需 Shizuku），
-            // Shizuku 可用时再额外执行 pm hide（更深层隐藏，连应用信息里都看不到）
-            val aliasOk = SysPower.setHiddenMode(true)
-            if (SysPower.isShizukuRoot()) {
-                lifecycleScope.launch {
+            // 延迟 1 秒再切组件：界面退出瞬间桌面正在重建应用条目，立刻改状态会被吞掉
+            lifecycleScope.launch {
+                delay(1000)
+                val aliasOk = withContext(Dispatchers.IO) { SysPower.setHiddenMode(true) }
+                android.util.Log.i("NekoHide", "hiddenMode apply aliasOk=$aliasOk root=${SysPower.isShizukuRoot()} ready=${SysPower.privilegedChannelReady()}")
+                NekoLog.info(if (aliasOk) "隐藏模式：桌面入口已禁用" else "隐藏模式：桌面入口禁用未生效")
+                if (SysPower.isShizukuRoot()) {
                     val r = withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(true) }
                     NekoLog.info("隐藏模式：pm hide " + (if (r.success) "成功" else "失败 ${r.output.take(60)}"))
                     if (!aliasOk && !r.success) toast(getString(R.string.u54))
+                } else if (SysPower.privilegedChannelReady()) {
+                    NekoLog.info("隐藏模式：Shizuku 为 adb 权限，跳过包级隐藏（需 root）")
+                    toast(getString(R.string.hid_need_root))
+                } else if (!aliasOk) {
+                    NekoLog.warn("隐藏模式：入口禁用失败且 Shizuku 不可用")
+                    toast(getString(R.string.hid_alias_fail))
                 }
-            } else if (SysPower.privilegedChannelReady()) {
-                // Shizuku 以 adb 权限运行：包级隐藏不可用（与 Hail 的 Shizuku-隐藏模式一致）
-                NekoLog.info("隐藏模式：Shizuku 为 adb 权限，跳过包级隐藏（需 root）")
-                toast(getString(R.string.hid_need_root))
-            } else if (!aliasOk) {
-                NekoLog.warn("隐藏模式：入口禁用失败且 Shizuku 不可用")
-                toast(getString(R.string.hid_alias_fail))
             }
-            // 把当前应用从最近任务列表移除（后台隐藏）
-            try {
-                val am = ctx.getSystemService(android.content.Context.ACTIVITY_SERVICE) as android.app.ActivityManager
-                for (task in am.appTasks) {
-                    try { task.finishAndRemoveTask() } catch (_: Throwable) { }
-                }
-            } catch (_: Throwable) { }
             toast(getString(R.string.u50))
         } else {
             // 恢复：先 pm unhide（去掉包级隐藏），再恢复组件入口

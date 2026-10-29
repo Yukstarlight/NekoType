@@ -651,4 +651,7 @@
     <string name="hc_check_service_tip">请在首页点「启动服务」</string>
     <string name="hid_need_root">Shizuku 以 adb 权限运行，无法做包级隐藏；桌面图标已隐藏。深度隐藏请用 root 启动 Shizuku</string>
     <string name="hid_alias_fail">隐藏桌面图标失败：系统拒绝修改组件状态。请确认无障碍服务运行中，或改用 root 权限的 Shizuku</string>
+    <string name="t_perm_guard">安全防护</string>
+    <string name="t_perm_guard_desc">进入系统「无障碍 / 设备管理」页时自动拦截返回，防止服务被关闭</string>
+    <string name="guard_blocked">安全防护：该设置页已被拦截</string>
 </resources>

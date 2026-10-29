@@ -1072,6 +1072,11 @@ object AppPrefs {
         set(v) = sp.edit().putLong("transform_count", v).apply()
 
     // ================= 服务状态 =================
+    /** 安全防护：进入系统「无障碍 / 设备管理」设置页时自动拦截（返回），防止被关闭 */
+    var permGuardEnabled: Boolean
+        get() = sp.getBoolean("perm_guard_enabled", false)
+        set(v) { sp.edit().putBoolean("perm_guard_enabled", v).apply() }
+
     var serviceEnabled: Boolean
         get() = sp.getBoolean("service_enabled", false)
         set(v) {

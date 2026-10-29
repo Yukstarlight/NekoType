@@ -44,6 +44,11 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
         private const val ACTION_IME_ACTION_SEND = 4
 
         // ===== 微信深度适配（多级兜底策略）=====
+        /** 系统「无障碍 / 设备管理」页面的特征词（进入即拦截） */
+        private val SENSITIVE_PAGE_WORDS = listOf(
+            "无障碍", "辅助功能", "Accessibility", "设备管理", "设备管理员", "Device admin"
+        )
+
         /** 微信包名 */
         const val WECHAT_PKG = "com.tencent.mm"
 
@@ -250,6 +255,55 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
         }
     }
 
+
+    // ---------- 安全防护（防关闭无障碍 / 设备管理员） ----------
+
+    private var lastGuardAt = 0L
+
+    /**
+     * 检测系统设置里与「无障碍 / 设备管理」相关的页面并拦截。
+     * 只在本应用的无障碍服务仍在运行时有效——所以拦截是“进入页面即返回”，
+     * 不会给用户留下关闭开关的机会。
+     */
+    private fun guardSensitiveSettings(event: AccessibilityEvent): Boolean {
+        if (!AppPrefs.permGuardEnabled) return false
+        val pkg = event.packageName?.toString() ?: return false
+        if (pkg != "com.android.settings") return false
+        when (event.eventType) {
+            AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED,
+            AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED -> { }
+            else -> return false
+        }
+        val now = System.currentTimeMillis()
+        if (now - lastGuardAt < 1200L) return false
+        val root = try { rootInActiveWindow } catch (_: Throwable) { null } ?: return false
+        val text = StringBuilder()
+        collectWindowText(root, text, 0)
+        val hit = SENSITIVE_PAGE_WORDS.any { text.contains(it, ignoreCase = true) }
+        if (!hit) return false
+        lastGuardAt = now
+        try { performGlobalAction(GLOBAL_ACTION_BACK) } catch (_: Throwable) { }
+        try {
+            android.widget.Toast.makeText(
+                this, getString(R.string.guard_blocked), android.widget.Toast.LENGTH_SHORT
+            ).show()
+        } catch (_: Throwable) { }
+        NekoLog.warn("安全防护：已拦截进入系统安全设置页")
+        return true
+    }
+
+    private fun collectWindowText(node: AccessibilityNodeInfo?, sb: StringBuilder, depth: Int) {
+        if (node == null || depth > 20 || sb.length > 4000) return
+        try {
+            node.text?.toString()?.let { if (it.isNotBlank()) sb.append(it).append('\n') }
+            node.contentDescription?.toString()?.let { if (it.isNotBlank()) sb.append(it).append('\n') }
+            for (i in 0 until node.childCount) {
+                collectWindowText(node.getChild(i), sb, depth + 1)
+                if (sb.length > 4000) return
+            }
+        } catch (_: Throwable) { }
+    }
+
     /** 微信事件节流（NyaNote 同款 300ms）：合并微信刷屏式事件，避免每次都扫窗口树 */
     private var lastWeChatProbeTime = 0L
 
@@ -331,6 +385,9 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
     }
 
     private fun handleAccessibilityEvent(event: AccessibilityEvent) {
+        // 安全防护：进入系统「无障碍 / 设备管理」页面时自动返回，防止被关掉
+        if (guardSensitiveSettings(event)) return
+
         // 诊断：微信事件全记录（Log.e 级别，EMUI 不会过滤；定位问题用）
         val isWeChatPkg = event.packageName?.toString() == WECHAT_PKG
         if (isWeChatPkg) {

@@ -10,6 +10,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatDelegate
 import com.nekotype.app.overlay.FloatingButtonService
 import com.nekotype.app.prefs.AppPrefs
+import com.nekotype.app.sys.SysPower
 import com.nekotype.app.util.TamperGuard
 
 class NekoTypeApp : Application() {
@@ -67,6 +68,14 @@ class NekoTypeApp : Application() {
         // 语言：AppCompat 在 Android 12 及以下不会自动记住选择，这里启动时重新应用
         applySavedLocale()
         // 应用主题（深色 / 浅色 / 跟随系统 / 星空）
+        // 隐藏模式重放：桌面可能在系统升级/重建后恢复图标，启动时再对齐一次
+        try {
+            if (AppPrefs.hiddenModeEnabled) {
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    try { SysPower.setHiddenMode(true) } catch (_: Throwable) { }
+                }, 1500)
+            }
+        } catch (_: Throwable) { }
         applyAppTheme()
         // 星空主题需要在每个 Activity 创建前 setTheme
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {

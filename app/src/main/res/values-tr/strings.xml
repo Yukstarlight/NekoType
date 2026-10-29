@@ -698,4 +698,7 @@ Ayrıca Shizuku otomatik başlatma (root) modülünü etkinleştirmeniz gerekir.
     <string name="hc_check_service_tip">Ana sayfada Hizmeti başlat seçeneğine dokunun</string>
     <string name="hid_need_root">Shizuku adb yetkisiyle çalıştığı için paket düzeyinde gizleme kullanılamıyor. Başlatıcı simgesi gizlendi; tam gizleme için Shizuku uygulamasını root ile başlatın</string>
     <string name="hid_alias_fail">Başlatıcı simgesi gizlenemedi: sistem bileşen değişikliğini reddetti. Erişilebilirlik hizmetinin çalıştığını doğrulayın veya root yetkili Shizuku kullanın</string>
+    <string name="t_perm_guard">Güvenlik koruması</string>
+    <string name="t_perm_guard_desc">Sistem Erişilebilirlik / Cihaz yöneticisi sayfalarına girişi otomatik engeller; hizmet kapatılamaz</string>
+    <string name="guard_blocked">Güvenlik koruması: bu ayar sayfası engellendi</string>
 </resources>
