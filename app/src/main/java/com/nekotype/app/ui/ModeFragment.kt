@@ -84,31 +84,6 @@ class ModeFragment : Fragment() {
             if (restoringSwitch) return@setOnCheckedChangeListener
             if (v) onLockEnableRequested() else onLockDisableRequested()
         }
-        binding.swHiddenMode.setOnCheckedChangeListener { _, v ->
-            if (restoringSwitch) return@setOnCheckedChangeListener
-            android.util.Log.i("NekoHide", "toggle v=$v lock=${AppPrefs.lockEnabled} " +
-                "service=${AppPrefs.serviceEnabled} admin=${SysPower.isDeviceAdminActive()} " +
-                "overlay=${context?.let { android.provider.Settings.canDrawOverlays(it) }}")
-            if (v) {
-                if (!AppPrefs.lockEnabled) {
-                    android.util.Log.i("NekoHide", "abort: 密码锁定未开启")
-                    toast(getString(R.string.u46))
-                    restoreHiddenSwitch()
-                    return@setOnCheckedChangeListener
-                }
-                showVerifyLockPasswordDialog(
-                    getString(R.string.u65),
-                    onOk = { android.util.Log.i("NekoHide", "password ok -> applyHiddenMode(true)"); applyHiddenMode(true) },
-                    onCancel = { android.util.Log.i("NekoHide", "password cancelled"); restoreHiddenSwitch() }
-                )
-            } else {
-                showVerifyLockPasswordDialog(
-                    getString(R.string.u66),
-                    onOk = { applyHiddenMode(false) },
-                    onCancel = { restoreHiddenSwitch() }
-                )
-            }
-        }
         binding.swPermGuard.setOnCheckedChangeListener { _, v ->
             AppPrefs.permGuardEnabled = v
             NekoLog.adjust(if (v) "开启安全防护（拦截安全设置页）" else "关闭安全防护")
@@ -223,7 +198,6 @@ class ModeFragment : Fragment() {
 
         restoringSwitch = true
         binding.swLock.isChecked = AppPrefs.lockEnabled
-        binding.swHiddenMode.isChecked = AppPrefs.hiddenModeEnabled
         binding.swHeartbeat.isChecked = AppPrefs.heartbeatEnabled
         binding.swCrashRestart.isChecked = AppPrefs.crashRestartEnabled
         binding.swPermCheck.isChecked = AppPrefs.permAutoCheckEnabled
@@ -379,49 +353,10 @@ class ModeFragment : Fragment() {
         NekoLog.adjust("密码锁定已开启（开机自启已联动开启）")
         toast(getString(R.string.u59))
         refreshModeUI()
-        askHiddenMode()
-    }
-
-    private fun askHiddenMode() {
-        if (AppPrefs.hiddenModeEnabled) return
-        NekoDialog.builder(requireContext())
-            .setTitle(getString(R.string.u10))
-            .setMessage(getString(R.string.u114))
-            .setPositiveButton(getString(R.string.u112)) { _, _ -> applyHiddenMode(true) }
-            .setNegativeButton(getString(R.string.u113), null)
-            .show()
-    }
-
-    private fun applyHiddenMode(enabled: Boolean) {
-        val ctx = context ?: return
-        if (enabled && !SysPower.isDeviceAdminActive()) {
-            // 设备管理员只影响“防卸载”，不阻止隐藏；没有它照样能藏，只是少一层保护
-            android.util.Log.i("NekoHide", "warn: 设备管理员未激活，仅隐藏入口")
-            NekoLog.warn("隐藏模式：设备管理员未激活，卸载保护未开启")
-        }
-        AppPrefs.hiddenModeEnabled = enabled
-        SysPower.setUninstallBlockedByAdmin(enabled)
-        if (enabled) {
-            if (!AppPrefs.heartbeatEnabled) {
-                AppPrefs.heartbeatEnabled = true
-                FloatingButtonService.start(ctx)
-            }
-            NekoLog.info("隐藏后台：已开启（不进入最近任务，心跳保活已开）")
-            toast(getString(R.string.u50))
-        } else {
-            NekoLog.info("隐藏后台：已关闭")
-            toast(getString(R.string.u51))
-        }
-        refreshModeUI()
     }
 
     private fun disableLock() {
         AppPrefs.lockEnabled = false
-        if (AppPrefs.hiddenModeEnabled) {
-            AppPrefs.hiddenModeEnabled = false
-            SysPower.setUninstallBlockedByAdmin(false)
-            toast(getString(R.string.u51))
-        }
         toast(getString(R.string.u34))
         refreshModeUI()
     }
@@ -510,12 +445,6 @@ class ModeFragment : Fragment() {
     private fun restoreLockSwitch() {
         restoringSwitch = true
         binding.swLock.isChecked = AppPrefs.lockEnabled
-        restoringSwitch = false
-    }
-
-    private fun restoreHiddenSwitch() {
-        restoringSwitch = true
-        binding.swHiddenMode.isChecked = AppPrefs.hiddenModeEnabled
         restoringSwitch = false
     }
 

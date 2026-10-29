@@ -254,13 +254,13 @@ class FloatingButtonService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     /**
-     * 防杀后台：任务被从最近任务划掉时，若开启了密码锁定或隐藏模式则延时重启服务，
-     * 配合隐藏模式让 NekoType 划掉后自动复活（部分 ROM 限制立即重启，延时 1.5s；
+     * 防杀后台：任务被从最近任务划掉时，若开启了密码锁定则延时重启服务，
+     * 避免被系统清掉后失联（部分 ROM 限制立即重启，延时 1.5s；
      * 用前台服务拉起，Android 12 对 FGS 的后台启动豁免更多）。
      */
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
-        if (AppPrefs.lockEnabled || AppPrefs.hiddenModeEnabled) {
+        if (AppPrefs.lockEnabled) {
             NekoLog.ok("检测到任务被划掉，防杀后台：延时自动重启服务")
             android.os.Handler(mainLooper).postDelayed({
                 try {

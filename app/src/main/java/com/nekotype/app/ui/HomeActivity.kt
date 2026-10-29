@@ -318,11 +318,6 @@ class HomeActivity : AppCompatActivity() {
         if (AppPrefs.lockEnabled) {
             NekoLog.info("外部停止请求：需要验证密码")
             showVerifyLockPasswordDialog(getString(R.string.u68)) {
-                if (AppPrefs.hiddenModeEnabled) {
-                    AppPrefs.hiddenModeEnabled = false
-                    SysPower.setUninstallBlockedByAdmin(false)
-                    NekoLog.adjust("隐藏模式已关闭，桌面图标已恢复")
-                }
                 AppPrefs.serviceEnabled = false
                 FloatingButtonService.stop(this)
                 toast(getString(R.string.u17))

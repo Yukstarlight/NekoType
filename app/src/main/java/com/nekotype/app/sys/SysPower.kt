@@ -994,22 +994,4 @@ object SysPower {
         false
     }
 
-    /**
-     * 隐藏模式下的卸载保护：设备管理员激活时阻止卸载，
-     * 必须先取消激活才能卸载，别人删不掉）。
-     * @param enabled true=阻止卸载，false=恢复
-     */
-    fun setUninstallBlockedByAdmin(enabled: Boolean): Boolean {
-        return try {
-            val dpm = NekoTypeApp.instance.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-            if (dpm.isAdminActive(adminComponent)) {
-                dpm.setUninstallBlocked(adminComponent, NekoTypeApp.instance.packageName, enabled)
-                true
-            } else {
-                false
-            }
-        } catch (_: Throwable) {
-            false
-        }
-    }
 }

@@ -221,8 +221,6 @@
     <string name="t64">60 秒ごとにアラームでサービスを起動し直します。システムに終了されても復帰します（消費電力はやや増加。非表示モードとの併用を推奨）</string>
     <string name="t65">クラッシュ時の自動起動</string>
     <string name="t66">プロセスがクラッシュしたときにフローティングサービスを自動で起動し直し、一度の強制終了でサービスが停止したままになるのを防ぎます（既定で有効）</string>
-    <string name="t67">バックグラウンド非表示</string>
-    <string name="t68">ランチャーのアイコンを隠し、バックグラウンドにも表示されず、他人が終了できなくなります（アプリ名は暗号化されません）。復帰は通知の「サービスを停止」とパスワードのみ。先にパスワードロックを有効にする必要があります</string>
     <string name="t69">プレビュー</string>
     <string name="t70">入力</string>
     <string name="t71">変換結果をプレビュー</string>
@@ -276,7 +274,6 @@
 
     <string name="u0">設定をインポートしました</string>
     <string name="u1">カスタム背景を適用しました</string>
-    <string name="u2">先に「サービスを開始」をタップしてフローティングサービスを常駐させてから、非表示モードを有効にしてください\n（通知の「サービスを停止」とパスワードが唯一の復帰手段です）</string>
     <string name="u3">Shizuku を許可しました ✅</string>
     <string name="u4">アプリログを消去しました</string>
     <string name="u5">先に「他のアプリの上に表示」権限を許可してください</string>
@@ -284,7 +281,6 @@
     <string name="u7">パスワードを入力してください</string>
     <string name="u8">現在のプリセット「%1$s」を削除しますか？削除すると元に戻せません。</string>
     <string name="u9">内容が空です</string>
-    <string name="u10">バックグラウンド非表示</string>
     <string name="u11">入力したパスワードが一致しません</string>
     <string name="u12">初回の有効化では旧パスワードは不要です。パスワードはハッシュのみ端末内に保存されます。忘れないようご注意ください。</string>
     <string name="u13">サービスを開始しました。フローティングボタンが画面の端に常駐します</string>
@@ -302,7 +298,6 @@
     <string name="u25">パスワードが違います</string>
     <string name="u26">Shizuku サービスが見つかりません。Shizuku をインストールし、「ワイヤレスデバッグ」または「ADB」で起動してください</string>
     <string name="u27">サイレント書き換えを有効にしました（Shizuku または Root モードが必要）</string>
-    <string name="u28">「非表示モード」を有効にしますか？\n\n</string>
     <string name="u29">プリセットは最低 1 つ必要です</string>
     <string name="u30">ルールプリセットを選択</string>
     <string name="u31">NekoType を気に入っていただけたら、開発者を支援してください！</string>
@@ -324,11 +319,8 @@
     <string name="u47">ログをコピーしました</string>
     <string name="u48">リストを空にしました</string>
     <string name="u49">バッテリー最適化のホワイトリストに登録しました（%1$s）✅</string>
-    <string name="u50">バックグラウンド非表示を有効にしました：最近使ったアプリに出ません。ハートビート常駐も有効です</string>
-    <string name="u51">バックグラウンド非表示を無効にしました</string>
     <string name="u52">言語 / Language</string>
     <string name="u53">削除し、「%1$s」に切り替えました</string>
-    <string name="u54">先にデバイス管理者（権限ガイドの手順 2）を有効にしてから、非表示モードをオンにしてください</string>
     <string name="u55">コピーできる内容がありません</string>
     <string name="u56">省電力解除の書き込みに失敗：%1$s</string>
     <string name="u57">グループ番号をコピーしました：1007865515。QQ で検索して参加してください</string>
@@ -339,8 +331,7 @@
     <string name="u62">終了</string>
     <string name="u63">キーボード改変の強制を有効にするにはパスワードが必要です</string>
     <string name="u64">キーボード改変の強制を無効にするにはパスワードが必要です</string>
-    <string name="u65">バックグラウンド非表示の有効化にはパスワードが必要です</string>
-    <string name="u66">バックグラウンド非表示の無効化にはパスワードが必要です</string>
+    <string name="u65">設定にアクセスするにはパスワードが必要です</string>
     <string name="u67">ハートビート常駐を無効にするにはパスワードが必要です</string>
     <string name="u68">サービスを停止するにはパスワードが必要です</string>
     <string name="u69">パスワードロックを有効にするにはパスワードが必要です</string>
@@ -388,13 +379,6 @@
     <string name="u111">🎉 主要な権限がそろいました。さっそく使ってみましょう！</string>
     <string name="u112">オン</string>
     <string name="u113">後で</string>
-    <string name="u114">「バックグラウンド非表示」を有効にしますか？
-
-・最近使ったアプリに表示されなくなり、スワイプで消しても復帰します
-・ランチャーのアイコンは残るため、いつでも起動できます
-・ハートビート常駐が自動で有効になります（消費電力が少し増えます）
-
-動作とスタイルからいつでもオフにできます（パスワードが必要）。</string>
     <string name="u115">「キーボード改変を強制」を有効にすると、標準キーボードでの入力時に、入力欄の内容が自動的にあなたのルールで書き換えられ、自動送信される場合があります。\n\n必ずご確認ください：\n1. 本機能はご本人の端末での、法令に適合した個人的な用途にのみ使用してください。\n2. 有効にすると、すべてのアプリの入力内容が自動で書き換えられる可能性があります（チャット・検索・コメントなど）。場面に応じて使い分けてください。\n3. 嫌がらせ、詐欺、虚偽情報の作成、他人へのなりすましなどの違法な用途での使用は禁止します。これにより生じた一切の結果は使用者が負担します。\n4. アクセシビリティサービスを有効にしておく必要があります。いつでも本スイッチをオフにして通常の入力に戻せます。\n\n「内容を理解し同意します」をタップすると、上記の内容を読み、承諾したものとみなします。</string>
     <string name="u116">ログ記録を有効にしました</string>
     <string name="u117">ログ記録を無効にしました</string>
@@ -709,8 +693,6 @@
     <string name="hc_check_go">有効にする</string>
     <string name="hc_check_result">結果：%1$d/%2$d 正常</string>
     <string name="hc_check_service_tip">ホームで「サービス開始」をタップしてください</string>
-    <string name="hid_need_root">Shizuku は adb 権限で動作中のため、パッケージ単位の非表示はできません。ランチャーのアイコンは非表示にしました。完全な非表示には root で Shizuku を起動してください</string>
-    <string name="hid_alias_fail">ランチャーアイコンの非表示に失敗しました。システムがコンポーネントの変更を拒否しました。アクセシビリティサービスの動作を確認するか、root 権限の Shizuku を使用してください</string>
     <string name="t_perm_guard">セキュリティ保護</string>
     <string name="t_perm_guard_desc">システムの「アクセシビリティ / デバイス管理」画面へ入ると自動で戻し、サービスを無効化させません</string>
     <string name="guard_blocked">セキュリティ保護：この設定画面はブロックされました</string>

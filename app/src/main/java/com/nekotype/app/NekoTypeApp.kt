@@ -68,6 +68,14 @@ class NekoTypeApp : Application() {
         // 语言：AppCompat 在 Android 12 及以下不会自动记住选择，这里启动时重新应用
         applySavedLocale()
         // 应用主题（深色 / 浅色 / 跟随系统 / 星空）
+        // 隐藏模式已改为“隐藏后台”，桌面图标必须始终可用；启动时兜底恢复入口
+        try {
+            packageManager.setComponentEnabledSetting(
+                android.content.ComponentName(this, "com.nekotype.app.MainActivityAlias"),
+                android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                android.content.pm.PackageManager.DONT_KILL_APP
+            )
+        } catch (_: Throwable) { }
         applyAppTheme()
         // 星空主题需要在每个 Activity 创建前 setTheme
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {

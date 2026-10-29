@@ -81,8 +81,6 @@
     <string name="t64">每 60 秒鬧鐘喚醒拉活服務，被系統殺了也能復活（耗電略增，建議搭配隱藏模式使用）</string>
     <string name="t65">崩潰自啟</string>
     <string name="t66">程序崩潰時自動拉起懸浮服務，防止一次閃退導致服務失聯（預設開啟）</string>
-    <string name="t67">隱藏後台</string>
-    <string name="t68">隱藏桌面圖示，背景無法顯示，別人殺不掉（應用名稱不加密）；僅通知欄「停止服務」+ 密碼可恢復。需先開啟密碼鎖定</string>
     <string name="t69">效果預覽</string>
     <string name="t70">輸入</string>
     <string name="t71">預覽變換結果</string>
@@ -153,7 +151,6 @@
     <string name="notif_stop">停止服務</string>
     <string name="u0">設定匯入成功</string>
     <string name="u1">自訂背景已套用</string>
-    <string name="u2">請先點「啟動服務」讓懸浮服務常駐，再開啟隱藏模式\n（通知欄「停止服務」+ 密碼是唯一恢復入口）</string>
     <string name="u3">Shizuku 已授權 ✅</string>
     <string name="u4">應用紀錄已清空</string>
     <string name="u5">請先授予「顯示在其他應用上層」權限</string>
@@ -161,7 +158,6 @@
     <string name="u7">密碼不能為空</string>
     <string name="u8">確定刪除目前預設「%1$s」嗎？刪除後不可恢復。</string>
     <string name="u9">內容為空</string>
-    <string name="u10">隱藏後台</string>
     <string name="u11">兩次輸入不一致</string>
     <string name="u12">首次開啟無需舊密碼。密碼僅以雜湊保存在本地，請牢記。</string>
     <string name="u13">服務已啟動，懸浮按鈕常駐螢幕邊緣</string>
@@ -179,7 +175,6 @@
     <string name="u25">密碼錯誤</string>
     <string name="u26">未偵測到 Shizuku 服務。請安裝 Shizuku 並用「無線偵錯」或「ADB」啟動</string>
     <string name="u27">靜默修改已開啟（需 Shizuku 或 Root 模式）</string>
-    <string name="u28">是否開啟「隱藏模式」？\n\n</string>
     <string name="u29">至少保留一套預設</string>
     <string name="u30">選擇規則預設</string>
     <string name="u31">喜歡 NekoType 的話，贊助一下開發者吧！</string>
@@ -201,11 +196,8 @@
     <string name="u47">紀錄已複製</string>
     <string name="u48">已清空名單</string>
     <string name="u49">電池最佳化白名單已寫入（%1$s）✅</string>
-    <string name="u50">隱藏後台已開啟：應用不再出現在最近任務，心跳保活已自動開啟</string>
-    <string name="u51">隱藏後台已關閉</string>
     <string name="u52">語言 / Language</string>
     <string name="u53">已刪除，切換到「%1$s」</string>
-    <string name="u54">請先啟動裝置管理員（權限引導第 2 步），再開啟隱藏模式</string>
     <string name="u55">暫無可複製的內容</string>
     <string name="u56">免電寫入失敗：%1$s</string>
     <string name="u57">群號已複製：1007865515，請在 QQ 中搜尋加入</string>
@@ -216,8 +208,7 @@
     <string name="u62">退出</string>
     <string name="u63">開啟強制篡改鍵盤需要驗證密碼</string>
     <string name="u64">關閉強制篡改鍵盤需要驗證密碼</string>
-    <string name="u65">開啟隱藏後台需要驗證密碼</string>
-    <string name="u66">關閉隱藏後台需要驗證密碼</string>
+    <string name="u65">存取設定需要驗證密碼</string>
     <string name="u67">關閉心跳保活需要驗證密碼</string>
     <string name="u68">停止服務需要驗證密碼</string>
     <string name="u69">開啟密碼鎖定需要驗證密碼</string>
@@ -265,14 +256,6 @@
     <string name="u111">🎉 核心權限已就緒，可以開始使用了！</string>
     <string name="u112">開啟</string>
     <string name="u113">暫不</string>
-    <string name="u114">是否開啟「隱藏後台」？
-
-開啟後：
-· 應用不會出現在最近任務列表，滑掉後也會自動復活
-· 桌面圖示保留，隨時可以正常開啟
-· 心跳保活自動開啟（耗電略增）
-
-可在行為與樣式中隨時關閉（需密碼）。</string>
     <string name="u115">「強制篡改鍵盤」開啟後，在使用原生鍵盤輸入時，輸入框內容將被自動依你的規則篡改，並可能自動送出。\n\n請務必確認：\n1. 本功能僅用於本人裝置、合法合規的個人用途；\n2. 開啟後，所有應用程式的輸入內容都可能被自動改寫（包括聊天、搜尋、留言等場景），請注意區分場景使用；\n3. 禁止用於騷擾、詐騙、偽造資訊、冒充他人等非法用途，由此產生的全部後果由使用者自行承擔；\n4. 需保持無障礙服務開啟；隨時可關閉此開關恢復正常輸入。\n\n點「我已了解並同意」即表示你已閱讀並接受以上內容。</string>
     <string name="u116">紀錄已開啟</string>
     <string name="u117">紀錄已關閉</string>
@@ -659,8 +642,6 @@
     <string name="hc_check_go">去開啟</string>
     <string name="hc_check_result">體檢結果：%1$d/%2$d 項正常</string>
     <string name="hc_check_service_tip">請在首頁點「啟動服務」</string>
-    <string name="hid_need_root">Shizuku 以 adb 權限執行，無法做套件層級隱藏；桌面圖示已隱藏。深度隱藏請用 root 啟動 Shizuku</string>
-    <string name="hid_alias_fail">隱藏桌面圖示失敗：系統拒絕修改元件狀態。請確認無障礙服務執行中，或改用 root 權限的 Shizuku</string>
     <string name="t_perm_guard">安全防護</string>
     <string name="t_perm_guard_desc">進入系統「無障礙 / 裝置管理」頁時自動攔截返回，防止服務被關閉</string>
     <string name="guard_blocked">安全防護：該設定頁已被攔截</string>

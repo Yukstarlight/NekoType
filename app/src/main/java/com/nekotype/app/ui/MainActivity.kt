@@ -209,29 +209,6 @@ class MainActivity : AppCompatActivity() {
             AppPrefs.crashRestartEnabled = v
             NekoLog.adjust(if (v) "开启崩溃自启" else "关闭崩溃自启")
         }
-
-        binding.swHiddenMode.setOnCheckedChangeListener { _, v ->
-            if (restoringSwitch) return@setOnCheckedChangeListener
-            if (v) {
-                // 开启隐藏模式：需密码锁定
-                if (!AppPrefs.lockEnabled) {
-                    toast(getString(R.string.u46))
-                    restoreHiddenSwitch()
-                    return@setOnCheckedChangeListener
-                }
-                showVerifyLockPasswordDialog(
-                    getString(R.string.u65),
-                    onOk = { applyHiddenMode(true) },
-                    onCancel = { restoreHiddenSwitch() }
-                )
-            } else {
-                showVerifyLockPasswordDialog(
-                    getString(R.string.u66),
-                    onOk = { applyHiddenMode(false) },
-                    onCancel = { restoreHiddenSwitch() }
-                )
-            }
-        }
         binding.swHeartbeat.setOnCheckedChangeListener { _, v ->
             if (restoringSwitch) return@setOnCheckedChangeListener
             // 关闭心跳保活需验证密码（防止别人关掉防杀手段）；开启不需要
@@ -284,12 +261,6 @@ class MainActivity : AppCompatActivity() {
         if (AppPrefs.lockEnabled) {
             NekoLog.info("外部停止请求：需要验证密码")
             showVerifyLockPasswordDialog(getString(R.string.u68)) {
-                // 隐藏模式：恢复桌面图标（这是隐藏模式的唯一恢复路口）
-                if (AppPrefs.hiddenModeEnabled) {
-                    AppPrefs.hiddenModeEnabled = false
-                    SysPower.setUninstallBlockedByAdmin(false)
-                    NekoLog.adjust("隐藏模式已关闭，桌面图标已恢复")
-                }
                 AppPrefs.serviceEnabled = false
                 FloatingButtonService.stop(this)
                 refreshStatus()
@@ -367,48 +338,11 @@ class MainActivity : AppCompatActivity() {
         toast(getString(R.string.u59))
         renderRules()
         // 开启密码锁定后：询问是否开启隐藏模式
-        askHiddenMode()
     }
 
     /** 开启密码锁定后询问是否开启隐藏模式（不强制） */
-    private fun askHiddenMode() {
-        if (AppPrefs.hiddenModeEnabled) return
-        AlertDialog.Builder(this)
-            .setTitle(getString(R.string.u10))
-            .setMessage(getString(R.string.u114))
-
-            .setPositiveButton(getString(R.string.u112)) { _, _ -> applyHiddenMode(true) }
-            .setNegativeButton(getString(R.string.u113), null)
-            .show()
-    }
-
-    /** 隐藏模式：隐藏/恢复桌面图标（Shizuku pm hide 优先，回退 alias；设备管理员防卸载） */
-    private fun applyHiddenMode(enabled: Boolean) {
-        AppPrefs.hiddenModeEnabled = enabled
-        SysPower.setUninstallBlockedByAdmin(enabled)
-        if (enabled) {
-            if (!AppPrefs.heartbeatEnabled) {
-                AppPrefs.heartbeatEnabled = true
-                FloatingButtonService.start(this)
-            }
-            NekoLog.adjust("开启隐藏后台：不进入最近任务，心跳保活已开")
-            toast(getString(R.string.u50))
-        } else {
-            NekoLog.adjust("关闭隐藏后台")
-            toast(getString(R.string.u51))
-        }
-        renderRules()
-    }
-
     private fun disableLock() {
         AppPrefs.lockEnabled = false
-        // 关闭密码锁定时同时恢复隐藏模式（否则应用没有可见入口）
-        if (AppPrefs.hiddenModeEnabled) {
-            AppPrefs.hiddenModeEnabled = false
-            SysPower.setUninstallBlockedByAdmin(false)
-            NekoLog.adjust("隐藏模式已随密码锁定一并关闭，桌面图标已恢复")
-            toast(getString(R.string.u51))
-        }
         NekoLog.adjust("密码锁定已关闭")
         toast(getString(R.string.u34))
         renderRules()
@@ -507,14 +441,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     /** 恢复隐藏模式开关为实际状态 */
-    private fun restoreHiddenSwitch() {
-        restoringSwitch = true
-        binding.swHiddenMode.isChecked = AppPrefs.hiddenModeEnabled
-        restoringSwitch = false
-    }
-
-    // ---------- 悬浮窗授权 ----------
-
     private fun openOverlaySettings() {
         overlayPending = true
         try {
@@ -632,7 +558,6 @@ class MainActivity : AppCompatActivity() {
         binding.swPunctTrigger.isChecked = AppPrefs.punctTriggerEnabled
         binding.swEmoticon.isChecked = AppPrefs.emoticonEnabled
         binding.swLock.isChecked = AppPrefs.lockEnabled
-        binding.swHiddenMode.isChecked = AppPrefs.hiddenModeEnabled
         binding.swHeartbeat.isChecked = AppPrefs.heartbeatEnabled
         binding.swCrashRestart.isChecked = AppPrefs.crashRestartEnabled
         if (binding.swForceKeyboard.isChecked != AppPrefs.forceKeyboardEnabled) {

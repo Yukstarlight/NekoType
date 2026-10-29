@@ -649,7 +649,6 @@ object AppPrefs {
         sb.append("自定义背景：${customBackgroundPath.ifEmpty { "无" }}\n")
         sb.append("自定义悬浮图标：${customFabIconPath.ifEmpty { "无" }}\n")
         sb.append("密码锁定：${onOff(lockEnabled)}\n")
-        sb.append("隐藏模式：${onOff(hiddenModeEnabled)}\n")
         sb.append("----------------------------------------\n")
         sb.append("外观：${themeText(themeMode)}\n")
         sb.append("按钮大小：$fabSizeDp\n")
@@ -840,7 +839,7 @@ object AppPrefs {
                     }
                     inBehaviors && line.startsWith("心跳保活：") -> heartbeatEnabled = onOffValue(line.removePrefix("心跳保活："))
                     inBehaviors && line.startsWith("崩溃自启：") -> crashRestartEnabled = onOffValue(line.removePrefix("崩溃自启："))
-                    // 密码锁定 / 隐藏模式：安全状态，导入配置不触碰（防止导入配置被用来解锁）
+                    // 密码锁定：安全状态，导入配置不触碰（防止导入配置被用来解锁）
                     line.startsWith("外观：") -> { anyData = true; themeMode = themeValue(line.removePrefix("外观：")) }
                     line.startsWith("按钮大小：") -> { anyData = true; line.removePrefix("按钮大小：").trim().toIntOrNull()?.let { fabSizeDp = it } }
                     line.startsWith("按钮透明度：") -> { anyData = true; line.removePrefix("按钮透明度：").trim().toIntOrNull()?.let { fabOpacity = it } }
@@ -988,7 +987,7 @@ object AppPrefs {
                     line.startsWith("猫娘用语：") -> { anyData = true; nekoMode = onOffValue(line.removePrefix("猫娘用语：")) }
                     line.startsWith("自定义背景：") -> { anyData = true; val v = line.removePrefix("自定义背景：").trim(); if (v.isNotEmpty() && v != "无") customBackgroundPath = v }
                     line.startsWith("自定义悬浮图标：") -> { anyData = true; val v = line.removePrefix("自定义悬浮图标：").trim(); if (v.isNotEmpty() && v != "无") customFabIconPath = v }
-                    // 密码锁定 / 隐藏模式：安全状态，导入不触碰
+                    // 密码锁定：安全状态，导入不触碰
                     line.startsWith("外观：") -> { anyData = true; themeMode = themeValue(line.removePrefix("外观：")) }
                     line.startsWith("按钮大小：") -> { anyData = true; line.removePrefix("按钮大小：").trim().toIntOrNull()?.let { fabSizeDp = it } }
                     line.startsWith("按钮透明度：") -> { anyData = true; line.removePrefix("按钮透明度：").trim().toIntOrNull()?.let { fabOpacity = it } }
@@ -1136,11 +1135,6 @@ object AppPrefs {
             // 开启不写任何字段：状态完全由 payload 派生
         }
 
-    /** 隐藏模式：隐藏桌面图标（后台无法显示，别人杀不掉；通知栏停止可恢复） */
-    var hiddenModeEnabled: Boolean
-        get() = sp.getBoolean("hidden_mode", false)
-        set(v) = sp.edit().putBoolean("hidden_mode", v).apply()
-
     /** 应用黑名单：这些应用内不自动篡改（强制篡改键盘 / 静默修改自动注入不生效） */
     var blacklistEnabled: Boolean
         get() = sp.getBoolean("blacklist_enabled", false)
@@ -1254,7 +1248,6 @@ object AppPrefs {
         }
     }
 
-    /** Shizuku 隐藏：隐藏模式用 Shizuku pm hide（图标即时消失）；关闭则用普通方式（alias） */
     var shizukuHideEnabled: Boolean
         get() = sp.getBoolean("shizuku_hide", false)
         set(v) = sp.edit().putBoolean("shizuku_hide", v).apply()

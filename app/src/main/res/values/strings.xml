@@ -77,11 +77,8 @@
     <string name="t61">密码锁定</string>
     <string name="t62">开启后停止服务需输入密码；配合设备管理员可防杀后台（从最近任务划掉后自动复活）。首次开启直接设置密码</string>
     <string name="t63">心跳保活</string>
-    <string name="t64">每 60 秒闹钟唤醒拉活服务，被系统杀了也能复活（耗电略增，建议配合隐藏模式使用）</string>
     <string name="t65">崩溃自启</string>
     <string name="t66">进程崩溃时自动拉起悬浮服务，防止一次闪退导致服务失联（默认开启）</string>
-    <string name="t67">隐藏后台</string>
-    <string name="t68">隐藏桌面图标，后台无法显示，别人杀不掉（应用名不加密）；仅通知栏「停止服务」+ 密码可恢复。需先开启密码锁定</string>
     <string name="t69">效果预览</string>
     <string name="t70">输入</string>
     <string name="t71">预览变换结果</string>
@@ -152,7 +149,6 @@
     <string name="notif_stop">停止服务</string>
     <string name="u0">配置导入成功</string>
     <string name="u1">自定义背景已应用</string>
-    <string name="u2">请先点击「启动服务」让悬浮服务常驻，再开启隐藏模式\n（通知栏「停止服务」+ 密码是唯一恢复入口）</string>
     <string name="u3">Shizuku 已授权 ✅</string>
     <string name="u4">应用日志已清空</string>
     <string name="u5">请先授予「显示在其他应用上层」权限</string>
@@ -160,7 +156,6 @@
     <string name="u7">密码不能为空</string>
     <string name="u8">确定删除当前预设「%1$s」吗？删除后不可恢复。</string>
     <string name="u9">内容为空</string>
-    <string name="u10">隐藏后台</string>
     <string name="u11">两次输入不一致</string>
     <string name="u12">首次开启无需旧密码。密码仅以哈希保存在本地，请牢记。</string>
     <string name="u13">服务已启动，悬浮按钮常驻屏幕边缘</string>
@@ -178,7 +173,6 @@
     <string name="u25">密码错误</string>
     <string name="u26">未检测到 Shizuku 服务。请安装 Shizuku 并用「无线调试」或「ADB」启动</string>
     <string name="u27">静默修改已开启（需 Shizuku 或 Root 模式）</string>
-    <string name="u28">是否开启「隐藏模式」？\n\n</string>
     <string name="u29">至少保留一套预设</string>
     <string name="u30">选择规则预设</string>
     <string name="u31">喜欢 NekoType 的话，赞助一下开发者吧！</string>
@@ -200,11 +194,8 @@
     <string name="u47">日志已复制</string>
     <string name="u48">已清空名单</string>
     <string name="u49">电池优化白名单已写入（%1$s）✅</string>
-    <string name="u50">隐藏后台已开启：应用不再出现在最近任务，心跳保活已自动开启</string>
-    <string name="u51">隐藏后台已关闭</string>
     <string name="u52">语言 / Language</string>
     <string name="u53">已删除，切换到「%1$s」</string>
-    <string name="u54">请先激活设备管理员（权限引导第 2 步），再开启隐藏模式</string>
     <string name="u55">暂无可复制的内容</string>
     <string name="u56">免电写入失败：%1$s</string>
     <string name="u57">群号已复制：1007865515，请在 QQ 中搜索加入</string>
@@ -215,8 +206,7 @@
     <string name="u62">退出</string>
     <string name="u63">开启强制篡改键盘需要验证密码</string>
     <string name="u64">关闭强制篡改键盘需要验证密码</string>
-    <string name="u65">开启隐藏后台需要验证密码</string>
-    <string name="u66">关闭隐藏后台需要验证密码</string>
+    <string name="u65">访问设置需要验证密码</string>
     <string name="u67">关闭心跳保活需要验证密码</string>
     <string name="u68">停止服务需要验证密码</string>
     <string name="u69">开启密码锁定需要验证密码</string>
@@ -264,14 +254,6 @@
     <string name="u111">🎉 核心权限已就绪，可以开始使用了！</string>
     <string name="u112">开启</string>
     <string name="u113">暂不</string>
-    <string name="u114">是否开启「隐藏后台」？
-
-开启后：
-· 应用不会出现在最近任务列表，划掉后也会自动复活
-· 桌面图标保留，随时可以正常打开
-· 心跳保活自动开启（耗电略增）
-
-可在行为与样式中随时关闭（需密码）。</string>
     <string name="u115">「强制篡改键盘」开启后，在使用原生键盘输入时，输入框内容将被自动按你的规则篡改，并可能自动发送。\n\n请务必确认：\n1. 本功能仅用于本人设备、合法合规的个人用途；\n2. 开启后，所有应用的输入内容都可能被自动改写（包括聊天、搜索、评论等场景），请注意区分场景使用；\n3. 禁止用于骚扰、诈骗、伪造信息、冒充他人等非法用途，由此产生的全部后果由使用者自行承担；\n4. 需要保持无障碍服务开启；随时可关闭本开关恢复正常输入。\n\n点击「我已知晓并同意」即表示你已阅读并接受以上内容。</string>
     <string name="u116">日志记录已开启</string>
     <string name="u117">日志记录已关闭</string>
@@ -656,9 +638,8 @@
     <string name="hc_check_go">去开启</string>
     <string name="hc_check_result">体检结果：%1$d/%2$d 项正常</string>
     <string name="hc_check_service_tip">请在首页点「启动服务」</string>
-    <string name="hid_need_root">Shizuku 以 adb 权限运行，无法做包级隐藏；桌面图标已隐藏。深度隐藏请用 root 启动 Shizuku</string>
-    <string name="hid_alias_fail">隐藏桌面图标失败：系统拒绝修改组件状态。请确认无障碍服务运行中，或改用 root 权限的 Shizuku</string>
     <string name="t_perm_guard">安全防护</string>
     <string name="t_perm_guard_desc">进入系统「无障碍 / 设备管理」页时自动拦截返回，防止服务被关闭</string>
     <string name="guard_blocked">安全防护：该设置页已被拦截</string>
+    <string name="t64">每 60 秒闹钟唤醒拉活服务，被系统杀了也能复活（耗电略增）</string>
 </resources>
