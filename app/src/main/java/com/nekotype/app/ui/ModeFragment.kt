@@ -86,16 +86,20 @@ class ModeFragment : Fragment() {
         }
         binding.swHiddenMode.setOnCheckedChangeListener { _, v ->
             if (restoringSwitch) return@setOnCheckedChangeListener
+            android.util.Log.i("NekoHide", "toggle v=$v lock=${AppPrefs.lockEnabled} " +
+                "service=${AppPrefs.serviceEnabled} admin=${SysPower.isDeviceAdminActive()} " +
+                "overlay=${context?.let { android.provider.Settings.canDrawOverlays(it) }}")
             if (v) {
                 if (!AppPrefs.lockEnabled) {
+                    android.util.Log.i("NekoHide", "abort: 密码锁定未开启")
                     toast(getString(R.string.u46))
                     restoreHiddenSwitch()
                     return@setOnCheckedChangeListener
                 }
                 showVerifyLockPasswordDialog(
                     getString(R.string.u65),
-                    onOk = { applyHiddenMode(true) },
-                    onCancel = { restoreHiddenSwitch() }
+                    onOk = { android.util.Log.i("NekoHide", "password ok -> applyHiddenMode(true)"); applyHiddenMode(true) },
+                    onCancel = { android.util.Log.i("NekoHide", "password cancelled"); restoreHiddenSwitch() }
                 )
             } else {
                 showVerifyLockPasswordDialog(
@@ -390,17 +394,10 @@ class ModeFragment : Fragment() {
 
     private fun applyHiddenMode(enabled: Boolean) {
         val ctx = context ?: return
-        if (enabled) {
-            if (!AppPrefs.serviceEnabled || !android.provider.Settings.canDrawOverlays(ctx)) {
-                toast(getString(R.string.u2))
-                restoreHiddenSwitch()
-                return
-            }
-            if (!SysPower.isDeviceAdminActive()) {
-                toast(getString(R.string.u54))
-                restoreHiddenSwitch()
-                return
-            }
+        if (enabled && !SysPower.isDeviceAdminActive()) {
+            // 设备管理员只影响“防卸载”，不阻止隐藏；没有它照样能藏，只是少一层保护
+            android.util.Log.i("NekoHide", "warn: 设备管理员未激活，仅隐藏入口")
+            NekoLog.warn("隐藏模式：设备管理员未激活，卸载保护未开启")
         }
         AppPrefs.hiddenModeEnabled = enabled
         SysPower.setUninstallBlockedByAdmin(enabled)
