@@ -24,6 +24,11 @@ class ModuleActivity : AppCompatActivity() {
     private lateinit var listBox: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (!LockGate.isUnlocked()) {
+            LockGate.require(this, { recreate() }, { finish() })
+            super.onCreate(savedInstanceState)
+            return
+        }
         super.onCreate(savedInstanceState)
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL

@@ -287,7 +287,6 @@ class MainActivity : AppCompatActivity() {
                 // 隐藏模式：恢复桌面图标（这是隐藏模式的唯一恢复路口）
                 if (AppPrefs.hiddenModeEnabled) {
                     AppPrefs.hiddenModeEnabled = false
-                    SysPower.setHiddenMode(false)
                     SysPower.setUninstallBlockedByAdmin(false)
                     NekoLog.adjust("隐藏模式已关闭，桌面图标已恢复")
                 }
@@ -385,66 +384,17 @@ class MainActivity : AppCompatActivity() {
 
     /** 隐藏模式：隐藏/恢复桌面图标（Shizuku pm hide 优先，回退 alias；设备管理员防卸载） */
     private fun applyHiddenMode(enabled: Boolean) {
-        if (enabled) {
-            // 前置条件 1：服务必须已启动并常驻 —— 通知栏「停止服务」是唯一恢复入口
-            if (!AppPrefs.serviceEnabled || !Settings.canDrawOverlays(this)) {
-                toast(getString(R.string.u2))
-                restoreHiddenSwitch()
-                return
-            }
-            // 前置条件 2：设备管理员必须已激活（防卸载 + 保活路线）
-            if (!SysPower.isDeviceAdminActive()) {
-                toast(getString(R.string.u54))
-                restoreHiddenSwitch()
-                return
-            }
-        }
         AppPrefs.hiddenModeEnabled = enabled
-        // 设备管理员：阻止卸载
-        val adminOk = SysPower.setUninstallBlockedByAdmin(enabled)
-        if (!adminOk && enabled) {
-            NekoLog.warn("设备管理员阻止卸载未生效")
-        }
+        SysPower.setUninstallBlockedByAdmin(enabled)
         if (enabled) {
-            // 关键：隐藏模式必须保证服务常驻 —— 自动开启心跳保活，
-            // pm hide / 系统杀进程后 60 秒内自动复活，通知栏入口永不丢
             if (!AppPrefs.heartbeatEnabled) {
                 AppPrefs.heartbeatEnabled = true
-                NekoLog.ok("隐藏模式：心跳保活已自动开启")
                 FloatingButtonService.start(this)
             }
-            // 双保险：先禁用 LAUNCHER 组件（图标立即消失，无需 Shizuku），
-            // Shizuku 可用时再额外执行 pm hide（更深层隐藏）
-            val aliasOk = SysPower.setHiddenMode(true)
-            if (SysPower.isShizukuRoot()) {
-                lifecycleScope.launch {
-                    val r = withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(true) }
-                    NekoLog.info("隐藏模式：pm hide " + (if (r.success) "成功" else "失败 ${r.output.take(60)}"))
-                    if (!aliasOk && !r.success) toast(getString(R.string.u54))
-                }
-            } else if (SysPower.privilegedChannelReady()) {
-                NekoLog.info("隐藏模式：Shizuku 为 adb 权限，跳过包级隐藏（需 root）")
-                toast(getString(R.string.hid_need_root))
-            } else if (!aliasOk) {
-                NekoLog.warn("隐藏模式：入口禁用失败且 Shizuku 不可用")
-                toast(getString(R.string.hid_alias_fail))
-            }
-            // 移出最近任务（后台隐藏）
-            try {
-                val am = getSystemService(android.content.Context.ACTIVITY_SERVICE) as android.app.ActivityManager
-                for (task in am.appTasks) {
-                    try { task.finishAndRemoveTask() } catch (_: Throwable) { }
-                }
-            } catch (_: Throwable) { }
-            NekoLog.adjust("开启隐藏模式：桌面图标已隐藏")
+            NekoLog.adjust("开启隐藏后台：不进入最近任务，心跳保活已开")
             toast(getString(R.string.u50))
         } else {
-            // 恢复：先恢复组件，再 pm unhide
-            SysPower.setHiddenMode(false)
-            if (SysPower.privilegedChannelReady()) {
-                lifecycleScope.launch { withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(false) } }
-            }
-            NekoLog.adjust("关闭隐藏模式：桌面图标已恢复")
+            NekoLog.adjust("关闭隐藏后台")
             toast(getString(R.string.u51))
         }
         renderRules()
@@ -455,7 +405,6 @@ class MainActivity : AppCompatActivity() {
         // 关闭密码锁定时同时恢复隐藏模式（否则应用没有可见入口）
         if (AppPrefs.hiddenModeEnabled) {
             AppPrefs.hiddenModeEnabled = false
-            SysPower.setHiddenMode(false)
             SysPower.setUninstallBlockedByAdmin(false)
             NekoLog.adjust("隐藏模式已随密码锁定一并关闭，桌面图标已恢复")
             toast(getString(R.string.u51))

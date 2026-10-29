@@ -33,6 +33,11 @@ class AppPresetActivity : AppCompatActivity() {
     private lateinit var llMap: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (!LockGate.isUnlocked()) {
+            LockGate.require(this, { recreate() }, { finish() })
+            super.onCreate(savedInstanceState)
+            return
+        }
         ThemeHelper.apply(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_app_preset)

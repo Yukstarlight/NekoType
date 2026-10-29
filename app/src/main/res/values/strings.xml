@@ -80,7 +80,7 @@
     <string name="t64">每 60 秒闹钟唤醒拉活服务，被系统杀了也能复活（耗电略增，建议配合隐藏模式使用）</string>
     <string name="t65">崩溃自启</string>
     <string name="t66">进程崩溃时自动拉起悬浮服务，防止一次闪退导致服务失联（默认开启）</string>
-    <string name="t67">隐藏模式</string>
+    <string name="t67">隐藏后台</string>
     <string name="t68">隐藏桌面图标，后台无法显示，别人杀不掉（应用名不加密）；仅通知栏「停止服务」+ 密码可恢复。需先开启密码锁定</string>
     <string name="t69">效果预览</string>
     <string name="t70">输入</string>
@@ -160,7 +160,7 @@
     <string name="u7">密码不能为空</string>
     <string name="u8">确定删除当前预设「%1$s」吗？删除后不可恢复。</string>
     <string name="u9">内容为空</string>
-    <string name="u10">隐藏模式</string>
+    <string name="u10">隐藏后台</string>
     <string name="u11">两次输入不一致</string>
     <string name="u12">首次开启无需旧密码。密码仅以哈希保存在本地，请牢记。</string>
     <string name="u13">服务已启动，悬浮按钮常驻屏幕边缘</string>
@@ -200,8 +200,8 @@
     <string name="u47">日志已复制</string>
     <string name="u48">已清空名单</string>
     <string name="u49">电池优化白名单已写入（%1$s）✅</string>
-    <string name="u50">隐藏模式已开启：图标已隐藏\n心跳保活已自动开启，通知栏「停止服务」+ 密码可恢复</string>
-    <string name="u51">隐藏模式已关闭，桌面图标已恢复</string>
+    <string name="u50">隐藏后台已开启：应用不再出现在最近任务，心跳保活已自动开启</string>
+    <string name="u51">隐藏后台已关闭</string>
     <string name="u52">语言 / Language</string>
     <string name="u53">已删除，切换到「%1$s」</string>
     <string name="u54">请先激活设备管理员（权限引导第 2 步），再开启隐藏模式</string>
@@ -215,8 +215,8 @@
     <string name="u62">退出</string>
     <string name="u63">开启强制篡改键盘需要验证密码</string>
     <string name="u64">关闭强制篡改键盘需要验证密码</string>
-    <string name="u65">开启隐藏模式需要验证密码</string>
-    <string name="u66">关闭隐藏模式需要验证密码</string>
+    <string name="u65">开启隐藏后台需要验证密码</string>
+    <string name="u66">关闭隐藏后台需要验证密码</string>
     <string name="u67">关闭心跳保活需要验证密码</string>
     <string name="u68">停止服务需要验证密码</string>
     <string name="u69">开启密码锁定需要验证密码</string>
@@ -264,7 +264,14 @@
     <string name="u111">🎉 核心权限已就绪，可以开始使用了！</string>
     <string name="u112">开启</string>
     <string name="u113">暂不</string>
-    <string name="u114">是否开启「隐藏模式」？\n\n开启后：\n· 桌面图标消失，后台无法显示，别人找不到、杀不掉\n· 应用名称保持原名（不加密）\n· 心跳保活自动开启，通知栏「停止服务」为唯一恢复入口\n\n⚠️ 强烈建议（备用入口）：\n1. 下拉通知栏，把「NekoType」磁贴添加到快捷设置面板——即使服务被杀，磁贴也能点开恢复\n2. 华为手机：设置 → 应用 → 应用启动管理 → NekoType → 设为「手动管理」并允许自启动/后台活动，否则系统会拦截服务复活\n\n可在行为与样式中随时关闭（需密码）。</string>
+    <string name="u114">是否开启「隐藏后台」？
+
+开启后：
+· 应用不会出现在最近任务列表，划掉后也会自动复活
+· 桌面图标保留，随时可以正常打开
+· 心跳保活自动开启（耗电略增）
+
+可在行为与样式中随时关闭（需密码）。</string>
     <string name="u115">「强制篡改键盘」开启后，在使用原生键盘输入时，输入框内容将被自动按你的规则篡改，并可能自动发送。\n\n请务必确认：\n1. 本功能仅用于本人设备、合法合规的个人用途；\n2. 开启后，所有应用的输入内容都可能被自动改写（包括聊天、搜索、评论等场景），请注意区分场景使用；\n3. 禁止用于骚扰、诈骗、伪造信息、冒充他人等非法用途，由此产生的全部后果由使用者自行承担；\n4. 需要保持无障碍服务开启；随时可关闭本开关恢复正常输入。\n\n点击「我已知晓并同意」即表示你已阅读并接受以上内容。</string>
     <string name="u116">日志记录已开启</string>
     <string name="u117">日志记录已关闭</string>

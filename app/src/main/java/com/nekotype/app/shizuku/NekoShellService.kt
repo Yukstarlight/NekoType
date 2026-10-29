@@ -22,7 +22,7 @@ import kotlin.concurrent.thread
  * 只作为受限插值，绝不拼接任意 shell 字符串。
  *
  * 动作清单见 [FixedCommands.build]：
- * - MSG_BATTERY_WHITELIST / MSG_INJECT_SELECT_ALL / MSG_INJECT_TEXT / MSG_HIDE_SELF
+ * - MSG_BATTERY_WHITELIST / MSG_INJECT_SELECT_ALL / MSG_INJECT_TEXT
  * - MSG_GRANT_OVERLAY / MSG_GRANT_ACCESSIBILITY / MSG_GRANT_DEVICE_ADMIN
  * - MSG_LOGCAT_DUMP / MSG_LOGCAT_CRASH
  */
@@ -33,7 +33,6 @@ class NekoShellService : Service() {
         const val MSG_BATTERY_WHITELIST = 1
         const val MSG_INJECT_SELECT_ALL = 2
         const val MSG_INJECT_TEXT = 3
-        const val MSG_HIDE_SELF = 4
         const val MSG_GRANT_OVERLAY = 5
         const val MSG_GRANT_ACCESSIBILITY = 6
         const val MSG_GRANT_DEVICE_ADMIN = 7

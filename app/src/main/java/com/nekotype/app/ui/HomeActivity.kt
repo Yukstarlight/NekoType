@@ -111,19 +111,34 @@ class HomeActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_rules -> {
-                    switchFragment(rulesFragment)
-                    NekoLog.nav("底部导航：规则")
-                    true
+                    if (LockGate.isUnlocked()) {
+                        switchFragment(rulesFragment)
+                        NekoLog.nav("底部导航：规则")
+                        true
+                    } else {
+                        LockGate.require(this, { binding.bottomNav.selectedItemId = item.itemId })
+                        false
+                    }
                 }
                 R.id.nav_mode -> {
-                    switchFragment(modeFragment)
-                    NekoLog.nav("底部导航：模式")
-                    true
+                    if (LockGate.isUnlocked()) {
+                        switchFragment(modeFragment)
+                        NekoLog.nav("底部导航：模式")
+                        true
+                    } else {
+                        LockGate.require(this, { binding.bottomNav.selectedItemId = item.itemId })
+                        false
+                    }
                 }
                 R.id.nav_settings -> {
-                    switchFragment(settingsFragment)
-                    NekoLog.nav("底部导航：设置")
-                    true
+                    if (LockGate.isUnlocked()) {
+                        switchFragment(settingsFragment)
+                        NekoLog.nav("底部导航：设置")
+                        true
+                    } else {
+                        LockGate.require(this, { binding.bottomNav.selectedItemId = item.itemId })
+                        false
+                    }
                 }
                 R.id.nav_terminal -> {
                     startActivity(Intent(this, TerminalActivity::class.java))
@@ -277,6 +292,12 @@ class HomeActivity : AppCompatActivity() {
         applyTabFromIntent(intent)
     }
 
+    override fun onStop() {
+        super.onStop()
+        // 退到后台即上锁，防止他人接管屏幕后继续改设置
+        LockGate.onAppBackground()
+    }
+
     override fun onResume() {
         super.onResume()
         BgUtils.apply(binding.root)
@@ -299,7 +320,6 @@ class HomeActivity : AppCompatActivity() {
             showVerifyLockPasswordDialog(getString(R.string.u68)) {
                 if (AppPrefs.hiddenModeEnabled) {
                     AppPrefs.hiddenModeEnabled = false
-                    SysPower.setHiddenMode(false)
                     SysPower.setUninstallBlockedByAdmin(false)
                     NekoLog.adjust("隐藏模式已关闭，桌面图标已恢复")
                 }

@@ -41,6 +41,11 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySettingsBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (!LockGate.isUnlocked()) {
+            LockGate.require(this, { recreate() }, { finish() })
+            super.onCreate(savedInstanceState)
+            return
+        }
         // 主题：super 前设置夜间模式（recreate 后保持）
         when (AppPrefs.themeMode) {
             "dark" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)

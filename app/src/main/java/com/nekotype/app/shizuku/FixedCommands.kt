@@ -67,11 +67,6 @@ object FixedCommands {
         // 光标移到末尾：CTRL(113) + END(123)
         NekoShellService.MSG_INJECT_MOVE_END -> "input keycombination 113 123"
 
-        NekoShellService.MSG_HIDE_SELF -> {
-            val verb = if (data?.getBoolean("hidden") ?: true) "hide" else "unhide"
-            if (validPkg(pkg)) "pm $verb $pkg" else null
-        }
-
         NekoShellService.MSG_GRANT_OVERLAY ->
             if (validPkg(pkg)) "appops set $pkg android:system_alert_window allow" else null
 

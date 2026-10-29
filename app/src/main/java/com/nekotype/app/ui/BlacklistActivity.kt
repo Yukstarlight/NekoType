@@ -32,6 +32,11 @@ class BlacklistActivity : AppCompatActivity() {
     private val apps = mutableListOf<Pair<ApplicationInfo, String>>() // appInfo + 应用名
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (!LockGate.isUnlocked()) {
+            LockGate.require(this, { recreate() }, { finish() })
+            super.onCreate(savedInstanceState)
+            return
+        }
         ThemeHelper.apply(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_blacklist)

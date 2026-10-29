@@ -225,7 +225,7 @@
     <string name="t64">Ein Alarm weckt den Dienst alle 60 Sekunden, sodass er auch nach einem Systemstopp zurückkehrt (etwas höherer Akkuverbrauch; am besten zusammen mit dem versteckten Modus nutzen)</string>
     <string name="t65">Neustart nach Absturz</string>
     <string name="t66">Startet den schwebenden Dienst nach einem Prozessabsturz automatisch neu, damit ein einziger Absturz den Dienst nicht abkoppelt (standardmäßig aktiviert)</string>
-    <string name="t67">Versteckter Modus</string>
+    <string name="t67">Im Hintergrund ausblenden</string>
     <string name="t68">Blendet das Symbol im Startbildschirm aus, die App ist im Hintergrund nicht sichtbar und für andere nicht beendbar (der App-Name bleibt unverschlüsselt); nur „Dienst stoppen“ in der Benachrichtigung und das Passwort stellen den Zugang wieder her. Erfordert zuerst die Passwortsperre</string>
 
     <!-- Effektvorschau -->
@@ -300,7 +300,7 @@ E-Mail: TR114512@qq.com</string>
     <string name="u7">Das Passwort darf nicht leer sein</string>
     <string name="u8">Profil „%1$s“ wirklich löschen? Dies kann nicht rückgängig gemacht werden.</string>
     <string name="u9">Inhalt ist leer</string>
-    <string name="u10">Versteckter Modus</string>
+    <string name="u10">Im Hintergrund ausblenden</string>
     <string name="u11">Die Eingaben stimmen nicht überein</string>
     <string name="u12">Beim ersten Aktivieren ist kein altes Passwort nötig. Das Passwort wird nur als Hash lokal gespeichert – bitte gut merken.</string>
     <string name="u13">Dienst gestartet – die schwebende Taste bleibt am Bildschirmrand</string>
@@ -340,8 +340,8 @@ E-Mail: TR114512@qq.com</string>
     <string name="u47">Protokoll kopiert</string>
     <string name="u48">Liste geleert</string>
     <string name="u49">Ausnahmeliste der Akkuoptimierung gespeichert (%1$s) ✅</string>
-    <string name="u50">Versteckter Modus aktiviert: Symbol ausgeblendet\nDie Heartbeat-Wachhaltung wurde automatisch eingeschaltet; „Dienst stoppen“ in der Benachrichtigung und das Passwort stellen den Zugang wieder her</string>
-    <string name="u51">Versteckter Modus deaktiviert – das Symbol im Startbildschirm ist wieder sichtbar</string>
+    <string name="u50">Hintergrund-Ausblenden aktiv: App erscheint nicht in den letzten Apps; Heartbeat ist an</string>
+    <string name="u51">Hintergrund-Ausblenden aus</string>
     <string name="u52">Sprache / Language</string>
     <string name="u53">Gelöscht – gewechselt zu „%1$s“</string>
     <string name="u54">Bitte zuerst den Geräteadministrator aktivieren (Schritt 2 des Berechtigungsassistenten) und dann den versteckten Modus einschalten</string>
@@ -355,8 +355,8 @@ E-Mail: TR114512@qq.com</string>
     <string name="u62">Beenden</string>
     <string name="u63">Zum Aktivieren der erzwungenen Tastatur-Umschreibung ist das Passwort erforderlich</string>
     <string name="u64">Zum Deaktivieren der erzwungenen Tastatur-Umschreibung ist das Passwort erforderlich</string>
-    <string name="u65">Zum Aktivieren des versteckten Modus ist das Passwort erforderlich</string>
-    <string name="u66">Zum Deaktivieren des versteckten Modus ist das Passwort erforderlich</string>
+    <string name="u65">Zum Aktivieren des Hintergrund-Ausblendens ist ein Passwort nötig</string>
+    <string name="u66">Zum Deaktivieren des Hintergrund-Ausblendens ist ein Passwort nötig</string>
     <string name="u67">Zum Deaktivieren der Heartbeat-Wachhaltung ist das Passwort erforderlich</string>
     <string name="u68">Zum Stoppen des Dienstes ist das Passwort erforderlich</string>
     <string name="u69">Zum Aktivieren der Passwortsperre ist das Passwort erforderlich</string>
@@ -404,7 +404,13 @@ E-Mail: TR114512@qq.com</string>
     <string name="u111">🎉 Die wichtigsten Berechtigungen sind bereit – es kann losgehen!</string>
     <string name="u112">Aktivieren</string>
     <string name="u113">Später</string>
-    <string name="u114">Versteckten Modus aktivieren?\n\nNach dem Aktivieren:\n· das Symbol im Startbildschirm verschwindet, die App ist im Hintergrund nicht sichtbar und für andere weder auffindbar noch beendbar\n· der App-Name bleibt unverändert (nicht verschlüsselt)\n· die Heartbeat-Wachhaltung wird automatisch eingeschaltet, „Dienst stoppen“ in der Benachrichtigung ist der einzige Weg zurück\n\n⚠️ Dringend empfohlen (Ersatz-Zugang):\n1. Ziehen Sie die Benachrichtigungsleiste herunter und fügen Sie die Kachel „NekoType“ den Schnelleinstellungen hinzu – selbst wenn der Dienst beendet wird, lässt er sich über die Kachel wieder starten\n2. Bei Huawei-Geräten: Einstellungen → Apps → App-Start → NekoType → „Manuell verwalten“ wählen und Autostart sowie Hintergrundaktivität erlauben, sonst blockiert das System den Neustart des Dienstes\n\nJederzeit unter „Verhalten und Stil“ abschaltbar (Passwort nötig).</string>
+    <string name="u114">"Im Hintergrund ausblenden" aktivieren?
+
+· Die App erscheint nicht mehr in den letzten Apps und startet nach dem Wegwischen neu
+· Das Startbildschirm-Symbol bleibt, du kannst sie jederzeit öffnen
+· Heartbeat hält den Dienst automatisch am Leben (etwas mehr Akkuverbrauch)
+
+Jederzeit unter Verhalten &amp; Stil abschaltbar (Passwort nötig).</string>
     <string name="u115">Nach dem Aktivieren von „Tastatur-Umschreibung erzwingen“ wird der Inhalt des Eingabefelds bei Eingabe über die Systemtastatur automatisch nach Ihren Regeln umgeschrieben und möglicherweise automatisch gesendet.\n\nBitte unbedingt bestätigen:\n1. Diese Funktion ist nur für das eigene Gerät und für rechtmäßige, private Zwecke bestimmt;\n2. nach dem Aktivieren können Eingaben in allen Apps automatisch umgeschrieben werden (zum Beispiel in Chats, bei Suchen und in Kommentaren) – bitte je nach Situation einsetzen;\n3. die Nutzung für Belästigung, Betrug, gefälschte Informationen, Identitätsmissbrauch oder andere rechtswidrige Zwecke ist untersagt; alle daraus entstehenden Folgen trägt die nutzende Person;\n4. der Bedienungshilfe-Dienst muss aktiviert bleiben; Sie können die Funktion jederzeit ausschalten und normal weiter eingeben.\n\nMit dem Tippen auf „Ich habe es gelesen und stimme zu“ bestätigen Sie, dass Sie die obigen Bedingungen gelesen haben und akzeptieren.</string>
     <string name="u116">Protokollierung aktiviert</string>
     <string name="u117">Protokollierung deaktiviert</string>

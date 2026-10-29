@@ -217,7 +217,7 @@
     <string name="t64">Her 60 saniyede bir alarm servisi uyandırır; sistem öldürse bile geri gelir (pil tüketimi biraz artar, gizli modla kullanmanız önerilir)</string>
     <string name="t65">Çökme sonrası otomatik başlatma</string>
     <string name="t66">Süreç çöktüğünde yüzen servisi otomatik başlatır, tek bir çökme servisi kaybettirmez (varsayılan açık)</string>
-    <string name="t67">Gizli mod</string>
+    <string name="t67">Arka planda gizle</string>
     <string name="t68">Masaüstü simgesini gizler, arka planda görünmez, kimse durduramaz (uygulama adı şifrelenmez); yalnızca bildirimdeki «Servisi durdur» + parola ile geri dönülür. Önce parola kilidi açılmalıdır</string>
     <string name="t69">Etki önizlemesi</string>
     <string name="t70">Giriş</string>
@@ -335,7 +335,7 @@ E-posta: TR114512@qq.com</string>
     <string name="u7">Parola boş olamaz</string>
     <string name="u8">Geçerli «%1$s» ön ayarı silinsin mi? Silme işlemi geri alınamaz.</string>
     <string name="u9">İçerik boş</string>
-    <string name="u10">Gizli mod</string>
+    <string name="u10">Arka planda gizle</string>
     <string name="u11">İki giriş uyuşmuyor</string>
     <string name="u12">İlk açılışta eski parola gerekmez. Parola yalnızca yerel olarak karma hâlinde saklanır, lütfen unutmayın.</string>
     <string name="u13">Servis başlatıldı, yüzen düğme ekran kenarında kalıcı</string>
@@ -375,8 +375,8 @@ E-posta: TR114512@qq.com</string>
     <string name="u47">Günlük kopyalandı</string>
     <string name="u48">Liste temizlendi</string>
     <string name="u49">Pil optimizasyonu beyaz listesine yazıldı (%1$s) ✅</string>
-    <string name="u50">Gizli mod açıldı: simge gizlendi\nKalp atışıyla canlı tutma otomatik açıldı, bildirimdeki «Servisi durdur» + parola ile geri dönülebilir</string>
-    <string name="u51">Gizli mod kapatıldı, masaüstü simgesi geri geldi</string>
+    <string name="u50">Arka planda gizleme açık: uygulama son kullanılanlarda görünmüyor; canlı tutma açıldı</string>
+    <string name="u51">Arka planda gizleme kapatıldı</string>
     <string name="u52">Dil / Language</string>
     <string name="u53">Silindi, «%1$s» konumuna geçildi</string>
     <string name="u54">Önce cihaz yöneticisini etkinleştirin (izin rehberi 2. adım), sonra gizli modu açın</string>
@@ -390,8 +390,8 @@ E-posta: TR114512@qq.com</string>
     <string name="u62">Çıkış</string>
     <string name="u63">Klavye değiştirmeyi zorla açmak için parola doğrulaması gerekir</string>
     <string name="u64">Klavye değiştirmeyi zorla kapatmak için parola doğrulaması gerekir</string>
-    <string name="u65">Gizli modu açmak için parola doğrulaması gerekir</string>
-    <string name="u66">Gizli modu kapatmak için parola doğrulaması gerekir</string>
+    <string name="u65">Arka planda gizlemeyi açmak için parola gerekir</string>
+    <string name="u66">Arka planda gizlemeyi kapatmak için parola gerekir</string>
     <string name="u67">Kalp atışıyla canlı tutmayı kapatmak için parola doğrulaması gerekir</string>
     <string name="u68">Servisi durdurmak için parola doğrulaması gerekir</string>
     <string name="u69">Parola kilidini açmak için parola doğrulaması gerekir</string>
@@ -439,7 +439,13 @@ E-posta: TR114512@qq.com</string>
     <string name="u111">🎉 Temel izinler hazır, kullanmaya başlayabilirsiniz!</string>
     <string name="u112">Aç</string>
     <string name="u113">Şimdi değil</string>
-    <string name="u114">«Gizli mod» açılsın mı?\n\nAçıldığında:\n· Masaüstü simgesi kaybolur, arka planda görünmez, kimse bulamaz ve durduramaz\n· Uygulama adı aynı kalır (şifrelenmez)\n· Kalp atışıyla canlı tutma otomatik açılır, bildirimdeki «Servisi durdur» tek geri dönüş yoludur\n\n⚠️ Kesinlikle önerilir (yedek giriş):\n1. Bildirim panelini indirip «NekoType» kutucuğunu hızlı ayarlar paneline ekleyin — servis öldürülse bile kutucuktan geri açılabilir\n2. Huawei telefonlar: Ayarlar → Uygulamalar → Uygulama başlatma yönetimi → NekoType → «Elle yönet» seçip otomatik başlatmaya/arka plan etkinliğine izin verin, aksi hâlde sistem servisin geri gelmesini engeller\n\nDavranış ve stil bölümünden istediğiniz zaman kapatabilirsiniz (parola gerekir).</string>
+    <string name="u114">"Arka planda gizle" açılsın mı?
+
+· Uygulama son kullanılanlar listesinde görünmez, kaydırılıp kapatılsa da geri döner
+· Başlatıcı simgesi kalır, istediğiniz zaman açabilirsiniz
+· Kalp atışı canlı tutma otomatik açılır (pil kullanımı biraz artar)
+
+Davranış ve stil bölümünden istediğiniz zaman kapatabilirsiniz (parola gerekir).</string>
     <string name="u115">«Klavye değiştirmeyi zorla» açıldığında, özgün klavyeyle yazarken giriş alanındaki metin kurallarınıza göre otomatik değiştirilir ve otomatik gönderilebilir.\n\nLütfen onaylayın:\n1. Bu özellik yalnızca kendi cihazınızda, yasal ve kişisel kullanım içindir;\n2. Açıldığında tüm uygulamalarda giriş metni otomatik değişebilir (sohbet, arama, yorum vb.); lütfen kullanım bağlamına dikkat edin;\n3. Taciz, dolandırıcılık, sahte bilgi üretme, başkasının kimliğine bürünme gibi yasa dışı amaçlarla kullanılamaz; doğacak tüm sonuçlardan kullanıcı sorumludur;\n4. Erişilebilirlik servisi açık kalmalıdır; istediğiniz zaman bu anahtarı kapatıp normal girişe dönebilirsiniz.\n\n«Okudum ve kabul ediyorum» düğmesine basarak yukarıdakileri okuduğunuzu ve kabul ettiğinizi beyan edersiniz.</string>
     <string name="u116">Günlük kaydı açıldı</string>
     <string name="u117">Günlük kaydı kapatıldı</string>

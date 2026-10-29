@@ -81,7 +81,7 @@
     <string name="t64">Alarm wakes service every 60s to keep it alive after being killed (slightly more battery)</string>
     <string name="t65">Crash Restart</string>
     <string name="t66">Auto restart service on crash to prevent losing it (enabled by default)</string>
-    <string name="t67">Hidden Mode</string>
+    <string name="t67">Hide in background</string>
     <string name="t68">Hides desktop icon, invisible in background; recover via notification + password. Requires Password Lock first</string>
     <string name="t69">Preview</string>
     <string name="t70">Input</string>
@@ -161,7 +161,7 @@ Email: TR114512@qq.com</string>
     <string name="u7">Password cannot be empty</string>
     <string name="u8">Delete current preset %1$s? This cannot be undone.</string>
     <string name="u9">Content is empty</string>
-    <string name="u10">Hidden Mode</string>
+    <string name="u10">Hide in background</string>
     <string name="u11">Passwords do not match</string>
     <string name="u12">No old password needed on first enable. The password is stored as a local hash only. Remember it!</string>
     <string name="u13">Service started, floating button stays on screen edge</string>
@@ -201,8 +201,8 @@ Email: TR114512@qq.com</string>
     <string name="u47">Log copied</string>
     <string name="u48">List cleared</string>
     <string name="u49">Battery whitelist written (%1$s) ✅</string>
-    <string name="u50">Hidden Mode enabled: icon hidden\nHeartbeat keep-alive auto-enabled, recover via notification + password</string>
-    <string name="u51">Hidden Mode disabled, icon restored</string>
+    <string name="u50">Background hiding is on: the app no longer appears in Recents; heartbeat keep-alive is on</string>
+    <string name="u51">Background hiding is off</string>
     <string name="u52">Language</string>
     <string name="u53">Deleted, switched to %1$s</string>
     <string name="u54">Please activate Device Admin (step 2 of permission guide) first, then enable Hidden Mode</string>
@@ -216,8 +216,8 @@ Email: TR114512@qq.com</string>
     <string name="u62">Exit</string>
     <string name="u63">Verify password to enable Force Tamper</string>
     <string name="u64">Verify password to disable Force Tamper</string>
-    <string name="u65">Verify password to enable Hidden Mode</string>
-    <string name="u66">Verify password to disable Hidden Mode</string>
+    <string name="u65">Password required to enable background hiding</string>
+    <string name="u66">Password required to disable background hiding</string>
     <string name="u67">Verify password to disable heartbeat</string>
     <string name="u68">Verify password to stop service</string>
     <string name="u69">Verify password to enable Password Lock</string>
@@ -265,7 +265,13 @@ Email: TR114512@qq.com</string>
     <string name="u111">🎉 Core permissions ready, you can start now!</string>
     <string name="u112">Enable</string>
     <string name="u113">Not now</string>
-    <string name="u114">Enable Hidden Mode?\n\nAfter enabling:\n· Desktop icon disappears, invisible in background, can not be found or killed\n· App name stays the same (not encrypted)\n· Heartbeat keep-alive turns on automatically, notification Stop Service is the only recovery entry\n\n⚠️ Strongly recommended (backup entry):\n1. Pull down the notification shade, add the NekoType tile to Quick Settings - even if the service is killed, the tile can still restore it\n2. Huawei: Settings - Apps - App launch - NekoType - set to Manual management and allow auto-start/background activity, otherwise the system will block revival\n\nCan be turned off anytime in Behavior &amp; Style (password required).</string>
+    <string name="u114">Turn on "Hide in background"?
+
+· The app no longer appears in Recents and is relaunched if swiped away
+· The launcher icon stays, so you can always open it
+· Heartbeat keep-alive turns on automatically (slightly more battery use)
+
+You can turn it off anytime in Behaviour &amp; style (password required).</string>
     <string name="u115">With Force Tamper Keyboard enabled, text you type on the native keyboard will be automatically tampered by your rules and may be auto-sent.\n\nPlease confirm:\n1. This feature is only for personal use on your own device, legal and compliant;\n2. Once enabled, input in all apps may be rewritten automatically (chat, search, comments, etc.), use it with care;\n3. It is forbidden for harassment, fraud, forgery, impersonation or other illegal purposes; all consequences are borne by the user;\n4. Keep the accessibility service enabled; you can turn this switch off anytime to restore normal input.\n\nTapping I understand and agree means you have read and accepted the above.</string>
     <string name="u116">Log recording enabled</string>
     <string name="u117">Log recording disabled</string>

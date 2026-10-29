@@ -406,38 +406,10 @@ class ModeFragment : Fragment() {
                 AppPrefs.heartbeatEnabled = true
                 FloatingButtonService.start(ctx)
             }
-            // 延迟 1 秒再切组件：界面退出瞬间桌面正在重建应用条目，立刻改状态会被吞掉
-            lifecycleScope.launch {
-                delay(1000)
-                val aliasOk = withContext(Dispatchers.IO) { SysPower.setHiddenMode(true) }
-                android.util.Log.i("NekoHide", "hiddenMode apply aliasOk=$aliasOk root=${SysPower.isShizukuRoot()} ready=${SysPower.privilegedChannelReady()}")
-                NekoLog.info(if (aliasOk) "隐藏模式：桌面入口已禁用" else "隐藏模式：桌面入口禁用未生效")
-                if (SysPower.isShizukuRoot()) {
-                    val r = withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(true) }
-                    NekoLog.info("隐藏模式：pm hide " + (if (r.success) "成功" else "失败 ${r.output.take(60)}"))
-                    if (!aliasOk && !r.success) toast(getString(R.string.u54))
-                } else if (SysPower.privilegedChannelReady()) {
-                    NekoLog.info("隐藏模式：Shizuku 为 adb 权限，跳过包级隐藏（需 root）")
-                    toast(getString(R.string.hid_need_root))
-                } else if (!aliasOk) {
-                    NekoLog.warn("隐藏模式：入口禁用失败且 Shizuku 不可用")
-                    toast(getString(R.string.hid_alias_fail))
-                }
-            }
+            NekoLog.info("隐藏后台：已开启（不进入最近任务，心跳保活已开）")
             toast(getString(R.string.u50))
-            // 关键：先把应用退到后台，让桌面回到前台，桌面才会处理组件变更并重建图标列表
-            try { activity?.finishAffinity() } catch (_: Throwable) { }
         } else {
-            // 恢复：先 pm unhide（去掉包级隐藏），再恢复组件入口
-            if (SysPower.isShizukuRoot()) {
-                lifecycleScope.launch {
-                    val r = withContext(Dispatchers.IO) { SysPower.shizukuHideSelf(false) }
-                    NekoLog.info("隐藏模式：pm unhide " + (if (r.success) "成功" else "失败 ${r.output.take(60)}"))
-                    SysPower.setHiddenMode(false)
-                }
-            } else {
-                SysPower.setHiddenMode(false)
-            }
+            NekoLog.info("隐藏后台：已关闭")
             toast(getString(R.string.u51))
         }
         refreshModeUI()
@@ -447,7 +419,6 @@ class ModeFragment : Fragment() {
         AppPrefs.lockEnabled = false
         if (AppPrefs.hiddenModeEnabled) {
             AppPrefs.hiddenModeEnabled = false
-            SysPower.setHiddenMode(false)
             SysPower.setUninstallBlockedByAdmin(false)
             toast(getString(R.string.u51))
         }
