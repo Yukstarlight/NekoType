@@ -725,4 +725,5 @@ Du kannst es jetzt überspringen und später aktivieren.</string>
     <string name="t_perm_guard">Sicherheitsschutz</string>
     <string name="t_perm_guard_desc">Blockiert automatisch die Systemseiten Bedienungshilfen / Geräteadministrator, damit der Dienst nicht deaktiviert wird</string>
     <string name="guard_blocked">Sicherheitsschutz: Diese Einstellungsseite ist gesperrt</string>
+    <string name="privacy_hint">Das soll dir nur zeigen, dass NekoType nichts über dich sammelt, hihi!</string>
 </resources>

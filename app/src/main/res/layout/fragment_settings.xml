@@ -1076,43 +1076,15 @@
                     android:layout_marginTop="8dp"
                     android:text="@string/t106"
                     android:textIsSelectable="true"/>
+                <LinearLayout
+                    android:id="@+id/llLegal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="vertical">
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- 隐私政策 -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="1dp"
-            app:strokeColor="?attr/colorOutlineVariant"
-            app:strokeWidth="1dp"
-            app:cardBackgroundColor="?attr/colorSurface"
-            android:layout_marginTop="14dp"
-            android:layout_marginBottom="28dp">
-            <LinearLayout
-                android:id="@+id/llLegal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/t112"
-                    android:textSize="@dimen/ts_16"
-                    android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface"/>
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="@dimen/ts_12"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:lineSpacingExtra="5dp"
-                    android:layout_marginTop="8dp"
-                    android:text="@string/t113"
-                    android:textIsSelectable="true"/>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

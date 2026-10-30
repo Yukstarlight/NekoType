@@ -303,6 +303,12 @@ class SettingsFragment : Fragment() {
         box.addView(NekoDialog.row(requireContext(), getString(R.string.i55)) {
             NekoDialog.showDoc(requireContext(), getString(R.string.i55), LegalDocs.privacy())
         })
+        box.addView(android.widget.TextView(requireContext()).apply {
+            text = getString(R.string.privacy_hint)
+            setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 11f)
+            setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.fg_2))
+            setPadding(0, 0, 0, (8 * resources.displayMetrics.density).toInt())
+        })
         box.addView(divider())
         box.addView(NekoDialog.row(requireContext(), getString(R.string.i56)) {
             NekoDialog.showDoc(requireContext(), getString(R.string.i56), LegalDocs.thirdParty())

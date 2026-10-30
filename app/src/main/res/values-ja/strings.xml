@@ -696,4 +696,5 @@
     <string name="t_perm_guard">セキュリティ保護</string>
     <string name="t_perm_guard_desc">システムの「アクセシビリティ / デバイス管理」画面へ入ると自動で戻し、サービスを無効化させません</string>
     <string name="guard_blocked">セキュリティ保護：この設定画面はブロックされました</string>
+    <string name="privacy_hint">これは NekoType があなたの個人情報を集めていないことを知ってもらうためのもの、えへへ！</string>
 </resources>

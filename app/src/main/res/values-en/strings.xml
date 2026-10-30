@@ -645,4 +645,5 @@ You can skip it for now and enable it once Shizuku runs as root.</string>
     <string name="t_perm_guard">Security guard</string>
     <string name="t_perm_guard_desc">Automatically block the system Accessibility / Device admin pages so the service cannot be disabled</string>
     <string name="guard_blocked">Security guard: this settings page is blocked</string>
+    <string name="privacy_hint">This is really just to show you that NekoType collects nothing about you, hehe!</string>
 </resources>
