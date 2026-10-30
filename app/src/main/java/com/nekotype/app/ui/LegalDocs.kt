@@ -350,7 +350,7 @@ object LegalDocs {
 
         else -> """
             NekoType Open Source Licenses
-            Last updated: 2026-10-11
+            Last updated: 2026-10-30
 
             This app is built on the following open-source projects. Thanks to their authors;
             their original licenses are retained.
