@@ -726,7 +726,4 @@ Du kannst es jetzt überspringen und später aktivieren.</string>
     <string name="t_perm_guard_desc">Blockiert automatisch die Systemseiten Bedienungshilfen / Geräteadministrator, damit der Dienst nicht deaktiviert wird</string>
     <string name="guard_blocked">Sicherheitsschutz: Diese Einstellungsseite ist gesperrt</string>
     <string name="privacy_hint">Das soll dir nur zeigen, dass NekoType nichts über dich sammelt, hihi!</string>
-    <string name="t_power_guard">Energiemenü blockieren</string>
-    <string name="t_power_guard_desc">Blockiert das Menü Ausschalten / Neu starten der Energietaste (erzwungenes Ausschalten per Langdruck nicht möglich)</string>
-    <string name="power_guard_blocked">Sicherheitsschutz: Das Energiemenü ist gesperrt</string>
 </resources>

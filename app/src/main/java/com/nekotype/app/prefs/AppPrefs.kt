@@ -1072,11 +1072,6 @@ object AppPrefs {
 
     // ================= 服务状态 =================
     /** 安全防护：进入系统「无障碍 / 设备管理」设置页时自动拦截（返回），防止被关闭 */
-    /** 安全防护：拦截电源菜单（关机 / 重启），防止借系统菜单强行重启 */
-    var powerGuardEnabled: Boolean
-        get() = sp.getBoolean("power_guard_enabled", false)
-        set(v) { sp.edit().putBoolean("power_guard_enabled", v).apply() }
-
     var permGuardEnabled: Boolean
         get() = sp.getBoolean("perm_guard_enabled", false)
         set(v) { sp.edit().putBoolean("perm_guard_enabled", v).apply() }

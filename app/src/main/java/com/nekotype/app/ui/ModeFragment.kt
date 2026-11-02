@@ -84,10 +84,6 @@ class ModeFragment : Fragment() {
             if (restoringSwitch) return@setOnCheckedChangeListener
             if (v) onLockEnableRequested() else onLockDisableRequested()
         }
-        binding.swPowerGuard.setOnCheckedChangeListener { _, v ->
-            AppPrefs.powerGuardEnabled = v
-            NekoLog.adjust(if (v) "开启电源菜单拦截" else "关闭电源菜单拦截")
-        }
         binding.swPermGuard.setOnCheckedChangeListener { _, v ->
             AppPrefs.permGuardEnabled = v
             NekoLog.adjust(if (v) "开启安全防护（拦截安全设置页）" else "关闭安全防护")
@@ -206,7 +202,6 @@ class ModeFragment : Fragment() {
         binding.swCrashRestart.isChecked = AppPrefs.crashRestartEnabled
         binding.swPermCheck.isChecked = AppPrefs.permAutoCheckEnabled
         binding.swPermGuard.isChecked = AppPrefs.permGuardEnabled
-        binding.swPowerGuard.isChecked = AppPrefs.powerGuardEnabled
         restoringSwitch = false
     }
 
