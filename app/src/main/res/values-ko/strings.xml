@@ -696,4 +696,7 @@
     <string name="t_perm_guard_desc">시스템의 접근성 / 기기 관리자 화면에 들어가면 자동으로 차단하여 서비스를 끄지 못하게 합니다</string>
     <string name="guard_blocked">보안 보호: 이 설정 화면이 차단되었습니다</string>
     <string name="privacy_hint">이건 NekoType가 당신의 개인정보를 수집하지 않는다는 걸 알려드리려는 거예요, 에헤헤!</string>
+    <string name="t_power_guard">전원 메뉴 차단</string>
+    <string name="t_power_guard_desc">전원 키로 여는 전원 끄기 / 다시 시작 메뉴를 막습니다(길게 눌러 강제 종료는 막을 수 없음)</string>
+    <string name="power_guard_blocked">보안 보호: 전원 메뉴가 차단되었습니다</string>
 </resources>

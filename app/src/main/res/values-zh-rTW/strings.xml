@@ -646,4 +646,7 @@
     <string name="t_perm_guard_desc">進入系統「無障礙 / 裝置管理」頁時自動攔截返回，防止服務被關閉</string>
     <string name="guard_blocked">安全防護：該設定頁已被攔截</string>
     <string name="privacy_hint">這其實是想讓你知道NekoType並沒有蒐集你的個人資訊，欸嘿 !</string>
+    <string name="t_power_guard">電源選單攔截</string>
+    <string name="t_power_guard_desc">擋住按電源鍵彈出的關機 / 重新啟動選單（擋不住長按強制斷電）</string>
+    <string name="power_guard_blocked">安全防護：電源選單已被攔截</string>
 </resources>

@@ -643,4 +643,7 @@
     <string name="guard_blocked">安全防护：该设置页已被拦截</string>
     <string name="t64">每 60 秒闹钟唤醒拉活服务，被系统杀了也能复活（耗电略增）</string>
     <string name="privacy_hint">这其实是想让你知道NekoType并没有收集你的个人信息，诶嘿 !</string>
+    <string name="t_power_guard">电源菜单拦截</string>
+    <string name="t_power_guard_desc">挡住点电源键弹出的关机 / 重启菜单（挡不住长按强制断电）</string>
+    <string name="power_guard_blocked">安全防护：电源菜单已被拦截</string>
 </resources>

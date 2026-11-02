@@ -697,4 +697,7 @@
     <string name="t_perm_guard_desc">システムの「アクセシビリティ / デバイス管理」画面へ入ると自動で戻し、サービスを無効化させません</string>
     <string name="guard_blocked">セキュリティ保護：この設定画面はブロックされました</string>
     <string name="privacy_hint">これは NekoType があなたの個人情報を集めていないことを知ってもらうためのもの、えへへ！</string>
+    <string name="t_power_guard">電源メニューをブロック</string>
+    <string name="t_power_guard_desc">電源キーで開く電源オフ / 再起動メニューを閉じます（長押しの強制電源断は防げません）</string>
+    <string name="power_guard_blocked">セキュリティ保護：電源メニューをブロックしました</string>
 </resources>

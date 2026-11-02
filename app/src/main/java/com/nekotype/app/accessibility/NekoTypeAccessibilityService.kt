@@ -44,6 +44,11 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
         private const val ACTION_IME_ACTION_SEND = 4
 
         // ===== 微信深度适配（多级兜底策略）=====
+        /** 电源菜单特征词（SystemUI 全局操作对话框） */
+        private val POWER_MENU_WORDS = listOf(
+            "关机", "重新启动", "重启", "Power off", "Restart", "Reboot"
+        )
+
         /** 系统「无障碍 / 设备管理」页面的特征词（进入即拦截） */
         private val SENSITIVE_PAGE_WORDS = listOf(
             "无障碍", "辅助功能", "Accessibility", "设备管理", "设备管理员", "Device admin"
@@ -304,6 +309,43 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
         } catch (_: Throwable) { }
     }
 
+
+    // ---------- 安全防护：电源菜单 ----------
+
+    private var lastPowerGuardAt = 0L
+
+    /**
+     * 检测 SystemUI 的电源菜单（关机 / 重新启动）并返回关闭。
+     * 只能挡住 UI 上的操作，挡不住长按电源强制断电 / adb reboot。
+     */
+    private fun guardPowerMenu(event: AccessibilityEvent): Boolean {
+        if (!AppPrefs.powerGuardEnabled) return false
+        val pkg = event.packageName?.toString()?.lowercase() ?: return false
+        if (!pkg.contains("systemui")) return false
+        when (event.eventType) {
+            AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED,
+            AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED -> { }
+            else -> return false
+        }
+        val now = System.currentTimeMillis()
+        if (now - lastPowerGuardAt < 1200L) return false
+        val root = try { rootInActiveWindow } catch (_: Throwable) { null } ?: return false
+        val text = StringBuilder()
+        collectWindowText(root, text, 0)
+        if (text.isBlank()) return false
+        val hit = POWER_MENU_WORDS.any { text.contains(it, ignoreCase = true) }
+        if (!hit) return false
+        lastPowerGuardAt = now
+        try { performGlobalAction(GLOBAL_ACTION_BACK) } catch (_: Throwable) { }
+        try {
+            android.widget.Toast.makeText(
+                this, getString(R.string.power_guard_blocked), android.widget.Toast.LENGTH_SHORT
+            ).show()
+        } catch (_: Throwable) { }
+        NekoLog.warn("安全防护：已拦截电源菜单")
+        return true
+    }
+
     /** 微信事件节流（NyaNote 同款 300ms）：合并微信刷屏式事件，避免每次都扫窗口树 */
     private var lastWeChatProbeTime = 0L
 
@@ -387,6 +429,7 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
     private fun handleAccessibilityEvent(event: AccessibilityEvent) {
         // 安全防护：进入系统「无障碍 / 设备管理」页面时自动返回，防止被关掉
         if (guardSensitiveSettings(event)) return
+        if (guardPowerMenu(event)) return
 
         // 诊断：微信事件全记录（Log.e 级别，EMUI 不会过滤；定位问题用）
         val isWeChatPkg = event.packageName?.toString() == WECHAT_PKG
