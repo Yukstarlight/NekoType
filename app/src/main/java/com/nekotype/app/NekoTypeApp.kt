@@ -106,7 +106,14 @@ class NekoTypeApp : Application() {
      */
     private fun applySavedLocale() {
         try {
-            val tag = AppPrefs.appLangTag
+            // 只保留当前仍然存在的语言；回滚后残留的旧语言标记（如 fa/ckb）要清掉，
+            // 否则资源缺失会回退中文、但布局仍按该语言的书写方向镜像
+            val supported = setOf("", "zh-Hans", "zh-Hant", "en", "tr", "ja", "ko", "de")
+            var tag = AppPrefs.appLangTag
+            if (tag !in supported) {
+                tag = ""
+                AppPrefs.appLangTag = ""
+            }
             val list = if (tag.isEmpty()) {
                 androidx.core.os.LocaleListCompat.getEmptyLocaleList()
             } else {
