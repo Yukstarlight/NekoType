@@ -521,7 +521,7 @@ Email: TR114512@qq.com</string>
     <string name="mod_subtitle">Modular extension system</string>
     <string name="mod_import_zip">Import module</string>
     <string name="mod_settings_row">Module manager</string>
-    <string name="mod_hint">Imported modules load and take effect immediately; modules that change UI or hooks may need an app restart for full effect.</string>
+    <string name="mod_hint">Imported modules take effect only after restarting the app; modules that change the UI or hooks especially need a restart.</string>
     <string name="mod_empty">No modules installed</string>
     <string name="mod_enable">Enabled</string>
     <string name="mod_delete">Delete</string>

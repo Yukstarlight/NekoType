@@ -35,6 +35,7 @@ import com.nekotype.app.util.setTextSizeDimen
  * 从 MainActivity 规则页逻辑迁移而来，保留全部功能。
  */
 class RulesFragment : Fragment() {
+    private var restoringSwitches = false
 
     private var _binding: FragmentRulesBinding? = null
     private val binding get() = _binding!!
@@ -85,6 +86,7 @@ class RulesFragment : Fragment() {
         b.swHaptic.setOnCheckedChangeListener { _, v -> AppPrefs.hapticEnabled = v }
         b.swSnap.setOnCheckedChangeListener { _, v -> AppPrefs.snapEdges = v }
         b.swSilentModify.setOnCheckedChangeListener { _, v ->
+            if (restoringSwitches) return@setOnCheckedChangeListener
             AppPrefs.silentModifyEnabled = v
             NekoLog.adjust(if (v) "开启静默修改（Shizuku 直写）" else "关闭静默修改")
             if (v) toast(getString(R.string.u27))
@@ -424,6 +426,7 @@ class RulesFragment : Fragment() {
     private fun renderRules() {
         val b = _binding ?: return
         b.tvActiveRule.text = getString(R.string.u78, AppPrefs.activePresetName())
+        restoringSwitches = true
         b.swStyleSpaced.isChecked = AppPrefs.styleSpaced
         b.swStyleUpper.isChecked = AppPrefs.styleUpper
         b.swAutoSend.isChecked = AppPrefs.autoSend
@@ -435,6 +438,7 @@ class RulesFragment : Fragment() {
         b.swDeleteOptimize.isChecked = AppPrefs.deleteOptimizeEnabled
         b.swVoiceOptimize.isChecked = AppPrefs.voiceInputOptimizeEnabled
         b.swPriorityGlobal.isChecked = AppPrefs.priorityGlobalEnabled
+        restoringSwitches = false
 
         val list = b.llRuleList
         list.removeAllViews()

@@ -521,7 +521,7 @@
     <string name="mod_subtitle">模組化擴充系統</string>
     <string name="mod_import_zip">匯入模組</string>
     <string name="mod_settings_row">模組管理</string>
-    <string name="mod_hint">匯入的模組會立即載入生效；改動介面/鉤子的模組建議重啟應用後查看完整效果。</string>
+    <string name="mod_hint">匯入的模組需要重新啟動應用後才會生效；會改動介面/鉤子的模組更要重啟後檢視完整效果。</string>
     <string name="mod_empty">還沒有安裝任何模組</string>
     <string name="mod_enable">啟用</string>
     <string name="mod_delete">刪除</string>

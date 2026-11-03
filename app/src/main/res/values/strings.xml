@@ -516,7 +516,7 @@
     <string name="mod_subtitle">模块化扩展系统</string>
     <string name="mod_import_zip">导入模块</string>
     <string name="mod_settings_row">模块管理</string>
-    <string name="mod_hint">导入的模块会立即加载生效；改动界面/钩子的模块建议重启应用后查看完整效果。</string>
+    <string name="mod_hint">导入的模块需重启应用后才会生效；改动界面/钩子的模块更要重启后查看完整效果。</string>
     <string name="mod_empty">还没有安装任何模块</string>
     <string name="mod_enable">启用</string>
     <string name="mod_delete">删除</string>
