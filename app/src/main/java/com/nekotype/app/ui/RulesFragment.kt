@@ -109,14 +109,6 @@ class RulesFragment : Fragment() {
             AppPrefs.emoticonEnabled = v
             NekoLog.adjust(if (v) "开启随机颜文字（每条自动追加）" else "关闭随机颜文字")
         }
-        b.swDeleteOptimize.setOnCheckedChangeListener { _, v ->
-            AppPrefs.deleteOptimizeEnabled = v
-            NekoLog.adjust(if (v) "开启删除优化（删字时不改写）" else "关闭删除优化")
-        }
-        b.swVoiceOptimize.setOnCheckedChangeListener { _, v ->
-            AppPrefs.voiceInputOptimizeEnabled = v
-            NekoLog.adjust(if (v) "开启语音输入优化（停顿 ${AppPrefs.voiceDebounceMs / 1000.0}s 再改写）" else "关闭语音输入优化")
-        }
         b.swPriorityGlobal.setOnCheckedChangeListener { _, v ->
             AppPrefs.priorityGlobalEnabled = v
             NekoLog.adjust(if (v) "开启按等级全局执行规则" else "关闭按等级全局执行（改为类别内排序）")
@@ -435,8 +427,6 @@ class RulesFragment : Fragment() {
         b.swSilentModify.isChecked = AppPrefs.silentModifyEnabled
         b.swPunctTrigger.isChecked = AppPrefs.punctTriggerEnabled
         b.swEmoticon.isChecked = AppPrefs.emoticonEnabled
-        b.swDeleteOptimize.isChecked = AppPrefs.deleteOptimizeEnabled
-        b.swVoiceOptimize.isChecked = AppPrefs.voiceInputOptimizeEnabled
         b.swPriorityGlobal.isChecked = AppPrefs.priorityGlobalEnabled
         restoringSwitches = false
 

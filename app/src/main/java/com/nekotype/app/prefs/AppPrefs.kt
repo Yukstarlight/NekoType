@@ -480,7 +480,7 @@ object AppPrefs {
 
     /** 删除优化：用户正在删除文字时暂不改写（避免"后缀删不掉／越删越多"），停手后自动恢复 */
     var deleteOptimizeEnabled: Boolean
-        get() = sp.getBoolean("delete_optimize", true)
+        get() = sp.getBoolean("delete_optimize", false)
         set(v) = sp.edit().putBoolean("delete_optimize", v).apply()
 
     /** 语音输入优化：语音输入时使用更长的停顿判定再接改写，避免说到一半被打断。

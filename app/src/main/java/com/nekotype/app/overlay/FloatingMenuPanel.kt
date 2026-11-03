@@ -478,8 +478,6 @@ class FloatingMenuPanel(private val service: FloatingButtonService) {
         })
         host.addView(toggleRow(str(R.string.t57), AppPrefs.punctTriggerEnabled) { AppPrefs.punctTriggerEnabled = it })
         host.addView(toggleRow(str(R.string.t59), AppPrefs.emoticonEnabled) { AppPrefs.emoticonEnabled = it })
-        host.addView(toggleRow(str(R.string.t1001), AppPrefs.deleteOptimizeEnabled) { AppPrefs.deleteOptimizeEnabled = it })
-        host.addView(toggleRow(str(R.string.t1003), AppPrefs.voiceInputOptimizeEnabled) { AppPrefs.voiceInputOptimizeEnabled = it })
         host.addView(toggleRow(str(R.string.i43), AppPrefs.priorityGlobalEnabled) { AppPrefs.priorityGlobalEnabled = it })
     }
 
