@@ -273,16 +273,20 @@ NekoType 是一款运行在 Android 上的系统级消息处理工具，核心�
 
 ## ⚙️ 构建
 
-### Windows（一键脚本）
+### Windows（一键脚本，已签名）
 
     # 前置：JDK 17+、Android SDK（ANDROID_HOME 或默认 %LOCALAPPDATA%\Android\Sdk）
     powershell -ExecutionPolicy Bypass -File sign_and_build.ps1
     # 产物: app\build\outputs\apk\release\app-release.apk （已签名）
 
-### Linux / macOS
+首次运行会生成 `nekotype-release.keystore` 并询问签名密码；也可以先设环境变量 `NEKOTYPE_STORE_PASSWORD` 免交互。密钥和 `keystore.properties` 只留在本机，已被 `.gitignore` 忽略，不要提交。
+
+### Linux / macOS（一键脚本，已签名）
 
     chmod +x sign_and_build.sh
     ./sign_and_build.sh
+
+流程与 Windows 一致，密码同样可用 `NEKOTYPE_STORE_PASSWORD` 传入。
 
 ### 手动构建
 
@@ -290,7 +294,9 @@ NekoType 是一款运行在 Android 上的系统级消息处理工具，核心�
     cd NekoType
     ./gradlew assembleRelease
 
-要求：JDK 17+，Android SDK Platform 34 + Build-Tools 34.0.0，Gradle 8.7（仓库已内置 wrapper）。
+注意：仓库不含签名密钥，手动构建产出的是 `app-release-unsigned.apk`，**不能直接安装**。要得到已签名 APK，请用上面的脚本，或在根目录自行创建 `keystore.properties`（`storeFile` / `storePassword` / `keyAlias` / `keyPassword`）后重新构建。
+
+要求：JDK 17+，Android SDK Platform 34 + Build-Tools 34.0.0，Gradle 8.7（仓库已内置 wrapper，首次构建会从腾讯镜像下载）。
 
 * * *
 
