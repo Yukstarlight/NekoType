@@ -1,9 +1,11 @@
-# ============================================================================
+﻿# ============================================================================
 # NekoType —— Windows 一键签名构建脚本
 # 用法:  powershell -ExecutionPolicy Bypass -File sign_and_build.ps1
 # 产物:  app\build\outputs\apk\release\app-release.apk （已签名，可直接安装/发布）
 # ============================================================================
 $ErrorActionPreference = "Stop"
+# 中文控制台输出：避免 GBK 代码页把提示显示成乱码
+try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch { }
 
 Write-Host "==> NekoType 签名构建脚本 (Windows)" -ForegroundColor Cyan
 $root = $PSScriptRoot
@@ -24,7 +26,11 @@ if (-not $javaBin) {
     Write-Host "  [ERROR] 未找到 JDK，请安装 JDK 17+ 并设置 JAVA_HOME" -ForegroundColor Red
     exit 1
 }
+# java -version 走 stderr；在 Stop 模式下会被当成终止错误，这里临时放宽
+$eap = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
 $verOut = & $javaBin -version 2>&1 | Out-String
+$ErrorActionPreference = $eap
 if ($verOut -notmatch 'version "([0-9]+)') {
     Write-Host "  [ERROR] 无法解析 JDK 版本: $verOut" -ForegroundColor Red
     exit 1
@@ -47,9 +53,10 @@ if (-not $env:ANDROID_HOME -or -not (Test-Path $env:ANDROID_HOME)) {
 Write-Host "  [OK] ANDROID_HOME=$env:ANDROID_HOME"
 
 # local.properties
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 if (-not (Test-Path "$root\local.properties")) {
     $sdkEscaped = $env:ANDROID_HOME -replace '\\', '\\'
-    Set-Content -Path "$root\local.properties" -Value "sdk.dir=$sdkEscaped" -Encoding UTF8
+    [System.IO.File]::WriteAllText("$root\local.properties", "sdk.dir=$sdkEscaped`n", $utf8NoBom)
     Write-Host "  [OK] 已生成 local.properties"
 }
 
@@ -96,12 +103,13 @@ if (-not (Test-Path $ks)) {
     Write-Host "  [OK] 密钥库已存在: $ks"
 }
 # keystore.properties（已被 .gitignore 忽略，仅保存在本机）
-@"
+$propsText = @"
 storeFile=nekotype-release.keystore
 storePassword=$storePass
 keyAlias=nekotype
 keyPassword=$keyPass
-"@ | Set-Content -Path $props -Encoding UTF8
+"@
+[System.IO.File]::WriteAllText($props, ($propsText -replace "`r`n", "`n"), $utf8NoBom)
 Write-Host "  [OK] keystore.properties 已写入（本机，已被 git 忽略）"
 
 # ---------- 3. 确保 Gradle Wrapper 可用 ----------
@@ -141,7 +149,10 @@ Write-Host "  [SUCCESS] 已签名 APK: $apk (${sizeKB} KB)" -ForegroundColor Gre
 $apksigner = Get-ChildItem "$env:ANDROID_HOME\build-tools" -Recurse -Filter apksigner.bat |
     Sort-Object FullName -Descending | Select-Object -First 1
 if ($apksigner) {
+    $eap2 = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
     $verify = & $apksigner.FullName verify --print-certs $apk 2>&1 | Out-String
+    $ErrorActionPreference = $eap2
     Write-Host "  [OK] apksigner 校验:" -ForegroundColor Green
     Write-Host ($verify | Select-Object -First 4)
 } else {
