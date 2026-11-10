@@ -690,4 +690,5 @@ Ayrıca Shizuku otomatik başlatma (root) modülünü etkinleştirmeniz gerekir.
     <string name="t_perm_guard_desc">Sistem Erişilebilirlik / Cihaz yöneticisi sayfalarına girişi otomatik engeller; hizmet kapatılamaz</string>
     <string name="guard_blocked">Güvenlik koruması: bu ayar sayfası engellendi</string>
     <string name="privacy_hint">Bu sadece NekoType uygulamasının kişisel bilgilerinizi toplamadığını göstermek için, hehe!</string>
+    <string name="op_failed">İşlem başarısız, lütfen tekrar deneyin</string>
 </resources>

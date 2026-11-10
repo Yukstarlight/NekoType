@@ -646,4 +646,5 @@
     <string name="t_perm_guard_desc">進入系統「無障礙 / 裝置管理」頁時自動攔截返回，防止服務被關閉</string>
     <string name="guard_blocked">安全防護：該設定頁已被攔截</string>
     <string name="privacy_hint">這其實是想讓你知道NekoType並沒有蒐集你的個人資訊，欸嘿 !</string>
+    <string name="op_failed">操作失敗，請重試</string>
 </resources>

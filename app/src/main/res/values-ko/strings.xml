@@ -696,4 +696,5 @@
     <string name="t_perm_guard_desc">시스템의 접근성 / 기기 관리자 화면에 들어가면 자동으로 차단하여 서비스를 끄지 못하게 합니다</string>
     <string name="guard_blocked">보안 보호: 이 설정 화면이 차단되었습니다</string>
     <string name="privacy_hint">이건 NekoType가 당신의 개인정보를 수집하지 않는다는 걸 알려드리려는 거예요, 에헤헤!</string>
+    <string name="op_failed">작업 실패, 다시 시도해 주세요</string>
 </resources>

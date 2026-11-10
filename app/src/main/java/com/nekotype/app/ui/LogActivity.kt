@@ -87,9 +87,9 @@ class LogActivity : AppCompatActivity() {
         binding.btnCopyLog.setOnClickListener { copyCurrentLog() }
         binding.btnClearLog.setOnClickListener {
             if (binding.scrollAppLog.visibility == View.VISIBLE) {
-                NekoLog.clear()
+                val ok = NekoLog.clear()
                 refreshAppLog()
-                toast(getString(R.string.u4))
+                toast(getString(if (ok) R.string.u4 else R.string.op_failed))
             } else {
                 toast(getString(R.string.u37))
             }

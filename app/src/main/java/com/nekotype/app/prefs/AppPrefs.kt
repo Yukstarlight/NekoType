@@ -418,8 +418,10 @@ object AppPrefs {
         }
     }
 
-    fun removeRule(id: String) {
+    /** 删除规则：写入后回读，返回是否真的删掉了 */
+    fun removeRule(id: String): Boolean {
         updateActivePreset { it.copy(rules = it.rules.filterNot { r -> r.id == id }) }
+        return rulesList().none { it.rules.any { r -> r.id == id } }
     }
 
     // ---------- 样式（全局，作用于当前预设） ----------
@@ -1101,12 +1103,16 @@ object AppPrefs {
 
     /** 开发者模式：恢复出厂设置（清空全部本地数据）。
      *  keepDevMode=true 时保留开发者模式开关，避免清空后连开发者页都进不去。 */
-    fun factoryReset(keepDevMode: Boolean = true) {
-        try {
+    /** 恢复出厂：清空本地数据；返回是否真正写入成功（失败时调用方必须提示） */
+    fun factoryReset(keepDevMode: Boolean = true): Boolean {
+        return try {
             val e = sp.edit().clear()
             if (keepDevMode) e.putBoolean("dev_mode", true)
             e.commit()
-        } catch (_: Throwable) { }
+        } catch (t: Throwable) {
+            android.util.Log.e("AppPrefs", "恢复出厂失败: ${t.message}")
+            false
+        }
     }
 
     /** 篡改检测标志（签名不匹配 / Hook 框架）：为 true 时各入口拒绝运行 */
