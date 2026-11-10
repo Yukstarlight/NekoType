@@ -53,6 +53,7 @@ class SettingsFragment : Fragment() {
                     out.outputStream().use { input.copyTo(it) }
                 }
                 AppPrefs.customBackgroundPath = out.absolutePath
+                BgUtils.notifyChanged()
                 BgUtils.apply(binding.root)
                 toast(getString(R.string.u1))
             } catch (_: Throwable) {
@@ -383,6 +384,10 @@ class SettingsFragment : Fragment() {
         var step = 0
         val runnable = object : Runnable {
             override fun run() {
+                if (!isAdded || _binding == null) {
+                    handler.removeCallbacks(this)
+                    return
+                }
                 step++
                 progress.progress = step * 2
                 tvState.text = getString(R.string.hc_downloading, step * 2)
@@ -390,7 +395,7 @@ class SettingsFragment : Fragment() {
                     handler.postDelayed(this, 50)
                 } else {
                     AppPrefs.devModeEnabled = true
-                    dialog.dismiss()
+                    try { dialog.dismiss() } catch (_: Throwable) { }
                     NekoLog.adjust("开发者模式已开启")
                     toast(getString(R.string.hc_dev_mode_on))
                 }

@@ -77,7 +77,7 @@ object NekoLog {
                 }
             }.start()
         }
-        listeners.forEach { runCatching { it() } }
+        listeners.toList().forEach { runCatching { it() } }
     }
 
     fun info(msg: String) = add(INFO, msg)
@@ -98,7 +98,7 @@ object NekoLog {
             android.util.Log.e("NekoLog", "清空日志失败: ${t.message}")
             false
         }
-        listeners.forEach { runCatching { it() } }
+        listeners.toList().forEach { runCatching { it() } }
         return ok
     }
 
@@ -145,10 +145,12 @@ object NekoLog {
         } catch (_: Throwable) { }
     }
 
+    @Synchronized
     fun registerListener(l: () -> Unit) {
         listeners.add(l)
     }
 
+    @Synchronized
     fun unregisterListener(l: () -> Unit) {
         listeners.remove(l)
     }

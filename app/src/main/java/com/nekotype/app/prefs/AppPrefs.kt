@@ -1352,8 +1352,11 @@ object AppPrefs {
     /** 是否已设置过密码（载荷存在即视为有锁——即使被篡改也按锁定处理，防绕过） */
     fun hasLockPassword(): Boolean = lockPayload.isNotEmpty() || lockHash.isNotEmpty()
 
-    /** 设置/重置密码（首次开启无需旧密码）；Argon2id 慢哈希 + Keystore 硬件加密存储 */
-    fun setLockPassword(pwd: String) {
+    /**
+     * 设置/重置密码（首次开启无需旧密码）；Argon2id 慢哈希 + Keystore 硬件加密存储。
+     * 盐、哈希、载荷一次原子写入并回验；失败则回滚旧值并返回 false（否则可能只写了一半，永远解不开）。
+     */
+    fun setLockPassword(pwd: String): Boolean {
         val salt = ByteArray(16).also { java.security.SecureRandom().nextBytes(it) }
         val hash = try {
             val res = argon2.hash(
@@ -1369,23 +1372,38 @@ object AppPrefs {
         } catch (_: Throwable) {
             "" // JNI 不可用时回退
         }
-        if (hash.isNotEmpty()) {
-            // 优先 Keystore 加密存储，但**同时**保留 salt+hash 兜底：
-            // Android Keystore 的密钥在重装/系统异常/密钥失效后会解不开，
-            // 只存加密载荷会导致"重启应用后原密码怎么输都不对、必须重设密码"。
-            lockSalt = salt.joinToString("") { "%02x".format(it) }
-            lockHash = hash
-            val payload = encryptPayload(hash)
-            if (payload != null) {
-                sp.edit().putString("lock_payload", payload).apply()
-                return
-            }
-            sp.edit().remove("lock_payload").apply()
-            return
+        val newSalt = salt.joinToString("") { "%02x".format(it) }
+        // Argon2 可用用编码串；JNI 不可用时回退旧格式（SHA-256）
+        val newHash = if (hash.isNotEmpty()) hash else sha256(newSalt + pwd)
+        // 优先 Keystore 加密存储，但**同时**保留 salt+hash 兜底：
+        // Keystore 密钥在重装/系统异常/密钥失效后会解不开，只存加密载荷会导致"重启后原密码怎么输都不对"。
+        val newPayload = if (hash.isNotEmpty()) encryptPayload(hash) else null
+
+        val oldSalt = lockSalt
+        val oldHash = lockHash
+        val oldPayload = lockPayload
+
+        val ok = try {
+            sp.edit()
+                .putString("lock_salt", newSalt)
+                .putString("lock_hash", newHash)
+                .also { if (newPayload != null) it.putString("lock_payload", newPayload) else it.remove("lock_payload") }
+                .commit()
+        } catch (t: Throwable) {
+            android.util.Log.e("AppPrefs", "写入锁密码失败: ${t.message}")
+            false
         }
-        // Argon2 JNI 不可用：回退旧格式（SHA-256）
-        lockSalt = salt.joinToString("") { "%02x".format(it) }
-        lockHash = sha256(lockSalt + pwd)
+        if (ok && verifyLockPassword(pwd)) return true
+
+        // 回滚，避免盐和哈希只写了一半导致原密码也失效
+        try {
+            sp.edit()
+                .putString("lock_salt", oldSalt)
+                .putString("lock_hash", oldHash)
+                .also { if (oldPayload.isEmpty()) it.remove("lock_payload") else it.putString("lock_payload", oldPayload) }
+                .commit()
+        } catch (_: Throwable) { }
+        return false
     }
 
     /** 校验密码：优先 Keystore 载荷；载荷解不开（密钥失效）时回落 salt+hash，兼容旧格式 */
@@ -1511,4 +1529,12 @@ object AppPrefs {
     var modulesJson: String
         get() = sp.getString("modules_json", "")!!
         set(v) = sp.edit().putString("modules_json", v).apply()
+
+    /** 同步写入模块启用状态并回读校验（开关失败要让用户知道，而不是默默弹回去） */
+    fun saveModulesJsonSync(json: String): Boolean = try {
+        sp.edit().putString("modules_json", json).commit() && sp.getString("modules_json", "") == json
+    } catch (t: Throwable) {
+        android.util.Log.e("AppPrefs", "写入模块状态失败: ${t.message}")
+        false
+    }
 }

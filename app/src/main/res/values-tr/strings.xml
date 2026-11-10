@@ -489,7 +489,7 @@ E-posta: TR114512@qq.com</string>
     <string name="u168">NekoType dönüştür ve gönder düğmesi</string>
     <string name="u169">Önce erişilebilirlik servisini açın (uygulama izin rehberi 1. adım)</string>
     <string name="u170">Önce giriş alanına dokunun, sonra bu düğmeye basın</string>
-    <string name="u171">✓ Dönüştürüldü ve gönderildi</string>
+    <string name="u171">Dönüştürülüyor ve gönderiliyor…</string>
     <string name="u172">NekoType çalışıyor</string>
     <string name="u173">Shizuku kanalı kullanılamıyor (çalışmıyor veya izin verilmedi)</string>
     <string name="u174">Geçerli bir NekoType yapılandırma dosyası değil</string>

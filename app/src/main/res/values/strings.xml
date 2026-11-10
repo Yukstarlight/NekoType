@@ -307,7 +307,7 @@
     <string name="u168">NekoType 变换发送按钮</string>
     <string name="u169">请先开启无障碍服务（App 权限引导第 1 步）</string>
     <string name="u170">请先点一下输入框，再点本按钮</string>
-    <string name="u171">✓ 已变换并发送</string>
+    <string name="u171">正在变换并发送…</string>
     <string name="u172">NekoType 运行中</string>
     <string name="u173">Shizuku 通道不可用（未运行或未授权）</string>
     <string name="u180">无障碍服务</string>

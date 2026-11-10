@@ -45,6 +45,10 @@ object LockGate {
             .setNegativeButton(activity.getString(R.string.u72), null)
             .create()
         dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
+                dialog.dismiss()
+                onCancel?.invoke()
+            }
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 if (AppPrefs.verifyLockPassword(NekoDialog.textOf(inPwd))) {
                     dialog.dismiss()

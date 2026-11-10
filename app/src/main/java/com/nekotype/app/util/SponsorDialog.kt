@@ -41,7 +41,7 @@ object SponsorDialog {
             val count = AppPrefs.launchCount
             val next = AppPrefs.nextSponsorMilestone
             if (count <= 0 || count < next) return
-            AppPrefs.nextSponsorMilestone = MILESTONES.firstOrNull { it > count } ?: (count + 1)
+            AppPrefs.nextSponsorMilestone = MILESTONES.firstOrNull { it > count } ?: Int.MAX_VALUE
             show(ctx, count)
         } catch (_: Throwable) { /* 提醒失败不影响正常使用 */ }
     }

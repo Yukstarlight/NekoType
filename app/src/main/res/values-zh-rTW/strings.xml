@@ -309,7 +309,7 @@
     <string name="u168">NekoType 變換發送按鈕</string>
     <string name="u169">請先開啟無障礙服務（App 權限引導第 1 步）</string>
     <string name="u170">請先點一下輸入框，再點本按鈕</string>
-    <string name="u171">✓ 已變換並送出</string>
+    <string name="u171">正在變換並送出…</string>
     <string name="u172">NekoType 執行中</string>
     <string name="u173">Shizuku 通道不可用（未執行或未授權）</string>
     <string name="u180">無障礙服務</string>

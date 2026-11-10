@@ -134,7 +134,10 @@ class AppPresetActivity : AppCompatActivity() {
                 list.sortBy { it.second.lowercase(Locale.getDefault()) }
             } catch (_: Throwable) { }
             appCache = list
-            runOnUiThread { showPickerDialog(list) }
+            runOnUiThread {
+                if (isFinishing || isDestroyed) return@runOnUiThread
+                showPickerDialog(list)
+            }
         }.start()
     }
 

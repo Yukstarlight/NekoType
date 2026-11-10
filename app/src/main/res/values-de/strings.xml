@@ -454,7 +454,7 @@ E-Mail: TR114512@qq.com</string>
     <string name="u168">NekoType-Taste zum Umwandeln und Senden</string>
     <string name="u169">Bitte zuerst die Bedienungshilfe aktivieren (Schritt 1 des Berechtigungsassistenten)</string>
     <string name="u170">Bitte zuerst in das Eingabefeld tippen und dann diese Taste drücken</string>
-    <string name="u171">✓ Umgewandelt und gesendet</string>
+    <string name="u171">Wird umgewandelt und gesendet…</string>
     <string name="u172">NekoType läuft</string>
     <string name="u173">Shizuku-Kanal nicht verfügbar (nicht gestartet oder nicht autorisiert)</string>
     <string name="u174">Keine gültige NekoType-Konfigurationsdatei</string>

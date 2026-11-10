@@ -438,7 +438,7 @@
     <string name="u168">NekoType 변환 전송 버튼</string>
     <string name="u169">먼저 접근성 서비스를 켜세요(앱 권한 안내 1단계)</string>
     <string name="u170">먼저 입력창을 한 번 누른 뒤 이 버튼을 누르세요</string>
-    <string name="u171">✓ 변환 후 전송했습니다</string>
+    <string name="u171">변환 후 전송 중…</string>
     <string name="u172">NekoType 실행 중</string>
     <string name="u173">Shizuku 채널을 사용할 수 없습니다(미실행 또는 미허용)</string>
     <string name="u174">유효한 NekoType 설정 파일이 아닙니다</string>

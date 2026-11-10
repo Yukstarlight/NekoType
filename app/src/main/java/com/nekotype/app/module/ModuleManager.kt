@@ -104,15 +104,15 @@ object ModuleManager {
         JSONObject()
     }
 
-    private fun saveStates(o: JSONObject) {
-        AppPrefs.modulesJson = o.toString()
-    }
+    private fun saveStates(o: JSONObject): Boolean = AppPrefs.saveModulesJsonSync(o.toString())
 
     fun isEnabled(id: String): Boolean = states().optBoolean(id, true)
 
-    fun setEnabled(ctx: Context, id: String, enabled: Boolean) {
-        states().also { it.put(id, enabled) }.let { saveStates(it) }
+    /** 返回是否写入成功；失败时界面要提示，否则开关会默默弹回 */
+    fun setEnabled(ctx: Context, id: String, enabled: Boolean): Boolean {
+        val ok = states().also { it.put(id, enabled) }.let { saveStates(it) }
         reload(ctx)
+        return ok
     }
 
     fun installFromUri(ctx: Context, uri: Uri): Result<ModuleInfo> = try {

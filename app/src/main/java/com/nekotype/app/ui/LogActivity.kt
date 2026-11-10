@@ -30,7 +30,10 @@ class LogActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLogBinding
 
-    private val logListener = { refreshAppLog() }
+    private val uiHandler = android.os.Handler(android.os.Looper.getMainLooper())
+
+    // 日志可能由后台线程写入，回调必须回主线程，否则刷新界面会崩
+    private val logListener: () -> Unit = { uiHandler.post { refreshAppLog() } }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         ThemeHelper.apply(this)

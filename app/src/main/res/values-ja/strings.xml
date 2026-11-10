@@ -432,7 +432,7 @@
     <string name="u168">NekoType 変換・送信ボタン</string>
     <string name="u169">先にアクセシビリティサービスを有効にしてください（アプリの権限ガイド手順 1）</string>
     <string name="u170">先に入力欄をタップしてから、このボタンを押してください</string>
-    <string name="u171">✓ 変換して送信しました</string>
+    <string name="u171">変換して送信中…</string>
     <string name="u172">NekoType 実行中</string>
     <string name="u173">Shizuku チャネルを利用できません（未起動または未許可）</string>
     <string name="u180">アクセシビリティサービス</string>

@@ -585,6 +585,15 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                 }
             }
             android.util.Log.e("NekoA11y", "写回结束 writeOk=$writeOk text=${transformed.take(20)}")
+            if (!writeOk) {
+                // 没写进去就别发：否则发出去的是未变换的原文，还谎报"已变换发送"
+                NekoLog.error("写回输入框失败，已取消发送")
+                android.widget.Toast.makeText(
+                    this@NekoTypeAccessibilityService, getString(R.string.op_failed),
+                    android.widget.Toast.LENGTH_SHORT
+                ).show()
+                return@launch
+            }
 
             // 同步强制篡改键盘的增量状态，避免手动变换后自动模式重复叠加
             syncAutoState(node, result, transformed)
@@ -1036,6 +1045,8 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             } else {
                 // 3. 重置：用户删除/中间插入 → 从当前文本剥离上次附加的前缀/后缀，视为新原文
                 var base = trim
+                // 样式里的"字符间加空格"先去掉，否则前缀/后缀都匹配不上 → 整段重复叠加
+                if (AppPrefs.styleSpaced) base = base.replace(" ", "")
                 // 后缀由 appendSuffixSmart 插到了句末标点之前，需用配对的 stripSmartSuffix 剥离，
                 // 否则 `endsWith(suffix)` 会失配（结尾是标点）→ 残留后缀 → 下次重复叠加
                 if (st.addedSuffix.isNotEmpty()) {
@@ -1044,7 +1055,6 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                 if (st.addedPrefix.isNotEmpty() && base.startsWith(st.addedPrefix)) {
                     base = base.substring(st.addedPrefix.length)
                 }
-                if (AppPrefs.styleSpaced) base = base.replace(" ", "")
                 st.userOriginal = base.trim()
             }
             if (st.userOriginal.isEmpty()) return

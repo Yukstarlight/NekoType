@@ -142,7 +142,9 @@ class ModuleActivity : AppCompatActivity() {
                 text = getString(R.string.mod_enable)
                 isChecked = enabled
                 setOnCheckedChangeListener { _, v ->
-                    ModuleManager.setEnabled(this@ModuleActivity, m.id, v)
+                    if (!ModuleManager.setEnabled(this@ModuleActivity, m.id, v)) {
+                        toast(getString(R.string.op_failed))
+                    }
                     refresh()
                 }
             }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
@@ -163,8 +165,11 @@ class ModuleActivity : AppCompatActivity() {
             .setTitle(getString(R.string.mod_delete))
             .setMessage(getString(R.string.mod_delete_confirm, name))
             .setPositiveButton(getString(R.string.u156)) { _, _ ->
-                ModuleManager.uninstall(this, id)
-                toast(getString(R.string.mod_deleted))
+                if (ModuleManager.uninstall(this, id)) {
+                    toast(getString(R.string.mod_deleted))
+                } else {
+                    toast(getString(R.string.op_failed))
+                }
                 refresh()
             }
             .setNegativeButton(getString(R.string.u72), null)

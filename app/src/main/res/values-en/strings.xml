@@ -309,7 +309,7 @@ Email: TR114512@qq.com</string>
     <string name="u168">NekoType Transform &amp; Send button</string>
     <string name="u169">Please enable the accessibility service first (step 1 of permission guide)</string>
     <string name="u170">Please tap the input box first, then tap this button</string>
-    <string name="u171">✓ Transformed &amp; sent</string>
+    <string name="u171">Transforming &amp; sending…</string>
     <string name="u172">NekoType running</string>
     <string name="u173">Shizuku channel unavailable (not running or not granted)</string>
     <string name="u180">Accessibility Service</string>
