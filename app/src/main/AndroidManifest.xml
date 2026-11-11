@@ -11,7 +11,6 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
-    <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="com.rosan.dhizuku.permission.API" />
 
@@ -22,7 +21,7 @@
 
     <application
         android:name=".NekoTypeApp"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:localeConfig="@xml/locales_config"
@@ -193,7 +192,7 @@
             android:multiprocess="false"
             android:enabled="true"
             android:exported="true"
-            tools:ignore="ExportedContentProvider" />
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
 
         <!-- 应用语言本地持久化（AppCompat 1.6+）：
              Android 13+ 由系统存储语言选择；13 以下必须声明此服务并开启 autoStoreLocales，

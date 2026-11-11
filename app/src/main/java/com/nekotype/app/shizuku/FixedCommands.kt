@@ -25,6 +25,15 @@ object FixedCommands {
         pkg.isNotEmpty() && pkg.matches(Regex("[a-zA-Z0-9._]+"))
 
     /**
+     * CLASSPATH 里的 apk 必须是真实存在的绝对路径 .apk 文件。
+     * 只允许路径安全字符，杜绝单引号/分号/空格等拼进 shell。
+     */
+    private fun validApkPath(p: String): Boolean =
+        p.isNotEmpty() && p.length <= 512 && p.startsWith("/") && p.endsWith(".apk") &&
+            p.all { it.isLetterOrDigit() || it == '/' || it == '.' || it == '_' || it == '-' } &&
+            java.io.File(p).isFile
+
+    /**
      * 构造动作对应的固定命令；返回 null 表示参数非法或不支持的动作。
      * @param pkg 本应用包名（UserService 内用 Service.packageName，客户端用 packageName）
      */
@@ -54,7 +63,7 @@ object FixedCommands {
             when {
                 text == null || text.isEmpty() || text.length > MAX_INJECT_LEN -> null
                 text.all { it.code in 0x20..0x7E && it != '\'' } -> "input text '$text'"
-                apk.isEmpty() -> null
+                !validApkPath(apk) -> null
                 else -> {
                     val b64 = android.util.Base64.encodeToString(
                         text.toByteArray(Charsets.UTF_8), android.util.Base64.NO_WRAP

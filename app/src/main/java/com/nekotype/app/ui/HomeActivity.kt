@@ -202,6 +202,12 @@ class HomeActivity : AppCompatActivity() {
             else -> R.id.nav_home
         }
         try {
+            val protectedTab = tab == TAB_RULES || tab == TAB_MODE || tab == TAB_SETTINGS
+            if (protectedTab && !LockGate.isUnlocked()) {
+                // 外部 Intent 指定受保护页：先过密码门，通过后再切
+                LockGate.require(this, { binding.bottomNav.selectedItemId = target })
+                return
+            }
             if (binding.bottomNav.selectedItemId != target) {
                 binding.bottomNav.selectedItemId = target
             } else {
@@ -300,6 +306,12 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        // 退过后台上锁：受保护的 tab 不能原样停留，退回首页重新走密码门
+        if (!LockGate.isUnlocked() && binding.bottomNav.selectedItemId in
+            setOf(R.id.nav_rules, R.id.nav_mode, R.id.nav_settings)
+        ) {
+            binding.bottomNav.selectedItemId = R.id.nav_home
+        }
         BgUtils.apply(binding.root)
         NekoLang.apply(binding.root)
         applyNekoBottomNav()

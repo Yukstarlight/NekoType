@@ -395,7 +395,7 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             val srcOk = try { event.source != null } catch (_: Throwable) { false }
             android.util.Log.e(
                 "NekoA11y",
-                "微信事件 type=${event.eventType} text=${event.text?.joinToString("")?.take(20)} cls=${event.className} src=$srcOk"
+                "微信事件 type=${event.eventType} cls=${event.className} src=$srcOk"
             )
         }
         when (event.eventType) {
@@ -584,7 +584,7 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                     }
                 }
             }
-            android.util.Log.e("NekoA11y", "写回结束 writeOk=$writeOk text=${transformed.take(20)}")
+            android.util.Log.e("NekoA11y", "写回结束 writeOk=$writeOk len=${transformed.length}")
             if (!writeOk) {
                 // 没写进去就别发：否则发出去的是未变换的原文，还谎报"已变换发送"
                 NekoLog.error("写回输入框失败，已取消发送")
@@ -979,7 +979,7 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             var trim = node.text?.toString()?.trim().orEmpty()
             // 不再用剪贴板回读：反复「全选→复制」会不停写剪贴板、
             // 在微信里弹"已复制"，就是"老是复制东西"的元凶。读不到文本就跳过本轮。
-            android.util.Log.e("NekoA11y", "自动篡改读取: pkg=$pkg len=${trim.length} text=${trim.take(20)}")
+            android.util.Log.e("NekoA11y", "自动篡改读取: pkg=$pkg len=${trim.length}")
             if (trim.isEmpty()) {
                 // 微信等自定义输入框读不到文本 → 盲操作：只追加后缀类规则产物
                 blindAppendSuffix(node, fromSendFallback)
@@ -1072,7 +1072,7 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             // 六级兜底写回（篡改键盘模式）：Shizuku 静默注入默认启用、无需用户开关，
             // 且走 newProcess 通道优先（免绑定 UserService，不白等 8 秒），显著提高篡改成功率。
             val writeOk = writeBackSixLevel(node, r.text)
-            android.util.Log.e("NekoA11y", "自动篡改写回六级兜底 ok=$writeOk text=${r.text.take(20)}")
+            android.util.Log.e("NekoA11y", "自动篡改写回六级兜底 ok=$writeOk len=${r.text.length}")
             AppPrefs.transformCount = AppPrefs.transformCount + 1
             AppPrefs.incrementToday()
             val appLabel = try {
@@ -1080,7 +1080,7 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                 if (pkg != null) packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
                 else getString(R.string.u163)
             } catch (_: Throwable) { getString(R.string.u163) }
-            NekoLog.ok("强制篡改键盘：在「$appLabel」自动变换为「${r.text}」")
+            NekoLog.ok("强制篡改键盘：在「$appLabel」自动变换完成（${r.text.length} 字）")
 
             // 微信下不自动发送（改完由用户自己点发送，避免和手点发送叠加/抢发）
             if (AppPrefs.autoSend && !isWeChat) {
@@ -1133,7 +1133,7 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
     private suspend fun writeBackSixLevel(node: AccessibilityNodeInfo, text: String): Boolean {
         val t0 = android.os.SystemClock.elapsedRealtime()
         fun stamp(stage: String) = android.util.Log.i("NekoWrite",
-            "$stage +" + (android.os.SystemClock.elapsedRealtime() - t0) + "ms text=" + text.take(12))
+            "$stage +" + (android.os.SystemClock.elapsedRealtime() - t0) + "ms len=" + text.length)
         var ok = setTextAndCursor(node, text)
         if (ok) {
             delay(150)

@@ -589,24 +589,12 @@ class HomeFragment : Fragment() {
     }
 
     /**
-     * 启用软件时检查并申请：发送消息（SEND_SMS）与读取已安装应用列表（QUERY_ALL_PACKAGES）。
-     * 缺哪个申请哪个；被永久拒绝时引导到应用详情页手动开启。
+     * 启用服务时只补通知权限（Android 13+）。
+     * 短信权限已删除：本应用从不发短信，申请它既无用途也会扩大模块滥用的攻击面。
+     * QUERY_ALL_PACKAGES 是安装期权限，运行时申请无效，也不再调用。
      */
     private fun ensureServicePermissions() {
-        try {
-            val missing = mutableListOf<String>()
-            if (requireContext().checkSelfPermission(Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
-                missing += Manifest.permission.SEND_SMS
-            }
-            if (requireContext().checkSelfPermission(Manifest.permission.QUERY_ALL_PACKAGES) != PackageManager.PERMISSION_GRANTED) {
-                missing += Manifest.permission.QUERY_ALL_PACKAGES
-            }
-            if (missing.isEmpty()) return
-            NekoLog.info("申请权限：${missing.joinToString()}")
-            requestPermissions(missing.toTypedArray(), servicePermCode)
-        } catch (t: Throwable) {
-            NekoLog.error("权限检查失败：${t.javaClass.simpleName}: ${t.message}")
-        }
+        requestNotificationPermission()
     }
 
     /** 打开本应用的系统详情页（用于手动开启被拒绝的权限） */
@@ -618,23 +606,6 @@ class HomeFragment : Fragment() {
             ))
         } catch (t: Throwable) {
             NekoLog.error("应用详情页打不开：${t.javaClass.simpleName}")
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode != servicePermCode) return
-        val denied = permissions.filterIndexed { i, _ ->
-            grantResults.getOrNull(i) != PackageManager.PERMISSION_GRANTED
-        }
-        if (denied.isEmpty()) {
-            NekoLog.ok("权限已全部授予")
-        } else {
-            NekoLog.warn("权限被拒绝：${denied.joinToString()}")
-            toast(getString(R.string.u209))
-            openAppDetailsSettings()
         }
     }
 

@@ -1530,6 +1530,11 @@ object AppPrefs {
         get() = sp.getString("modules_json", "")!!
         set(v) = sp.edit().putString("modules_json", v).apply()
 
+    /** 模块 DEX 哈希表（id → sha256），加载前比对，防模块文件被替换 */
+    var moduleHashesJson: String
+        get() = sp.getString("module_hashes", "{}")!!
+        set(v) = sp.edit().putString("module_hashes", v).apply()
+
     /** 同步写入模块启用状态并回读校验（开关失败要让用户知道，而不是默默弹回去） */
     fun saveModulesJsonSync(json: String): Boolean = try {
         sp.edit().putString("modules_json", json).commit() && sp.getString("modules_json", "") == json
