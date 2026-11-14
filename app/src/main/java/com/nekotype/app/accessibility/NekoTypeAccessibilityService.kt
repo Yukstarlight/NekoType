@@ -94,7 +94,9 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
     /** 强制篡改键盘：防抖自动变换任务（原生键盘输入停顿后自动篡改） */
     private var autoTransformJob: Job? = null
 
-    /** 删除优化的恢复任务：用户停手 500ms 后解除"删除模式"并重新改写 */
+    /** 本服务自己上一次点发送的时间：用于忽略自己点击产生的 TYPE_VIEW_CLICKED 回投 */
+    private var lastSelfSendAt = 0L
+    private val SELF_SEND_ECHO_MS = 2000L
 
     /** 防重入处理锁（processing 标志：并发事件不重复处理） */
     @Volatile private var autoProcessing = false
@@ -444,7 +446,12 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                 // 发送按钮兜底：用户手点发送时立即篡改（不等防抖、不受标点触发限制），确保发出的是篡改后文本。
                 // 黑名单应用内不自动篡改（含兜底）
                 val src = event.source ?: return
-                if (AppPrefs.forceKeyboardEnabled && AppPrefs.serviceEnabled && isSendButtonNode(src) && !isBlacklistedApp(src)) {
+                // 自己点发送会让系统回投一条 VIEW_CLICKED，若当成"用户点发送"会再触发一轮
+                // 改写+盲追加+再发送 → 无限连发。这里先把自家人挡掉。
+                val selfEcho = System.currentTimeMillis() - lastSelfSendAt < SELF_SEND_ECHO_MS
+                if (selfEcho && isSendButtonNode(src)) {
+                    android.util.Log.e("NekoA11y", "发送点击兜底：忽略本服务自己触发的发送点击")
+                } else if (AppPrefs.forceKeyboardEnabled && AppPrefs.serviceEnabled && isSendButtonNode(src) && !isBlacklistedApp(src)) {
                     val edit = NekoTypeAccessibilityBridge.activeNode
                     if (edit != null) {
                         autoTransformJob?.cancel()
@@ -1077,11 +1084,9 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             } catch (_: Throwable) { getString(R.string.u163) }
             NekoLog.ok("强制篡改键盘：在「$appLabel」自动变换完成（${r.text.length} 字）")
 
-            // 微信下不自动发送（改完由用户自己点发送，避免和手点发送叠加/抢发）
-            if (AppPrefs.autoSend && !isWeChat) {
-                delay(if (AppPrefs.voiceInputOptimizeEnabled) 3000L else 120L)
-                performSend(node)
-            }
+            // 自动改写（强制篡改键盘）只改不发：输入过程中每个字都会触发改写，
+            // 在这里发送会变成"每敲一个字发一条"。发送只由用户点发送键或
+            // 悬浮球/摇一摇的手动变换路径触发。
         } catch (_: Throwable) { }
     }
 
@@ -1231,6 +1236,11 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
      * 发送兜底（用户点发送）不受冷却限制；自动路径按 2.5 秒冷却防重复。
      */
     private suspend fun blindAppendSuffix(node: AccessibilityNodeInfo, fromSendFallback: Boolean) {
+        // 发送兜底进来时消息已经发出去了，输入框是空的：此时追加后缀会再发一条
+        if (fromSendFallback && System.currentTimeMillis() - lastSelfSendAt < SELF_SEND_ECHO_MS) {
+            android.util.Log.e("NekoA11y", "盲操作：发送后的空输入框，跳过追加")
+            return
+        }
         val key = node.viewIdResourceName ?: "node_${node.hashCode()}"
         val st = autoStates[key] ?: AutoState("", "", 0L)
         val now = System.currentTimeMillis()
@@ -1252,10 +1262,7 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             AppPrefs.transformCount = AppPrefs.transformCount + 1
             AppPrefs.incrementToday()
             NekoLog.ok("盲操作追加成功：$suffix")
-            if (AppPrefs.autoSend && pkgOf(node) != WECHAT_PKG) {
-                delay(150)
-                performSend(node)
-            }
+            // 不再自动发送：盲路径每次输入事件都可能走到这里，自动发送会连发
         } else {
             android.util.Log.e("NekoA11y", "盲操作追加失败: ch=${r.channel} out=${r.output}")
         }
@@ -1263,6 +1270,7 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
 
     /** 五级发送兜底：微信发送键 ID 点击 → 微信发送键手势 → 通用打分点击 → 通用手势 → IME 发送动作 */
     private fun performSend(editNode: AccessibilityNodeInfo) {
+        lastSelfSendAt = System.currentTimeMillis()
         val root = getBestRoot()
         val inputBounds = Rect().also { editNode.getBoundsInScreen(it) }
         val isWeChat = pkgOf(editNode) == WECHAT_PKG
