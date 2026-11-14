@@ -1027,12 +1027,17 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                     deleteRecoveryJob = scope.launch {
                         delay(500)
                         android.util.Log.e("NekoA11y", "删除优化：停手 500ms，恢复改写")
+                        // 先清自己的引用：下面 autoTransformInner 里的 isActive 检查否则会命中自己
+                        deleteRecoveryJob = null
                         autoTransform(src)
                     }
                     return
                 }
                 if (deleteRecoveryJob?.isActive == true) {
-                    android.util.Log.e("NekoA11y", "删除优化：删除过程中，暂不改写")
+                    // 删除后停手窗口内用户又继续打字：把最新节点挂起，等恢复任务补跑，
+                    // 否则这段时间的输入会被直接丢掉（表现为"删字后接着写就不再改写"）
+                    android.util.Log.e("NekoA11y", "删除优化：删除过程中，暂缓本次改写（已记下待补跑）")
+                    pendingRerun = src
                     return
                 }
             } else if (deleteOptOn && fromSendFallback) {
@@ -1066,7 +1071,16 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
 
             // 4. 变换并写回（基于 userOriginal，不是基于当前全文 → 永不叠加）
             val r = TextTransformEngine.transform(st.userOriginal)
-            if (r.text == trim || r.text.isEmpty()) return
+            if (r.text == trim || r.text.isEmpty()) {
+                // 结果与输入框一致：不用写，但状态要对齐到当前文本，别让 lastSet 停在上一版
+                st.addedPrefix = r.addedPrefix
+                st.addedSuffix = r.addedSuffix
+                st.lastSet = trim
+                st.lastWriteTime = 0L
+                st.lastSeenText = trim
+                autoStates[key] = st
+                return
+            }
 
             st.addedPrefix = r.addedPrefix
             st.addedSuffix = r.addedSuffix
@@ -1081,6 +1095,11 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             if (!writeOk) {
                 // 没写进去就别计数、别发送，否则发出去的是原文却记成"已变换"
                 NekoLog.warn("强制篡改：写回失败，本轮跳过")
+                // 关键：状态回滚到"输入框实际内容"，否则下次会以为已经写过 r.text 而推导错
+                st.lastSet = trim
+                st.lastWriteTime = 0L
+                st.lastSeenText = trim
+                autoStates[key] = st
                 return
             }
             AppPrefs.transformCount = AppPrefs.transformCount + 1
