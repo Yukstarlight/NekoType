@@ -211,7 +211,7 @@ class FloatingButtonService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // 防篡改：签名被改 / Hook 框架 → 拒绝运行
-        if (AppPrefs.tampered) {
+        if (AppPrefs.tampered || !com.nekotype.app.util.TamperGuard.isSignatureValid(this)) {
             AppPrefs.serviceEnabled = false
             NekoLog.warn("检测到篡改，悬浮服务拒绝运行")
             stopSelf()

@@ -638,9 +638,11 @@ class TerminalActivity : AppCompatActivity(), TerminalSessionClient, TerminalVie
             } catch (_: Throwable) { }
             // 2. 系统 sh 交互模式（-i）+ ENV 指向 rc 文件（横幅自动打印）
             val shPath = "/system/bin/sh"
-            val cwd = "/data/data/com.nekotype.app"
+            // 用应用自己的 dataDir：改包名/调试变体时也不会落到 "/"
+            val dataDir = applicationInfo.dataDir
+            val cwd = dataDir
             val env = arrayOf(
-                "HOME=/data/data/com.nekotype.app",
+                "HOME=" + dataDir,
                 "TERM=xterm-256color",
                 "PATH=/system/bin:/system/xbin:/system/bin",
                 "PWD=" + cwd,

@@ -79,6 +79,17 @@ class HomeActivity : AppCompatActivity() {
         BgUtils.apply(binding.root)
         NekoLog.nav("应用启动（重构版底部导航）")
 
+        // 防篡改：签名被改 / Hook 框架 → 拒绝运行并提示（实时校验，不信可被改写的 prefs 标记）
+        if (AppPrefs.tampered || !com.nekotype.app.util.TamperGuard.isSignatureValid(this)) {
+            androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle(getString(R.string.u36))
+                .setMessage(getString(R.string.u45))
+                .setPositiveButton(getString(R.string.u62)) { _, _ -> finish() }
+                .setCancelable(false)
+                .show()
+            return
+        }
+
         // 模块钩子：布局完成后回调，模块可替换/改造界面（如隐藏底部导航、自绘导航栏）
         binding.root.post {
             try { com.nekotype.app.module.ModuleHooks.dispatchActivity(this) } catch (_: Throwable) { }
