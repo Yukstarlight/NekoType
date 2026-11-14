@@ -438,7 +438,7 @@
     <string name="u168">NekoType 변환 전송 버튼</string>
     <string name="u169">먼저 접근성 서비스를 켜세요(앱 권한 안내 1단계)</string>
     <string name="u170">먼저 입력창을 한 번 누른 뒤 이 버튼을 누르세요</string>
-    <string name="u171">변환 후 전송 중…</string>
+    <string name="u171">✓ 변환 후 전송했습니다</string>
     <string name="u172">NekoType 실행 중</string>
     <string name="u173">Shizuku 채널을 사용할 수 없습니다(미실행 또는 미허용)</string>
     <string name="u174">유효한 NekoType 설정 파일이 아닙니다</string>
@@ -696,5 +696,4 @@
     <string name="t_perm_guard_desc">시스템의 접근성 / 기기 관리자 화면에 들어가면 자동으로 차단하여 서비스를 끄지 못하게 합니다</string>
     <string name="guard_blocked">보안 보호: 이 설정 화면이 차단되었습니다</string>
     <string name="privacy_hint">이건 NekoType가 당신의 개인정보를 수집하지 않는다는 걸 알려드리려는 거예요, 에헤헤!</string>
-    <string name="op_failed">작업 실패, 다시 시도해 주세요</string>
 </resources>

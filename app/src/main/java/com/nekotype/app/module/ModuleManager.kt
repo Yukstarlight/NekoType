@@ -27,7 +27,6 @@ object ModuleManager {
     private const val MAX_ENTRIES = 300
     private const val MAX_TOTAL_BYTES = 32L * 1024 * 1024
     private const val MAX_MANIFEST_BYTES = 64 * 1024
-    private const val IMPORT_TMP = "_import.tmp"
     private const val ID_PATTERN = "[A-Za-z0-9._-]{1,64}"
 
     val KNOWN_ABILITIES = setOf(
@@ -56,7 +55,7 @@ object ModuleManager {
     fun modulesRoot(ctx: Context): File = File(ctx.filesDir, "modules").apply { mkdirs() }
 
     fun list(ctx: Context): List<ModuleInfo> = modulesRoot(ctx).listFiles().orEmpty()
-        .filter { it.isDirectory && it.name != IMPORT_TMP }
+        .filter { it.isDirectory }
         .mapNotNull { d ->
             try {
                 val mf = File(d, "module.json")
@@ -66,34 +65,6 @@ object ModuleManager {
             }
         }
         .sortedBy { it.name.lowercase() }
-
-    /** 超预算立即中止的复制（防"声明很小、实际炸弹"的 ZIP） */
-    private fun copyLimited(ins: java.io.InputStream, outs: java.io.OutputStream, budget: Long): Long {
-        val buf = ByteArray(64 * 1024)
-        var used = 0L
-        while (true) {
-            val n = ins.read(buf)
-            if (n < 0) break
-            if (n == 0) continue
-            used += n
-            if (used > budget) throw IllegalStateException("模块解压后过大（> 32MB）")
-            outs.write(buf, 0, n)
-        }
-        return used
-    }
-
-    private fun sha256Of(f: File): String {
-        val md = java.security.MessageDigest.getInstance("SHA-256")
-        f.inputStream().use { ins ->
-            val buf = ByteArray(64 * 1024)
-            while (true) {
-                val n = ins.read(buf)
-                if (n < 0) break
-                md.update(buf, 0, n)
-            }
-        }
-        return md.digest().joinToString("") { "%02x".format(it) }
-    }
 
     fun loadErrors(): Map<String, String> = loadErrors.toMap()
 
@@ -133,29 +104,27 @@ object ModuleManager {
         JSONObject()
     }
 
-    private fun saveStates(o: JSONObject): Boolean = AppPrefs.saveModulesJsonSync(o.toString())
+    private fun saveStates(o: JSONObject) {
+        AppPrefs.modulesJson = o.toString()
+    }
 
     fun isEnabled(id: String): Boolean = states().optBoolean(id, true)
 
-    /** 返回是否写入成功；失败时界面要提示，否则开关会默默弹回 */
-    fun setEnabled(ctx: Context, id: String, enabled: Boolean): Boolean {
-        val ok = states().also { it.put(id, enabled) }.let { saveStates(it) }
+    fun setEnabled(ctx: Context, id: String, enabled: Boolean) {
+        states().also { it.put(id, enabled) }.let { saveStates(it) }
         reload(ctx)
-        return ok
     }
 
     fun installFromUri(ctx: Context, uri: Uri): Result<ModuleInfo> = try {
         val tmp = File(ctx.cacheDir, "nekotype-module-import.zip")
         val ok = ctx.contentResolver.openInputStream(uri)?.use { ins ->
-            // 压缩包本身也不许无限大（按实际字节计，防占满缓存）
-            tmp.outputStream().use { copyLimited(ins, it, MAX_TOTAL_BYTES + 8L * 1024 * 1024) }
+            tmp.outputStream().use { ins.copyTo(it) }
             true
         } ?: false
         val r = if (ok) installFromFile(ctx, tmp) else Result.failure(IllegalStateException("无法读取所选文件"))
         tmp.delete()
         r
     } catch (t: Throwable) {
-        runCatching { File(ctx.cacheDir, "nekotype-module-import.zip").delete() }
         Result.failure(t)
     }
 
@@ -181,10 +150,7 @@ object ModuleManager {
             if (mfEntry.size > MAX_MANIFEST_BYTES) {
                 return Result.failure(IllegalStateException("module.json 过大"))
             }
-            // 按实际读到的字节限长，不信任 ZIP 中央目录声明的 size
-            val mfBuf = java.io.ByteArrayOutputStream()
-            zf.getInputStream(mfEntry).use { copyLimited(it, mfBuf, MAX_MANIFEST_BYTES.toLong()) }
-            val manifestText = mfBuf.toString("UTF-8")
+            val manifestText = zf.getInputStream(mfEntry).use { it.readBytes().toString(Charsets.UTF_8) }
             val tmpDir = File(modulesRoot(ctx), "_import.tmp")
             tmpDir.deleteRecursively()
             tmpDir.mkdirs()
@@ -199,16 +165,11 @@ object ModuleManager {
             if (info.minVersionCode > 0 && hostVer > 0 && info.minVersionCode > hostVer) {
                 return Result.failure(IllegalStateException("模块要求应用版本 ≥ ${info.minVersionCode}（当前 $hostVer）"))
             }
-            var actual = 0L
             for (e in entries) {
                 if (e.isDirectory) continue
                 val out = File(tmpDir, e.name)
                 out.parentFile?.mkdirs()
-                zf.getInputStream(e).use { ins ->
-                    out.outputStream().use { os ->
-                        actual += copyLimited(ins, os, MAX_TOTAL_BYTES - actual)
-                    }
-                }
+                zf.getInputStream(e).use { ins -> out.outputStream().use { ins.copyTo(it) } }
             }
             val dest = File(modulesRoot(ctx), info.id)
             dest.deleteRecursively()
@@ -216,23 +177,12 @@ object ModuleManager {
                 tmpDir.copyRecursively(dest, overwrite = true)
                 tmpDir.deleteRecursively()
             }
-            // 记录 DEX 哈希：之后每次加载都比对，模块文件被替换/篡改则不加载
-            try {
-                val dexHash = sha256Of(File(dest, info.dexName))
-                val hashes = JSONObject(AppPrefs.moduleHashesJson)
-                hashes.put(info.id, dexHash)
-                AppPrefs.moduleHashesJson = hashes.toString()
-            } catch (t: Throwable) {
-                Log.w(TAG, "记录模块哈希失败（下次加载会补记）", t)
-            }
             states().also { it.put(info.id, true) }.let { saveStates(it) }
             Log.i(TAG, "已安装模块 ${info.id} ${info.name} ${info.version}")
             reload(ctx)
             Result.success(info)
         }
     } catch (t: Throwable) {
-        // 失败不留残骸：临时目录里的 module.json/classes.dex 不能被下次启动误加载
-        runCatching { File(modulesRoot(ctx), IMPORT_TMP).deleteRecursively() }
         Result.failure(t)
     }
 
@@ -258,16 +208,6 @@ object ModuleManager {
             try {
                 val dex = m.dexFile()
                 if (!dex.isFile) throw IllegalStateException("缺少 ${m.dexName}")
-                val actualHash = sha256Of(dex)
-                val hashes = JSONObject(AppPrefs.moduleHashesJson)
-                val expected = hashes.optString(m.id, "")
-                if (expected.isEmpty()) {
-                    // 旧版本安装的模块：首次加载补记哈希
-                    hashes.put(m.id, actualHash)
-                    AppPrefs.moduleHashesJson = hashes.toString()
-                } else if (expected != actualHash) {
-                    throw IllegalStateException("模块 DEX 与安装时不一致，已拒绝加载")
-                }
                 val optDir = File(ctx.codeCacheDir, "mod-${m.id}").apply { mkdirs() }
                 val cl = dalvik.system.DexClassLoader(dex.absolutePath, optDir.absolutePath, null, ctx.classLoader)
                 val obj = cl.loadClass(m.entryClass).getDeclaredConstructor().newInstance()
@@ -324,14 +264,7 @@ object ModuleManager {
         override fun addMenuItem(label: String, onClick: () -> Unit) =
             ModuleHooks.addMenuItem(moduleId, label, onClick)
 
-        override fun hideFeature(key: String) {
-            // 模块不允许隐藏自己的管理入口，否则恶意模块可让自己无法被卸载
-            if (key.equals(FeatureKeys.MODULES, ignoreCase = true)) {
-                Log.w(TAG, "模块 $moduleId 试图隐藏模块管理入口，已忽略")
-                return
-            }
-            ModuleHooks.hideFeature(key)
-        }
+        override fun hideFeature(key: String) = ModuleHooks.hideFeature(key)
 
         override fun splashDelay(ms: Long) = ModuleHooks.splashDelay(ms)
     }

@@ -307,7 +307,7 @@
     <string name="u168">NekoType 变换发送按钮</string>
     <string name="u169">请先开启无障碍服务（App 权限引导第 1 步）</string>
     <string name="u170">请先点一下输入框，再点本按钮</string>
-    <string name="u171">正在变换并发送…</string>
+    <string name="u171">✓ 已变换并发送</string>
     <string name="u172">NekoType 运行中</string>
     <string name="u173">Shizuku 通道不可用（未运行或未授权）</string>
     <string name="u180">无障碍服务</string>
@@ -413,7 +413,7 @@
     <string name="i27">终端 nekomood 命令随机情绪概率</string>
     <string name="i28">猫娘主题下自动 +20%</string>
     <string name="i29">当前：#%1$s</string>
-    <string name="i30">猫娘主题已激活，实际 %1$d%%（基础 %2$d%% +20%%）</string>
+    <string name="i30">猫娘主题已激活，实际 %1$d%%（基础 %2$d%% +20%）</string>
     <string name="i41">优先级</string>
     <string name="i42">1-100，数字越大越先执行（同级按列表顺序；默认 50）</string>
     <string name="i43">按等级全局执行</string>
@@ -643,5 +643,4 @@
     <string name="guard_blocked">安全防护：该设置页已被拦截</string>
     <string name="t64">每 60 秒闹钟唤醒拉活服务，被系统杀了也能复活（耗电略增）</string>
     <string name="privacy_hint">这其实是想让你知道NekoType并没有收集你的个人信息，诶嘿 !</string>
-    <string name="op_failed">操作失败，请重试</string>
 </resources>

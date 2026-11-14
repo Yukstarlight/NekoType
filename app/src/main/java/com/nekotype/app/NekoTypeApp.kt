@@ -26,24 +26,6 @@ class NekoTypeApp : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-        // 任意页面退到后台（整个进程没有可见 Activity）即重置解锁窗口，
-        // 不再依赖每个 Activity 自己调用 LockGate
-        registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
-            private var started = 0
-            override fun onActivityStarted(activity: Activity) { started++ }
-            override fun onActivityStopped(activity: Activity) {
-                started--
-                if (started <= 0) {
-                    started = 0
-                    com.nekotype.app.ui.LockGate.onAppBackground()
-                }
-            }
-            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) { }
-            override fun onActivityResumed(activity: Activity) { }
-            override fun onActivityPaused(activity: Activity) { }
-            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) { }
-            override fun onActivityDestroyed(activity: Activity) { }
-        })
         // 启动次数 +1（进程启动即计一次），用于里程碑赞助提醒
         try { AppPrefs.launchCount = AppPrefs.launchCount + 1 } catch (_: Throwable) { }
         // 初始化 Shizuku 长连接通道（注册 Binder 监听 + 预绑定 UserService）

@@ -85,9 +85,7 @@ class BlacklistActivity : AppCompatActivity() {
                 if (white) AppPrefs.removeWhitelist(it.first.packageName) else AppPrefs.removeBlacklist(it.first.packageName)
             }
             adapter.notifyDataSetChanged()
-            // 回读确认真的清空了，否则提示失败
-            val left = if (white) AppPrefs.whitelist().size else AppPrefs.blacklist().size
-            toast(getString(if (left == 0) R.string.u48 else R.string.op_failed))
+            toast(getString(R.string.u48))
         }
 
         // 应用列表

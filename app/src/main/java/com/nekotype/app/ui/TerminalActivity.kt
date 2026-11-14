@@ -53,11 +53,6 @@ class TerminalActivity : AppCompatActivity(), TerminalSessionClient, TerminalVie
     override fun onCreate(savedInstanceState: Bundle?) {
         ThemeHelper.apply(this)
         super.onCreate(savedInstanceState)
-        // 终端能读写应用私有目录（含密码文件），必须与设置页同一道密码关
-        if (!LockGate.isUnlocked()) {
-            LockGate.require(this, { recreate() }, { finish() })
-            return
-        }
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LOW_PROFILE
         setContentView(com.nekotype.app.R.layout.activity_terminal)
         // 应用自定义背景（优先用户自定义壁纸，无则回退主题背景）
@@ -638,11 +633,9 @@ class TerminalActivity : AppCompatActivity(), TerminalSessionClient, TerminalVie
             } catch (_: Throwable) { }
             // 2. 系统 sh 交互模式（-i）+ ENV 指向 rc 文件（横幅自动打印）
             val shPath = "/system/bin/sh"
-            // 用应用自己的 dataDir：改包名/调试变体时也不会落到 "/"
-            val dataDir = applicationInfo.dataDir
-            val cwd = dataDir
+            val cwd = "/data/data/com.nekotype.app"
             val env = arrayOf(
-                "HOME=" + dataDir,
+                "HOME=/data/data/com.nekotype.app",
                 "TERM=xterm-256color",
                 "PATH=/system/bin:/system/xbin:/system/bin",
                 "PWD=" + cwd,

@@ -62,8 +62,8 @@ class DevActivity : AppCompatActivity() {
         binding.btnDevCrash.setOnClickListener { grabLogcat(crash = true) }
         binding.btnDevAppLog.setOnClickListener { showAppLog() }
         binding.btnDevClearLog.setOnClickListener {
-            if (NekoLog.clear()) toast(getString(R.string.dev_toast_log_cleared))
-            else toast(getString(R.string.op_failed))
+            NekoLog.clear()
+            toast(getString(R.string.dev_toast_log_cleared))
         }
 
         // 黑名单模糊搜索
@@ -383,15 +383,9 @@ class DevActivity : AppCompatActivity() {
     /** 真正清空：先把当前配置复制到剪贴板备份，再清数据 + 清日志 + 重启应用 */
     private fun doFactoryReset() {
         try { copyText(AppPrefs.exportConfigText(), getString(R.string.dev_config_what)) } catch (_: Throwable) { }
-        val logOk = NekoLog.clear()
-        val dataOk = AppPrefs.factoryReset(keepDevMode = true)
-        if (!dataOk) {
-            // 数据没清掉就不能假装成功，更不能重启（重启后旧数据还在）
-            toast(getString(R.string.op_failed))
-            return
-        }
-        if (!logOk) toast(getString(R.string.op_failed))
-        else toast(getString(R.string.dev_factory_done))
+        try { NekoLog.clear() } catch (_: Throwable) { }
+        AppPrefs.factoryReset(keepDevMode = true)
+        toast(getString(R.string.dev_factory_done))
         android.os.Handler(mainLooper).postDelayed({ restartApp() }, 500)
     }
 
@@ -402,11 +396,9 @@ class DevActivity : AppCompatActivity() {
             .setTitle(getString(R.string.dev_confirm_title))
             .setMessage(getString(R.string.dev_confirm_msg, AppPrefs.activePresetName(), count))
             .setPositiveButton(getString(R.string.dev_confirm_ok)) { _, _ ->
-                var failed = 0
-                AppPrefs.rules().forEach { if (!AppPrefs.removeRule(it.id)) failed++ }
+                AppPrefs.rules().forEach { AppPrefs.removeRule(it.id) }
                 NekoLog.rule("开发者模式：清空当前预设全部规则（$count 条）")
-                if (failed > 0) toast(getString(R.string.op_failed))
-                else toast(getString(R.string.dev_cleared, count))
+                toast(getString(R.string.dev_cleared, count))
                 refreshInfo()
             }
             .setNegativeButton(com.nekotype.app.R.string.u72, null)

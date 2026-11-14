@@ -79,17 +79,6 @@ class HomeActivity : AppCompatActivity() {
         BgUtils.apply(binding.root)
         NekoLog.nav("应用启动（重构版底部导航）")
 
-        // 防篡改：签名被改 / Hook 框架 → 拒绝运行并提示（实时校验，不信可被改写的 prefs 标记）
-        if (AppPrefs.tampered || !com.nekotype.app.util.TamperGuard.isSignatureValid(this)) {
-            androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle(getString(R.string.u36))
-                .setMessage(getString(R.string.u45))
-                .setPositiveButton(getString(R.string.u62)) { _, _ -> finish() }
-                .setCancelable(false)
-                .show()
-            return
-        }
-
         // 模块钩子：布局完成后回调，模块可替换/改造界面（如隐藏底部导航、自绘导航栏）
         binding.root.post {
             try { com.nekotype.app.module.ModuleHooks.dispatchActivity(this) } catch (_: Throwable) { }
@@ -213,12 +202,6 @@ class HomeActivity : AppCompatActivity() {
             else -> R.id.nav_home
         }
         try {
-            val protectedTab = tab == TAB_RULES || tab == TAB_MODE || tab == TAB_SETTINGS
-            if (protectedTab && !LockGate.isUnlocked()) {
-                // 外部 Intent 指定受保护页：先过密码门，通过后再切
-                LockGate.require(this, { binding.bottomNav.selectedItemId = target })
-                return
-            }
             if (binding.bottomNav.selectedItemId != target) {
                 binding.bottomNav.selectedItemId = target
             } else {
@@ -317,12 +300,6 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // 退过后台上锁：受保护的 tab 不能原样停留，退回首页重新走密码门
-        if (!LockGate.isUnlocked() && binding.bottomNav.selectedItemId in
-            setOf(R.id.nav_rules, R.id.nav_mode, R.id.nav_settings)
-        ) {
-            binding.bottomNav.selectedItemId = R.id.nav_home
-        }
         BgUtils.apply(binding.root)
         NekoLang.apply(binding.root)
         applyNekoBottomNav()

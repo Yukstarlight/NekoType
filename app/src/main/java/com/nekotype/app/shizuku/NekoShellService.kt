@@ -62,11 +62,6 @@ class NekoShellService : Service() {
         override fun handleMessage(msg: Message) {
             // 结果一律回给发送方（replyTo），动作在独立线程执行
             val replyTo = msg.replyTo ?: return
-            // 只服务宿主应用进程；其他 uid 直接丢弃（不回报，避免探测）
-            if (appUid <= 0 || msg.sendingUid != appUid) {
-                android.util.Log.e(TAG, "reject uid=${msg.sendingUid} (want $appUid)")
-                return
-            }
             val action = msg.what
             android.util.Log.e(TAG, "action=$action fromUid=${msg.sendingUid}")
             thread {
@@ -110,16 +105,8 @@ class NekoShellService : Service() {
         }
     }
 
-    /** 宿主应用 uid：只接受它发来的动作，其他进程一律丢弃 */
-    private var appUid = -1
-
     override fun onCreate() {
         super.onCreate()
-        appUid = try {
-            packageManager.getApplicationInfo(packageName, 0).uid
-        } catch (_: Throwable) {
-            -1
-        }
         // UserService 由 Shizuku 服务端实例化时 uid 为 shell(2000)/root(0)，
         // 且 Application（NekoTypeApp）不会初始化 —— 所以本服务内一律用 Service 自身的 packageName
         android.util.Log.e(

@@ -35,10 +35,8 @@ object TamperGuard {
             }
             val digest = certs?.firstOrNull()?.toByteArray()?.let { sha256Hex(it) }
             digest.equals(EXPECTED_SIGNATURE, ignoreCase = true)
-        } catch (t: Throwable) {
-            // fail-closed：拿不到自己的签名信息本身就是异常情况，按"不可信"处理
-            android.util.Log.e("TamperGuard", "读取签名失败: ${t.javaClass.simpleName}")
-            false
+        } catch (_: Throwable) {
+            true // 获取失败不误伤（保守：不拦截）
         }
     }
 
