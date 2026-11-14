@@ -95,7 +95,6 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
     private var autoTransformJob: Job? = null
 
     /** 删除优化的恢复任务：用户停手 500ms 后解除"删除模式"并重新改写 */
-    private var deleteRecoveryJob: Job? = null
 
     /** 防重入处理锁（processing 标志：并发事件不重复处理） */
     @Volatile private var autoProcessing = false
@@ -1010,42 +1009,9 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                 return
             }
 
-            // 1.5 删除优化（deleteOptimize）：用户正在删字 → 暂不改写，
-            //     否则会出现"后缀删不掉/越删越多"。停手 500ms 后自动恢复并重新改写。
-            //     判定必须精确：只有「文本变短 且 上一版文本以新版开头」才是真的退格删字。
-            //     早期用「变短 或 等长变化」判定，会把替换类规则自己写回的结果（如 什么→什）
-            //     误判成用户正在删字 → 永远停在暂停分支 → 规则整体不生效。
-            //     微信下发文字频繁、回读不一致，删除优化同样不启用。
-            val deleteOptOn = AppPrefs.deleteOptimizeEnabled && !isWeChat
-            if (deleteOptOn && !fromSendFallback) {
-                val prev = st.lastSeenText
-                val deleting = prev.isNotEmpty() && trim.length < prev.length && prev.startsWith(trim)
-                st.lastSeenText = trim
-                if (deleting) {
-                    android.util.Log.e("NekoA11y", "删除优化：检测到删除（$prev → $trim），暂不改写")
-                    deleteRecoveryJob?.cancel()
-                    deleteRecoveryJob = scope.launch {
-                        delay(500)
-                        android.util.Log.e("NekoA11y", "删除优化：停手 500ms，恢复改写")
-                        // 先清自己的引用：下面 autoTransformInner 里的 isActive 检查否则会命中自己
-                        deleteRecoveryJob = null
-                        autoTransform(src)
-                    }
-                    return
-                }
-                if (deleteRecoveryJob?.isActive == true) {
-                    // 删除后停手窗口内用户又继续打字：把最新节点挂起，等恢复任务补跑，
-                    // 否则这段时间的输入会被直接丢掉（表现为"删字后接着写就不再改写"）
-                    android.util.Log.e("NekoA11y", "删除优化：删除过程中，暂缓本次改写（已记下待补跑）")
-                    pendingRerun = src
-                    return
-                }
-            } else if (deleteOptOn && fromSendFallback) {
-                // 用户点发送时无视删除模式（必然要处理）
-                deleteRecoveryJob?.cancel()
-                st.lastSeenText = trim
-            }
-
+            // 1.5 删除优化已移除：入口早已隐藏，历史配置里残留的 true 会让"删字后停手 500ms"，
+            //     期间输入被丢弃（表现为删完字接着写就不再改写）。删除/中间插入由下面的
+            //     重置分支剥离前后缀后立即重算，不需要暂停。
             // 2. 增量：文本以 lastSet 开头（用户在末尾继续输入）→ 只把新增部分并入原文
             if (st.lastSet.isNotEmpty() && trim.startsWith(st.lastSet)) {
                 st.userOriginal += trim.substring(st.lastSet.length)
