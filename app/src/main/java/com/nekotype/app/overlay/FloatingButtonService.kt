@@ -246,6 +246,12 @@ class FloatingButtonService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
+        // 用户已关闭服务时，任何"重启/心跳"拉起都不应该把按钮显示出来
+        if (!AppPrefs.serviceEnabled) {
+            NekoLog.info("服务已被用户关闭，忽略本次拉起")
+            stopSelf()
+            return START_NOT_STICKY
+        }
         // 永久显示：服务运行期间按钮常驻（无需输入法触发）
         showButton()
         return START_STICKY
@@ -285,6 +291,8 @@ class FloatingButtonService : Service() {
         cancelHeartbeat()
         try { menuPanel?.dismiss() } catch (_: Throwable) { }
         menuPanel = null
+        // 规则编辑是全屏遮罩，不关掉会留下"整屏点不动"的鬼窗口
+        try { com.nekotype.app.overlay.RuleEditOverlay.dismissCurrent() } catch (_: Throwable) { }
         hideButton()
         instance = null
         super.onDestroy()
@@ -378,11 +386,15 @@ class FloatingButtonService : Service() {
     private fun cancelHeartbeat() {
         try {
             val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            val pi = PendingIntent.getService(
-                this, 1001,
-                Intent(this, FloatingButtonService::class.java).apply { action = ACTION_HEARTBEAT },
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
+            // 必须与 scheduleNextHeartbeat 用同一种构造（API 26+ 是 getForegroundService），
+            // 否则 PendingIntent 不相等，cancel 静默无效，关掉心跳后还会被拉起一次
+            val i = Intent(this, FloatingButtonService::class.java).apply { action = ACTION_HEARTBEAT }
+            val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            val pi = if (Build.VERSION.SDK_INT >= 26) {
+                PendingIntent.getForegroundService(this, 1001, i, flags)
+            } else {
+                PendingIntent.getService(this, 1001, i, flags)
+            }
             am.cancel(pi)
         } catch (_: Throwable) { }
     }

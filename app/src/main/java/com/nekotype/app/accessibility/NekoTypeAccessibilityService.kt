@@ -844,7 +844,9 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             if (!AppPrefs.forceKeyboardEnabled) return
             val key = node.viewIdResourceName ?: "node_${node.hashCode()}"
             autoStates[key] = AutoState(
-                userOriginal = result.text.removePrefix(result.addedPrefix).removeSuffix(result.addedSuffix),
+                userOriginal = TextTransformEngine.stripSmartSuffix(
+                    result.text.removePrefix(result.addedPrefix), result.addedSuffix
+                ),
                 lastSet = written,
                 lastWriteTime = System.currentTimeMillis(),
                 addedPrefix = result.addedPrefix,
@@ -1052,7 +1054,10 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                 if (st.addedSuffix.isNotEmpty()) {
                     base = TextTransformEngine.stripSmartSuffix(base, st.addedSuffix)
                 }
-                if (st.addedPrefix.isNotEmpty() && base.startsWith(st.addedPrefix)) {
+                if (st.addedPrefix.isNotEmpty() && base.length >= st.addedPrefix.length &&
+                    base.substring(0, st.addedPrefix.length).equals(st.addedPrefix, ignoreCase = true)
+                ) {
+                    // 开"转大写"时写回的是 NYA…，前缀记录仍是 nya…，必须忽略大小写比对
                     base = base.substring(st.addedPrefix.length)
                 }
                 st.userOriginal = base.trim()
@@ -1073,6 +1078,11 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             // 且走 newProcess 通道优先（免绑定 UserService，不白等 8 秒），显著提高篡改成功率。
             val writeOk = writeBackSixLevel(node, r.text)
             android.util.Log.e("NekoA11y", "自动篡改写回六级兜底 ok=$writeOk len=${r.text.length}")
+            if (!writeOk) {
+                // 没写进去就别计数、别发送，否则发出去的是原文却记成"已变换"
+                NekoLog.warn("强制篡改：写回失败，本轮跳过")
+                return
+            }
             AppPrefs.transformCount = AppPrefs.transformCount + 1
             AppPrefs.incrementToday()
             val appLabel = try {
@@ -1159,8 +1169,8 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                 }
             }
         }
-        stamp("写回全部失败，交给发送前校验")
-        return true
+        stamp("写回全部失败")
+        return false
     }
 
     /** Shizuku 按键注入（全选 + 注入任意 Unicode），newProcess 通道优先 */

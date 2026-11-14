@@ -26,8 +26,9 @@ object BgUtils {
 
     /** 背景变化时调用：清除缓存，下次 apply 会重新加载（用于清除壁纸后立刻生效） */
     fun notifyChanged() {
+        // 不要 recycle：多个页面的 CoverDrawable 可能还持有同一张图，
+        // 提前回收会让那些页面当场变空白。交回 GC 即可。
         lastPath = null
-        lastBitmap?.let { if (!it.isRecycled) it.recycle() }
         lastBitmap = null
     }
 

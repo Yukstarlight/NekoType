@@ -208,12 +208,14 @@ object TextTransformEngine {
      */
     fun stripSmartSuffix(text: String, suffix: String): String {
         if (suffix.isEmpty() || text.isEmpty()) return text
-        var core = text
-        while (core.isNotEmpty() && core.last() in TRAILING_PUNCT) core = core.substring(0, core.length - 1)
-        return if (core.endsWith(suffix)) {
-            val punctTail = text.substring(core.length)
-            core.substring(0, core.length - suffix.length) + punctTail
-        } else text
+        // ① 后缀自身以标点结尾（如 "喵～"），或颜文字被追加在标点之后 → 直接结尾匹配
+        if (text.endsWith(suffix)) return text.substring(0, text.length - suffix.length)
+        // ② 后缀插在句末标点之前（"你好喵。" - "喵"）→ 先跳过标点再匹配、最后把标点接回
+        var i = text.length
+        while (i > 0 && text[i - 1] in TRAILING_PUNCT) i--
+        val head = text.substring(0, i)
+        val tail = text.substring(i)
+        return if (head.endsWith(suffix)) head.substring(0, head.length - suffix.length) + tail else text
     }
 
     /** 随机池解析（| 分隔） */

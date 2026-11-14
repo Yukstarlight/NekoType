@@ -234,7 +234,7 @@
     <string name="t83">Boyut</string>
     <string name="t84">56dp</string>
     <string name="t85">Saydamlık</string>
-    <string name="t86">100%%</string>
+    <string name="t86">100%</string>
     <string name="t87">Değişiklikler hemen uygulanır</string>
     <string name="t88">Boştayken küçük noktaya küçül</string>
     <string name="t89">5 saniye işlem olmazsa küçük noktaya küçülür, dokununca açılır</string>
@@ -402,7 +402,7 @@ E-posta: TR114512@qq.com</string>
     <string name="u83">İçerik (rastgele: | ile ayırın, örn. qwq|awa)</string>
     <string name="u84">Algılanacak karakter, örn.: 的</string>
     <string name="u85">Şununla değiştir, örn.: の</string>
-    <string name="u86">Tetikleme olasılığı %% (1-100)</string>
+    <string name="u86">Tetikleme olasılığı % (1-100)</string>
     <string name="u87">Kuralı düzenle</string>
     <string name="u88">Kural ekle</string>
     <string name="u89">Kaydet</string>

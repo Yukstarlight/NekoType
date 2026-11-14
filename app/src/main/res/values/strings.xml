@@ -413,7 +413,7 @@
     <string name="i27">终端 nekomood 命令随机情绪概率</string>
     <string name="i28">猫娘主题下自动 +20%</string>
     <string name="i29">当前：#%1$s</string>
-    <string name="i30">猫娘主题已激活，实际 %1$d%%（基础 %2$d%% +20%）</string>
+    <string name="i30">猫娘主题已激活，实际 %1$d%%（基础 %2$d%% +20%%）</string>
     <string name="i41">优先级</string>
     <string name="i42">1-100，数字越大越先执行（同级按列表顺序；默认 50）</string>
     <string name="i43">按等级全局执行</string>
