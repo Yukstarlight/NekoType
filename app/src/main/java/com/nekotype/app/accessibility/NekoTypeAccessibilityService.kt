@@ -850,9 +850,7 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             if (!AppPrefs.forceKeyboardEnabled) return
             val key = node.viewIdResourceName ?: "node_${node.hashCode()}"
             autoStates[key] = AutoState(
-                userOriginal = TextTransformEngine.stripSmartSuffix(
-                    result.text.removePrefix(result.addedPrefix), result.addedSuffix
-                ),
+                userOriginal = result.text.removePrefix(result.addedPrefix).removeSuffix(result.addedSuffix),
                 lastSet = written,
                 lastWriteTime = System.currentTimeMillis(),
                 addedPrefix = result.addedPrefix,
@@ -1032,10 +1030,7 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                 if (st.addedSuffix.isNotEmpty()) {
                     base = TextTransformEngine.stripSmartSuffix(base, st.addedSuffix)
                 }
-                if (st.addedPrefix.isNotEmpty() && base.length >= st.addedPrefix.length &&
-                    base.substring(0, st.addedPrefix.length).equals(st.addedPrefix, ignoreCase = true)
-                ) {
-                    // 开"转大写"时写回的是 NYA…，前缀记录仍是 nya…，必须忽略大小写比对
+                if (st.addedPrefix.isNotEmpty() && base.startsWith(st.addedPrefix)) {
                     base = base.substring(st.addedPrefix.length)
                 }
                 st.userOriginal = base.trim()
