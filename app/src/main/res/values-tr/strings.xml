@@ -695,4 +695,5 @@ Ayrıca Shizuku otomatik başlatma (root) modülünü etkinleştirmeniz gerekir.
     <string name="rival_msg">Ee? Efendim, böyle bir şeyi neden hâlâ tutuyorsunuz? Ben varken yeterli değil mi…?</string>
     <string name="rival_uninstall">Kaldır</string>
     <string name="rival_skip">Atla</string>
+    <string name="splash_tagline">Sis dağıldı, gelecek çoktan geldi</string>
 </resources>

@@ -651,4 +651,5 @@ You can skip it for now and enable it once Shizuku runs as root.</string>
     <string name="rival_msg">Ehh? Why are you still keeping that thing around, master? Am I not enough...?</string>
     <string name="rival_uninstall">Uninstall</string>
     <string name="rival_skip">Skip</string>
+    <string name="splash_tagline">The mist clears — the future is here</string>
 </resources>

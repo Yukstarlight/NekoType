@@ -43,6 +43,7 @@ class SplashActivity : AppCompatActivity() {
         val icon = findViewById<View>(R.id.ivSplashIcon)
         val title = findViewById<View>(R.id.tvSplashTitle)
         val subtitle = findViewById<View>(R.id.tvSplashSubtitle)
+        val tagline = findViewById<View>(R.id.tvSplashTagline)
         val version = findViewById<View>(R.id.tvSplashVersion)
         // 版本号运行时取，跟随 versionName（原来写死在 7 个 strings.xml 里，升版本会忘记改）
         try {
@@ -92,6 +93,15 @@ class SplashActivity : AppCompatActivity() {
                 .setInterpolator(DecelerateInterpolator())
                 .start()
         } catch (_: Throwable) { subtitle.alpha = 1f; subtitle.translationY = 0f }
+
+        // 标语：在副标题之后淡入
+        try {
+            tagline.animate()
+                .alpha(1f).translationY(0f)
+                .setStartDelay(650).setDuration(400)
+                .setInterpolator(DecelerateInterpolator())
+                .start()
+        } catch (_: Throwable) { tagline.alpha = 1f; tagline.translationY = 0f }
 
         // 版本号：延迟淡入
         try {

@@ -49,6 +49,18 @@
             android:alpha="0"
             android:translationY="15dp"/>
 
+        <!-- 标语 -->
+        <TextView
+            android:id="@+id/tvSplashTagline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="@string/splash_tagline"
+            android:textSize="@dimen/ts_12"
+            android:textColor="#99FFFFFF"
+            android:alpha="0"
+            android:translationY="12dp"/>
+
     </LinearLayout>
 
     <!-- 底部小字 -->
