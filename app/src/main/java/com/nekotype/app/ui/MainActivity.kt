@@ -373,7 +373,13 @@ class MainActivity : AppCompatActivity() {
                 val p2 = et2.text.toString()
                 if (p1.isEmpty()) { toast(getString(R.string.u7)); binding.swLock.isChecked = false; return@setPositiveButton }
                 if (p1 != p2) { toast(getString(R.string.u11)); binding.swLock.isChecked = false; return@setPositiveButton }
-                AppPrefs.setLockPassword(p1)
+                if (!AppPrefs.setLockPassword(p1)) {
+                    toast(getString(R.string.op_failed))
+                    restoringSwitch = true
+                    binding.swLock.isChecked = false
+                    restoringSwitch = false
+                    return@setPositiveButton
+                }
                 enableLock()
             }
             .setNegativeButton(getString(R.string.u72)) { _, _ ->

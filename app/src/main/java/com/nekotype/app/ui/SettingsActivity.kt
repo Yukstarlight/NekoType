@@ -68,6 +68,7 @@ class SettingsActivity : AppCompatActivity() {
                         out.outputStream().use { input.copyTo(it) }
                     }
                     AppPrefs.customBackgroundPath = out.absolutePath
+                    BgUtils.notifyChanged()
                     BgUtils.apply(binding.root)
                     NekoLog.adjust("更换自定义背景成功")
                     toast(getString(R.string.u1))

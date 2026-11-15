@@ -77,7 +77,7 @@ object NekoLog {
                 }
             }.start()
         }
-        listeners.forEach { runCatching { it() } }
+        listeners.toList().forEach { runCatching { it() } }
     }
 
     fun info(msg: String) = add(INFO, msg)
@@ -89,10 +89,17 @@ object NekoLog {
     fun rule(msg: String) = add(RULE, msg)
 
     @Synchronized
-    fun clear() {
+    /** 清空日志：同步落盘并返回是否成功（异步 apply 失败时调用方无从得知） */
+    fun clear(): Boolean {
         cache.clear()
-        persistLocked(emptyList())
-        listeners.forEach { runCatching { it() } }
+        val ok = try {
+            sp.edit().putString("log", "[]").commit()
+        } catch (t: Throwable) {
+            android.util.Log.e("NekoLog", "清空日志失败: ${t.message}")
+            false
+        }
+        listeners.toList().forEach { runCatching { it() } }
+        return ok
     }
 
     /** 读取日志：优先内存缓存；为空时从磁盘载入（与最终落盘一致） */
@@ -138,10 +145,12 @@ object NekoLog {
         } catch (_: Throwable) { }
     }
 
+    @Synchronized
     fun registerListener(l: () -> Unit) {
         listeners.add(l)
     }
 
+    @Synchronized
     fun unregisterListener(l: () -> Unit) {
         listeners.remove(l)
     }

@@ -30,7 +30,16 @@ class NekoTypeTileService : TileService() {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 putExtra(HomeActivity.EXTRA_STOP_REQUEST, true)
             }
-            startActivityAndCollapse(i)
+            if (android.os.Build.VERSION.SDK_INT >= 34) {
+                val pi = android.app.PendingIntent.getActivity(
+                    this, 0, i,
+                    android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+                )
+                startActivityAndCollapse(pi)
+            } else {
+                @Suppress("DEPRECATION")
+                startActivityAndCollapse(i)
+            }
             return
         }
         AppPrefs.serviceEnabled = enabled

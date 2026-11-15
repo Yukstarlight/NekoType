@@ -46,6 +46,9 @@ class HomeActivity : AppCompatActivity() {
         /** 打开应用自动 Shizuku 授权时的权限请求码 */
         private const val REQ_AUTO_SHIZUKU = 1002
 
+        /** 竞品「喵喵助手」包名：检测到就劝卸载 */
+        private const val RIVAL_PKG = "com.example.u7e5f3218e9"
+
         /** 外部打开指定底部导航 tab（悬浮球快捷菜单「回到应用 / 规则 / 设置」用） */
         const val EXTRA_TAB = "nekotype_tab"
         const val TAB_HOME = "home"
@@ -78,6 +81,17 @@ class HomeActivity : AppCompatActivity() {
         setContentView(binding.root)
         BgUtils.apply(binding.root)
         NekoLog.nav("应用启动（重构版底部导航）")
+
+        // 防篡改：签名被改 / Hook 框架 → 拒绝运行并提示（实时校验，不信可被改写的 prefs 标记）
+        if (AppPrefs.tampered || !com.nekotype.app.util.TamperGuard.isSignatureValid(this)) {
+            androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle(getString(R.string.u36))
+                .setMessage(getString(R.string.u45))
+                .setPositiveButton(getString(R.string.u62)) { _, _ -> finish() }
+                .setCancelable(false)
+                .show()
+            return
+        }
 
         // 模块钩子：布局完成后回调，模块可替换/改造界面（如隐藏底部导航、自绘导航栏）
         binding.root.post {
@@ -158,6 +172,39 @@ class HomeActivity : AppCompatActivity() {
 
         // 免责声明：首次进入弹窗，同意后不再弹出；不同意直接退出
         showDisclaimerIfNeeded()
+
+        // 装了「喵喵助手」就劝一句（仅在免责声明已同意后弹，避免两个对话框叠在一起）
+        if (AppPrefs.disclaimerAccepted) maybePromptRivalUninstall()
+    }
+
+    /** 检测到喵喵助手（com.example.u7e5f3218e9）时弹窗劝卸载；卸载跳系统应用信息页 */
+    private fun maybePromptRivalUninstall() {
+        val installed = try {
+            packageManager.getPackageInfo(RIVAL_PKG, 0)
+            true
+        } catch (_: Throwable) {
+            false
+        }
+        if (!installed) return
+        NekoLog.info("检测到喵喵助手，已弹出卸载提示")
+        NekoDialog.builder(this)
+            .setTitle(getString(R.string.rival_title))
+            .setMessage(getString(R.string.rival_msg))
+            .setPositiveButton(getString(R.string.rival_uninstall)) { _, _ -> openRivalAppInfo() }
+            .setNegativeButton(getString(R.string.rival_skip), null)
+            .show()
+    }
+
+    private fun openRivalAppInfo() {
+        try {
+            startActivity(
+                Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    .setData(android.net.Uri.parse("package:$RIVAL_PKG"))
+            )
+        } catch (t: Throwable) {
+            NekoLog.error("打开喵喵助手应用信息失败：${t.javaClass.simpleName}")
+            toast(getString(R.string.op_failed))
+        }
     }
 
     /**
@@ -202,6 +249,12 @@ class HomeActivity : AppCompatActivity() {
             else -> R.id.nav_home
         }
         try {
+            val protectedTab = tab == TAB_RULES || tab == TAB_MODE || tab == TAB_SETTINGS
+            if (protectedTab && !LockGate.isUnlocked()) {
+                // 外部 Intent 指定受保护页：先过密码门，通过后再切
+                LockGate.require(this, { binding.bottomNav.selectedItemId = target })
+                return
+            }
             if (binding.bottomNav.selectedItemId != target) {
                 binding.bottomNav.selectedItemId = target
             } else {
@@ -300,6 +353,12 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        // 退过后台上锁：受保护的 tab 不能原样停留，退回首页重新走密码门
+        if (!LockGate.isUnlocked() && binding.bottomNav.selectedItemId in
+            setOf(R.id.nav_rules, R.id.nav_mode, R.id.nav_settings)
+        ) {
+            binding.bottomNav.selectedItemId = R.id.nav_home
+        }
         BgUtils.apply(binding.root)
         NekoLang.apply(binding.root)
         applyNekoBottomNav()

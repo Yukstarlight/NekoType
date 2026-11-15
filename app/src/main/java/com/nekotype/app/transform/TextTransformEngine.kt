@@ -52,7 +52,7 @@ object TextTransformEngine {
         rules.filter { it.type == RuleType.PREFIX }.byPriority().forEach { r ->
             if (r.value.isNotEmpty()) {
                 text = r.value + text
-                addedPrefix += r.value
+                addedPrefix = r.value + addedPrefix
             }
         }
         // 2.1 随机前缀（固定）：命中的规则【全部生效】，按等级顺序叠加（等级高的在最左）
@@ -66,7 +66,7 @@ object TextTransformEngine {
         if (fixedPrefixPicks.isNotEmpty()) {
             val joined = fixedPrefixPicks.joinToString("")
             text = joined + text
-            addedPrefix += joined
+            addedPrefix = joined + addedPrefix
         }
         // 2.2 随机前缀（不固定）：命中的规则里【只随机取一条】生效
         val oncePrefixRules = rules.filter {
@@ -76,7 +76,7 @@ object TextTransformEngine {
         if (oncePrefixRules.isNotEmpty()) {
             val pick = parsePool(oncePrefixRules.random().value).random()
             text = pick + text
-            addedPrefix += pick
+            addedPrefix = pick + addedPrefix
         }
 
         // 3. 后缀：固定后缀 + 随机后缀
@@ -126,7 +126,7 @@ object TextTransformEngine {
                 RuleType.REPLACE -> if (r.value.isNotEmpty()) text = text.replace(r.value, r.replaceTo)
                 RuleType.PREFIX -> if (r.value.isNotEmpty()) {
                     text = r.value + text
-                    addedPrefix += r.value
+                    addedPrefix = r.value + addedPrefix
                 }
                 RuleType.SUFFIX -> if (r.value.isNotEmpty()) {
                     text = appendSuffixSmart(text, r.value)
@@ -138,7 +138,7 @@ object TextTransformEngine {
                         if (pool.isNotEmpty()) {
                             val pick = pool.random()
                             text = pick + text
-                            addedPrefix += pick
+                            addedPrefix = pick + addedPrefix
                         }
                     }
                 RuleType.RANDOM_SUFFIX, RuleType.RANDOM_SUFFIX_ONCE ->

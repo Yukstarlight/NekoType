@@ -309,7 +309,7 @@ Email: TR114512@qq.com</string>
     <string name="u168">NekoType Transform &amp; Send button</string>
     <string name="u169">Please enable the accessibility service first (step 1 of permission guide)</string>
     <string name="u170">Please tap the input box first, then tap this button</string>
-    <string name="u171">✓ Transformed &amp; sent</string>
+    <string name="u171">Transforming &amp; sending…</string>
     <string name="u172">NekoType running</string>
     <string name="u173">Shizuku channel unavailable (not running or not granted)</string>
     <string name="u180">Accessibility Service</string>
@@ -646,4 +646,9 @@ You can skip it for now and enable it once Shizuku runs as root.</string>
     <string name="t_perm_guard_desc">Automatically block the system Accessibility / Device admin pages so the service cannot be disabled</string>
     <string name="guard_blocked">Security guard: this settings page is blocked</string>
     <string name="privacy_hint">This is really just to show you that NekoType collects nothing about you, hehe!</string>
+    <string name="op_failed">Operation failed, please try again</string>
+    <string name="rival_title">Meow-Meow Helper</string>
+    <string name="rival_msg">Ehh? Why are you still keeping that thing around, master? Am I not enough...?</string>
+    <string name="rival_uninstall">Uninstall</string>
+    <string name="rival_skip">Skip</string>
 </resources>

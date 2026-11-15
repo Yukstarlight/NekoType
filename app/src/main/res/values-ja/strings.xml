@@ -432,7 +432,7 @@
     <string name="u168">NekoType 変換・送信ボタン</string>
     <string name="u169">先にアクセシビリティサービスを有効にしてください（アプリの権限ガイド手順 1）</string>
     <string name="u170">先に入力欄をタップしてから、このボタンを押してください</string>
-    <string name="u171">✓ 変換して送信しました</string>
+    <string name="u171">変換して送信中…</string>
     <string name="u172">NekoType 実行中</string>
     <string name="u173">Shizuku チャネルを利用できません（未起動または未許可）</string>
     <string name="u180">アクセシビリティサービス</string>
@@ -697,4 +697,9 @@
     <string name="t_perm_guard_desc">システムの「アクセシビリティ / デバイス管理」画面へ入ると自動で戻し、サービスを無効化させません</string>
     <string name="guard_blocked">セキュリティ保護：この設定画面はブロックされました</string>
     <string name="privacy_hint">これは NekoType があなたの個人情報を集めていないことを知ってもらうためのもの、えへへ！</string>
+    <string name="op_failed">操作に失敗しました。もう一度お試しください</string>
+    <string name="rival_title">にゃんにゃんアシスタント</string>
+    <string name="rival_msg">えっ、ご主人様、どうしてこんなものまだ残してるの？私がいれば十分でしょ…</string>
+    <string name="rival_uninstall">アンインストール</string>
+    <string name="rival_skip">スキップ</string>
 </resources>

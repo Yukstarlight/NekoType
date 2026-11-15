@@ -94,8 +94,9 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
     /** 强制篡改键盘：防抖自动变换任务（原生键盘输入停顿后自动篡改） */
     private var autoTransformJob: Job? = null
 
-    /** 删除优化的恢复任务：用户停手 500ms 后解除"删除模式"并重新改写 */
-    private var deleteRecoveryJob: Job? = null
+    /** 本服务自己上一次点发送的时间：用于忽略自己点击产生的 TYPE_VIEW_CLICKED 回投 */
+    private var lastSelfSendAt = 0L
+    private val SELF_SEND_ECHO_MS = 2000L
 
     /** 防重入处理锁（processing 标志：并发事件不重复处理） */
     @Volatile private var autoProcessing = false
@@ -395,7 +396,7 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             val srcOk = try { event.source != null } catch (_: Throwable) { false }
             android.util.Log.e(
                 "NekoA11y",
-                "微信事件 type=${event.eventType} text=${event.text?.joinToString("")?.take(20)} cls=${event.className} src=$srcOk"
+                "微信事件 type=${event.eventType} cls=${event.className} src=$srcOk"
             )
         }
         when (event.eventType) {
@@ -445,7 +446,12 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                 // 发送按钮兜底：用户手点发送时立即篡改（不等防抖、不受标点触发限制），确保发出的是篡改后文本。
                 // 黑名单应用内不自动篡改（含兜底）
                 val src = event.source ?: return
-                if (AppPrefs.forceKeyboardEnabled && AppPrefs.serviceEnabled && isSendButtonNode(src) && !isBlacklistedApp(src)) {
+                // 自己点发送会让系统回投一条 VIEW_CLICKED，若当成"用户点发送"会再触发一轮
+                // 改写+盲追加+再发送 → 无限连发。这里先把自家人挡掉。
+                val selfEcho = System.currentTimeMillis() - lastSelfSendAt < SELF_SEND_ECHO_MS
+                if (selfEcho && isSendButtonNode(src)) {
+                    android.util.Log.e("NekoA11y", "发送点击兜底：忽略本服务自己触发的发送点击")
+                } else if (AppPrefs.forceKeyboardEnabled && AppPrefs.serviceEnabled && isSendButtonNode(src) && !isBlacklistedApp(src)) {
                     val edit = NekoTypeAccessibilityBridge.activeNode
                     if (edit != null) {
                         autoTransformJob?.cancel()
@@ -584,7 +590,16 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                     }
                 }
             }
-            android.util.Log.e("NekoA11y", "写回结束 writeOk=$writeOk text=${transformed.take(20)}")
+            android.util.Log.e("NekoA11y", "写回结束 writeOk=$writeOk len=${transformed.length}")
+            if (!writeOk) {
+                // 没写进去就别发：否则发出去的是未变换的原文，还谎报"已变换发送"
+                NekoLog.error("写回输入框失败，已取消发送")
+                android.widget.Toast.makeText(
+                    this@NekoTypeAccessibilityService, getString(R.string.op_failed),
+                    android.widget.Toast.LENGTH_SHORT
+                ).show()
+                return@launch
+            }
 
             // 同步强制篡改键盘的增量状态，避免手动变换后自动模式重复叠加
             syncAutoState(node, result, transformed)
@@ -833,7 +848,7 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
     private fun syncAutoState(node: AccessibilityNodeInfo, result: TextTransformEngine.TransformResult, written: String) {
         try {
             if (!AppPrefs.forceKeyboardEnabled) return
-            val key = node.viewIdResourceName ?: "node_${node.hashCode()}"
+            val key = try { node.viewIdResourceName ?: "node_${node.hashCode()}" } catch (_: Throwable) { "node_${node.hashCode()}" }
             autoStates[key] = AutoState(
                 userOriginal = result.text.removePrefix(result.addedPrefix).removeSuffix(result.addedSuffix),
                 lastSet = written,
@@ -873,7 +888,9 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
     private fun scheduleAutoTransform(src: AccessibilityNodeInfo, immediate: Boolean = false) {
         try {
             if (src.isPassword) { gateLog("节点被标记为密码框"); return }
-            autoTransformJob?.cancel()
+            // 正在处理（写回）时不要取消：取消点会落在写回中途，这一轮直接作废，
+            // 表现就是"删字/连续打字后不改写、要等一会"。处理中的新事件由 pendingRerun 补跑。
+            if (!autoProcessing) autoTransformJob?.cancel()
             val debounce = when {
                 AppPrefs.voiceInputOptimizeEnabled -> AppPrefs.voiceDebounceMs.toLong()
                 immediate -> 0L
@@ -970,7 +987,7 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             var trim = node.text?.toString()?.trim().orEmpty()
             // 不再用剪贴板回读：反复「全选→复制」会不停写剪贴板、
             // 在微信里弹"已复制"，就是"老是复制东西"的元凶。读不到文本就跳过本轮。
-            android.util.Log.e("NekoA11y", "自动篡改读取: pkg=$pkg len=${trim.length} text=${trim.take(20)}")
+            android.util.Log.e("NekoA11y", "自动篡改读取: pkg=$pkg len=${trim.length}")
             if (trim.isEmpty()) {
                 // 微信等自定义输入框读不到文本 → 盲操作：只追加后缀类规则产物
                 blindAppendSuffix(node, fromSendFallback)
@@ -980,7 +997,10 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             // 发送兜底不受此限制（用户点发送必然处理）
             if (AppPrefs.punctTriggerEnabled && !fromSendFallback) {
                 val puncts = AppPrefs.punctTriggerChars.toSet()
-                if (trim.lastOrNull() !in puncts) return
+                if (trim.lastOrNull() !in puncts) {
+                    android.util.Log.e("NekoA11y", "跳过：标点触发模式，结尾不是触发标点")
+                    return
+                }
             }
             val key = node.viewIdResourceName ?: "node_${node.hashCode()}"
             val st = autoStates[key] ?: AutoState("", "", 0L)
@@ -989,6 +1009,7 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             // 0. 文本级自我写回去重（比时间窗更可靠，微信下尤其必要）：
             //    当前文本就是我们上次写回的内容 → 自己触发的回显，直接忽略，避免重复叠加
             if (st.lastSet.isNotEmpty() && trim == st.lastSet) {
+                android.util.Log.e("NekoA11y", "跳过：文本等于上次写回(dedupe)")
                 st.lastWriteTime = 0L
                 return
             }
@@ -999,43 +1020,17 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                 return
             }
 
-            // 1.5 删除优化（deleteOptimize）：用户正在删字 → 暂不改写，
-            //     否则会出现"后缀删不掉/越删越多"。停手 500ms 后自动恢复并重新改写。
-            //     判定必须精确：只有「文本变短 且 上一版文本以新版开头」才是真的退格删字。
-            //     早期用「变短 或 等长变化」判定，会把替换类规则自己写回的结果（如 什么→什）
-            //     误判成用户正在删字 → 永远停在暂停分支 → 规则整体不生效。
-            //     微信下发文字频繁、回读不一致，删除优化同样不启用。
-            val deleteOptOn = AppPrefs.deleteOptimizeEnabled && !isWeChat
-            if (deleteOptOn && !fromSendFallback) {
-                val prev = st.lastSeenText
-                val deleting = prev.isNotEmpty() && trim.length < prev.length && prev.startsWith(trim)
-                st.lastSeenText = trim
-                if (deleting) {
-                    android.util.Log.e("NekoA11y", "删除优化：检测到删除（$prev → $trim），暂不改写")
-                    deleteRecoveryJob?.cancel()
-                    deleteRecoveryJob = scope.launch {
-                        delay(500)
-                        android.util.Log.e("NekoA11y", "删除优化：停手 500ms，恢复改写")
-                        autoTransform(src)
-                    }
-                    return
-                }
-                if (deleteRecoveryJob?.isActive == true) {
-                    android.util.Log.e("NekoA11y", "删除优化：删除过程中，暂不改写")
-                    return
-                }
-            } else if (deleteOptOn && fromSendFallback) {
-                // 用户点发送时无视删除模式（必然要处理）
-                deleteRecoveryJob?.cancel()
-                st.lastSeenText = trim
-            }
-
+            // 1.5 删除优化已移除：入口早已隐藏，历史配置里残留的 true 会让"删字后停手 500ms"，
+            //     期间输入被丢弃（表现为删完字接着写就不再改写）。删除/中间插入由下面的
+            //     重置分支剥离前后缀后立即重算，不需要暂停。
             // 2. 增量：文本以 lastSet 开头（用户在末尾继续输入）→ 只把新增部分并入原文
             if (st.lastSet.isNotEmpty() && trim.startsWith(st.lastSet)) {
                 st.userOriginal += trim.substring(st.lastSet.length)
             } else {
                 // 3. 重置：用户删除/中间插入 → 从当前文本剥离上次附加的前缀/后缀，视为新原文
                 var base = trim
+                // 样式里的"字符间加空格"先去掉，否则前缀/后缀都匹配不上 → 整段重复叠加
+                if (AppPrefs.styleSpaced) base = base.replace(" ", "")
                 // 后缀由 appendSuffixSmart 插到了句末标点之前，需用配对的 stripSmartSuffix 剥离，
                 // 否则 `endsWith(suffix)` 会失配（结尾是标点）→ 残留后缀 → 下次重复叠加
                 if (st.addedSuffix.isNotEmpty()) {
@@ -1044,14 +1039,26 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                 if (st.addedPrefix.isNotEmpty() && base.startsWith(st.addedPrefix)) {
                     base = base.substring(st.addedPrefix.length)
                 }
-                if (AppPrefs.styleSpaced) base = base.replace(" ", "")
                 st.userOriginal = base.trim()
             }
-            if (st.userOriginal.isEmpty()) return
+            if (st.userOriginal.isEmpty()) {
+                android.util.Log.e("NekoA11y", "跳过：原文为空 trim='$trim' prefix='${st.addedPrefix}' suffix='${st.addedSuffix}'")
+                return
+            }
 
             // 4. 变换并写回（基于 userOriginal，不是基于当前全文 → 永不叠加）
             val r = TextTransformEngine.transform(st.userOriginal)
-            if (r.text == trim || r.text.isEmpty()) return
+            if (r.text == trim || r.text.isEmpty()) {
+                android.util.Log.e("NekoA11y", "跳过：结果与当前一致 r='${r.text}' trim='$trim' orig='${st.userOriginal}'")
+                // 结果与输入框一致：不用写，但状态要对齐到当前文本，别让 lastSet 停在上一版
+                st.addedPrefix = r.addedPrefix
+                st.addedSuffix = r.addedSuffix
+                st.lastSet = trim
+                st.lastWriteTime = 0L
+                st.lastSeenText = trim
+                autoStates[key] = st
+                return
+            }
 
             st.addedPrefix = r.addedPrefix
             st.addedSuffix = r.addedSuffix
@@ -1062,7 +1069,17 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             // 六级兜底写回（篡改键盘模式）：Shizuku 静默注入默认启用、无需用户开关，
             // 且走 newProcess 通道优先（免绑定 UserService，不白等 8 秒），显著提高篡改成功率。
             val writeOk = writeBackSixLevel(node, r.text)
-            android.util.Log.e("NekoA11y", "自动篡改写回六级兜底 ok=$writeOk text=${r.text.take(20)}")
+            android.util.Log.e("NekoA11y", "自动篡改写回六级兜底 ok=$writeOk len=${r.text.length}")
+            if (!writeOk) {
+                // 没写进去就别计数、别发送，否则发出去的是原文却记成"已变换"
+                NekoLog.warn("强制篡改：写回失败，本轮跳过")
+                // 关键：状态回滚到"输入框实际内容"，否则下次会以为已经写过 r.text 而推导错
+                st.lastSet = trim
+                st.lastWriteTime = 0L
+                st.lastSeenText = trim
+                autoStates[key] = st
+                return
+            }
             AppPrefs.transformCount = AppPrefs.transformCount + 1
             AppPrefs.incrementToday()
             val appLabel = try {
@@ -1070,14 +1087,17 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                 if (pkg != null) packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
                 else getString(R.string.u163)
             } catch (_: Throwable) { getString(R.string.u163) }
-            NekoLog.ok("强制篡改键盘：在「$appLabel」自动变换为「${r.text}」")
+            NekoLog.ok("强制篡改键盘：在「$appLabel」自动变换完成（${r.text.length} 字）")
 
-            // 微信下不自动发送（改完由用户自己点发送，避免和手点发送叠加/抢发）
-            if (AppPrefs.autoSend && !isWeChat) {
-                delay(if (AppPrefs.voiceInputOptimizeEnabled) 3000L else 120L)
-                performSend(node)
-            }
-        } catch (_: Throwable) { }
+            // 自动改写（强制篡改键盘）只改不发：输入过程中每个字都会触发改写，
+            // 在这里发送会变成"每敲一个字发一条"。发送只由用户点发送键或
+            // 悬浮球/摇一摇的手动变换路径触发。
+        } catch (t: kotlinx.coroutines.CancellationException) {
+            // 结构化并发：取消是要传播的信号，不是错误
+            throw t
+        } catch (t: Throwable) {
+            android.util.Log.e("NekoA11y", "自动篡改异常(已吞): ${t.javaClass.simpleName}: ${t.message}", t)
+        }
     }
 
     /** 事件源是否为发送按钮（点击发送兜底用） */
@@ -1123,7 +1143,7 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
     private suspend fun writeBackSixLevel(node: AccessibilityNodeInfo, text: String): Boolean {
         val t0 = android.os.SystemClock.elapsedRealtime()
         fun stamp(stage: String) = android.util.Log.i("NekoWrite",
-            "$stage +" + (android.os.SystemClock.elapsedRealtime() - t0) + "ms text=" + text.take(12))
+            "$stage +" + (android.os.SystemClock.elapsedRealtime() - t0) + "ms len=" + text.length)
         var ok = setTextAndCursor(node, text)
         if (ok) {
             delay(150)
@@ -1149,8 +1169,8 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
                 }
             }
         }
-        stamp("写回全部失败，交给发送前校验")
-        return true
+        stamp("写回全部失败")
+        return false
     }
 
     /** Shizuku 按键注入（全选 + 注入任意 Unicode），newProcess 通道优先 */
@@ -1226,6 +1246,11 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
      * 发送兜底（用户点发送）不受冷却限制；自动路径按 2.5 秒冷却防重复。
      */
     private suspend fun blindAppendSuffix(node: AccessibilityNodeInfo, fromSendFallback: Boolean) {
+        // 发送兜底进来时消息已经发出去了，输入框是空的：此时追加后缀会再发一条
+        if (fromSendFallback && System.currentTimeMillis() - lastSelfSendAt < SELF_SEND_ECHO_MS) {
+            android.util.Log.e("NekoA11y", "盲操作：发送后的空输入框，跳过追加")
+            return
+        }
         val key = node.viewIdResourceName ?: "node_${node.hashCode()}"
         val st = autoStates[key] ?: AutoState("", "", 0L)
         val now = System.currentTimeMillis()
@@ -1247,10 +1272,7 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
             AppPrefs.transformCount = AppPrefs.transformCount + 1
             AppPrefs.incrementToday()
             NekoLog.ok("盲操作追加成功：$suffix")
-            if (AppPrefs.autoSend && pkgOf(node) != WECHAT_PKG) {
-                delay(150)
-                performSend(node)
-            }
+            // 不再自动发送：盲路径每次输入事件都可能走到这里，自动发送会连发
         } else {
             android.util.Log.e("NekoA11y", "盲操作追加失败: ch=${r.channel} out=${r.output}")
         }
@@ -1258,6 +1280,7 @@ open class NekoTypeAccessibilityService : AccessibilityService() {
 
     /** 五级发送兜底：微信发送键 ID 点击 → 微信发送键手势 → 通用打分点击 → 通用手势 → IME 发送动作 */
     private fun performSend(editNode: AccessibilityNodeInfo) {
+        lastSelfSendAt = System.currentTimeMillis()
         val root = getBestRoot()
         val inputBounds = Rect().also { editNode.getBoundsInScreen(it) }
         val isWeChat = pkgOf(editNode) == WECHAT_PKG
