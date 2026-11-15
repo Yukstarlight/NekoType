@@ -1119,20 +1119,24 @@ object AppPrefs {
      * 某个竞品的卸载提示在"当前版本"是否已经弹过。
      * 规则：同一版本只提醒一次；升级到新版本后再提醒一次。
      */
-    fun isRivalPromptShown(pkg: String, versionCode: Int): Boolean {
-        val key = "rival_prompt_ver_$pkg"
-        val v = sp.getInt(key, -1)
-        if (v == versionCode) return true
-        // 旧版是"永久已提示"布尔标记：迁移成当前版本，避免升级后立刻重复弹
-        if (v == -1 && sp.getBoolean("rival_prompt_shown_$pkg", false)) {
-            sp.edit().putInt(key, versionCode).apply()
-            return true
+    fun isRivalPromptShown(pkg: String, versionName: String): Boolean {
+        val key = "rival_prompt_name_$pkg"
+        val v = sp.getString(key, "").orEmpty()
+        if (v == versionName) return true
+        if (v.isEmpty()) {
+            // 迁移旧标记（旧版存的是 versionCode 整数，更早是布尔），避免这次重装又弹一遍
+            val legacyInt = sp.getBoolean("rival_prompt_shown_$pkg", false) ||
+                sp.getInt("rival_prompt_ver_$pkg", -1) != -1
+            if (legacyInt) {
+                sp.edit().putString(key, versionName).apply()
+                return true
+            }
         }
         return false
     }
 
-    fun markRivalPromptShown(pkg: String, versionCode: Int) {
-        sp.edit().putInt("rival_prompt_ver_$pkg", versionCode).apply()
+    fun markRivalPromptShown(pkg: String, versionName: String) {
+        sp.edit().putString("rival_prompt_name_$pkg", versionName).apply()
     }
 
     /** 篡改检测标志（签名不匹配 / Hook 框架）：为 true 时各入口拒绝运行 */
