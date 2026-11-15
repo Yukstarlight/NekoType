@@ -171,6 +171,17 @@ class HomeActivity : AppCompatActivity() {
 
     // ---------- 启动弹窗队列（免责声明 / 竞品提示 / 赞助提醒互不重叠） ----------
 
+    /** 当前安装版本号：竞品提示按版本记忆（升级后再提示一次） */
+    private val appVersionCode: Int by lazy {
+        try {
+            val pi = packageManager.getPackageInfo(packageName, 0)
+            if (android.os.Build.VERSION.SDK_INT >= 28) pi.longVersionCode.toInt()
+            else @Suppress("DEPRECATION") pi.versionCode
+        } catch (_: Throwable) {
+            0
+        }
+    }
+
     private val promptQueue = java.util.ArrayDeque<() -> Unit>()
     private var promptActive = false
 
@@ -204,7 +215,7 @@ class HomeActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val rivals = withContext(Dispatchers.IO) { findRivalApps() }
             for ((pkg, label) in rivals) {
-                if (AppPrefs.isRivalPromptShown(pkg)) continue
+                if (AppPrefs.isRivalPromptShown(pkg, appVersionCode)) continue
                 enqueuePrompt { showRivalPrompt(pkg, label) }
             }
             enqueuePrompt { showSponsorPrompt() }
@@ -247,7 +258,7 @@ class HomeActivity : AppCompatActivity() {
 
     /** 竞品提示：标题用应用显示名，正文同一套猫娘语气；只提醒一次 */
     private fun showRivalPrompt(pkg: String, label: String) {
-        AppPrefs.markRivalPromptShown(pkg)
+        AppPrefs.markRivalPromptShown(pkg, appVersionCode)
         NekoLog.info("检测到竞品「$label」($pkg)，提示卸载")
         NekoDialog.builder(this)
             .setTitle(label)
