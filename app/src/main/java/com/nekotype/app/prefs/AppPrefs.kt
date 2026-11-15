@@ -1115,6 +1115,11 @@ object AppPrefs {
         }
     }
 
+    /** 「喵喵助手」卸载提示是否已经弹过（只提醒一次，不再每次进应用都弹） */
+    var rivalPromptShown: Boolean
+        get() = sp.getBoolean("rival_prompt_shown", false)
+        set(v) = sp.edit().putBoolean("rival_prompt_shown", v).apply()
+
     /** 篡改检测标志（签名不匹配 / Hook 框架）：为 true 时各入口拒绝运行 */
     var tampered: Boolean
         get() = sp.getBoolean("tampered", false)

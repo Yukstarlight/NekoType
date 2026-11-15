@@ -186,6 +186,9 @@ class HomeActivity : AppCompatActivity() {
             false
         }
         if (!installed) return
+        // 只提醒一次：用户点了卸载或跳过就不再打扰（否则每次进应用都弹）
+        if (AppPrefs.rivalPromptShown) return
+        AppPrefs.rivalPromptShown = true
         NekoLog.info("检测到喵喵助手，已弹出卸载提示")
         NekoDialog.builder(this)
             .setTitle(getString(R.string.rival_title))
