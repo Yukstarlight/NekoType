@@ -78,10 +78,12 @@ class SplashActivity : AppCompatActivity() {
 
         // 标题：延迟淡入 + 上移
         try {
+            title.scaleX = 0.96f
+            title.scaleY = 0.96f
             title.animate()
-                .alpha(1f).translationY(0f)
-                .setStartDelay(300).setDuration(400)
-                .setInterpolator(DecelerateInterpolator())
+                .alpha(1f).translationY(0f).scaleX(1f).scaleY(1f)
+                .setStartDelay(300).setDuration(460)
+                .setInterpolator(android.view.animation.PathInterpolator(0.2f, 0.8f, 0.2f, 1f))
                 .start()
         } catch (_: Throwable) { title.alpha = 1f; title.translationY = 0f }
 

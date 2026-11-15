@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Fragment 进入：iOS 风格弹性缩放 + 淡入，280ms 减速曲线 -->
+<!-- Fragment 进入：淡入 + 轻微放大 + 上移（motion 风格，280ms 减速） -->
 <set xmlns:android="http://schemas.android.com/apk/res/android"
     android:interpolator="@android:anim/decelerate_interpolator"
     android:shareInterpolator="true">
@@ -8,11 +8,15 @@
         android:toAlpha="1.0"
         android:duration="280"/>
     <scale
-        android:fromXScale="0.94"
+        android:fromXScale="0.97"
         android:toXScale="1.0"
-        android:fromYScale="0.94"
+        android:fromYScale="0.97"
         android:toYScale="1.0"
         android:pivotX="50%"
         android:pivotY="50%"
+        android:duration="280"/>
+    <translate
+        android:fromYDelta="10%p"
+        android:toYDelta="0"
         android:duration="280"/>
 </set>

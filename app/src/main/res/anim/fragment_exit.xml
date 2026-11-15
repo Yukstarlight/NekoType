@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Fragment 退出：轻微缩小 + 淡出，180ms 加速曲线 -->
+<!-- Fragment 退出：淡出 + 轻微缩小 + 下移（180ms 加速） -->
 <set xmlns:android="http://schemas.android.com/apk/res/android"
     android:interpolator="@android:anim/accelerate_interpolator"
     android:shareInterpolator="true">
@@ -9,10 +9,14 @@
         android:duration="180"/>
     <scale
         android:fromXScale="1.0"
-        android:toXScale="0.97"
+        android:toXScale="0.98"
         android:fromYScale="1.0"
-        android:toYScale="0.97"
+        android:toYScale="0.98"
         android:pivotX="50%"
         android:pivotY="50%"
+        android:duration="180"/>
+    <translate
+        android:fromYDelta="0"
+        android:toYDelta="6%p"
         android:duration="180"/>
 </set>

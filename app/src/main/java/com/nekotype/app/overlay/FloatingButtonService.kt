@@ -535,6 +535,16 @@ class FloatingButtonService : Service() {
         try {
             wm.addView(btn, p)
             buttonAdded = true
+            // 出现动画：从 0.65 弹性放大到 1（overshoot 曲线，类似 spring）
+            try {
+                btn.scaleX = 0.65f
+                btn.scaleY = 0.65f
+                btn.alpha = 0f
+                btn.animate().scaleX(1f).scaleY(1f).alpha(1f)
+                    .setDuration(320)
+                    .setInterpolator(android.view.animation.OvershootInterpolator(1.3f))
+                    .start()
+            } catch (_: Throwable) { }
         } catch (_: Throwable) {
             // 悬浮窗权限未授予：按钮暂不显示
         }
@@ -587,8 +597,14 @@ class FloatingButtonService : Service() {
                         v.removeCallbacks(longPressRunnable)
                         v.postDelayed(longPressRunnable, longPressTimeout)
                     }
-                    // 按压反馈：按下变暗
-                    v.alpha = 0.8f
+                    // 按压反馈：按下变暗 + 轻微缩小（弹性按压）
+                    v.alpha = 0.85f
+                    try {
+                        v.animate().scaleX(0.92f).scaleY(0.92f)
+                            .setDuration(110).setInterpolator(android.view.animation.DecelerateInterpolator())
+                            .start()
+                    } catch (_: Throwable) { }
+
                     return true
                 }
                 MotionEvent.ACTION_MOVE -> {
@@ -609,6 +625,12 @@ class FloatingButtonService : Service() {
                 MotionEvent.ACTION_UP -> {
                     v.removeCallbacks(longPressRunnable)
                     v.alpha = 1f
+                    try {
+                        v.animate().scaleX(1f).scaleY(1f)
+                            .setDuration(220).setInterpolator(android.view.animation.OvershootInterpolator(1.4f))
+                            .start()
+                    } catch (_: Throwable) { }
+
                     // 长按已触发菜单：本次抬手不再执行点击（避免误触发变换）
                     if (longPressFired) {
                         scheduleCollapse()
