@@ -46,8 +46,12 @@ class HomeActivity : AppCompatActivity() {
         /** 打开应用自动 Shizuku 授权时的权限请求码 */
         private const val REQ_AUTO_SHIZUKU = 1002
 
-        /** 竞品「喵喵助手」包名：检测到就劝卸载 */
-        private const val RIVAL_PKG = "com.example.u7e5f3218e9"
+        /** 竞品包名：检测到就劝卸载 */
+        private const val RIVAL_PKG_MAOMAO = "com.example.u7e5f3218e9"
+
+        /** NyaNote 的实际包名（实测 love.miao.yun）；另保留应用名匹配兜底 */
+        private const val RIVAL_PKG_NYANOTE = "love.miao.yun"
+        private const val RIVAL_LABEL_NYANOTE = "NyaNote"
 
         /** 外部打开指定底部导航 tab（悬浮球快捷菜单「回到应用 / 规则 / 设置」用） */
         const val EXTRA_TAB = "nekotype_tab"
@@ -102,15 +106,6 @@ class HomeActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             switchFragment(homeFragment)
         }
-
-        // 里程碑赞助提醒（第 10 次起，见 SponsorDialog.MILESTONES）
-        binding.root.postDelayed({
-            try {
-                if (!com.nekotype.app.module.ModuleHooks.isFeatureHidden(com.nekotype.app.module.FeatureKeys.SPONSOR)) {
-                    com.nekotype.app.util.SponsorDialog.maybeShow(this)
-                }
-            } catch (_: Throwable) { }
-        }, 800)
 
         // 预加载其他 Fragment：首屏显示后延迟创建，避免首次切换卡顿
         binding.root.postDelayed({
@@ -170,44 +165,118 @@ class HomeActivity : AppCompatActivity() {
         // 打开应用自动执行（设置里两个开关，各自独立）
         if (savedInstanceState == null) applyLaunchAutomation()
 
-        // 免责声明：首次进入弹窗，同意后不再弹出；不同意直接退出
-        showDisclaimerIfNeeded()
-
-        // 装了「喵喵助手」就劝一句（仅在免责声明已同意后弹，避免两个对话框叠在一起）
-        if (AppPrefs.disclaimerAccepted) maybePromptRivalUninstall()
+        // 启动弹窗统一排队：免责声明 → 竞品提示 → 赞助提醒，同一时间只显示一个
+        enqueueStartupPrompts()
     }
 
-    /** 检测到喵喵助手（com.example.u7e5f3218e9）时弹窗劝卸载；卸载跳系统应用信息页 */
-    private fun maybePromptRivalUninstall() {
-        val installed = try {
-            packageManager.getPackageInfo(RIVAL_PKG, 0)
-            true
-        } catch (_: Throwable) {
-            false
+    // ---------- 启动弹窗队列（免责声明 / 竞品提示 / 赞助提醒互不重叠） ----------
+
+    private val promptQueue = java.util.ArrayDeque<() -> Unit>()
+    private var promptActive = false
+
+    private fun enqueuePrompt(block: () -> Unit) {
+        promptQueue.addLast(block)
+        pumpPrompts()
+    }
+
+    private fun pumpPrompts() {
+        if (promptActive) return
+        val next = promptQueue.pollFirst() ?: return
+        promptActive = true
+        try {
+            next()
+        } catch (t: Throwable) {
+            NekoLog.error("启动弹窗失败：${t.javaClass.simpleName}: ${t.message}")
+            finishPrompt()
         }
-        if (!installed) return
-        // 只提醒一次：用户点了卸载或跳过就不再打扰（否则每次进应用都弹）
-        if (AppPrefs.rivalPromptShown) return
-        AppPrefs.rivalPromptShown = true
-        NekoLog.info("检测到喵喵助手，已弹出卸载提示")
+    }
+
+    private fun finishPrompt() {
+        promptActive = false
+        pumpPrompts()
+    }
+
+    private fun enqueueStartupPrompts() {
+        if (!AppPrefs.disclaimerAccepted) {
+            enqueuePrompt { showDisclaimerIfNeeded() }
+            return
+        }
+        lifecycleScope.launch {
+            val rivals = withContext(Dispatchers.IO) { findRivalApps() }
+            for ((pkg, label) in rivals) {
+                if (AppPrefs.isRivalPromptShown(pkg)) continue
+                enqueuePrompt { showRivalPrompt(pkg, label) }
+            }
+            enqueuePrompt { showSponsorPrompt() }
+        }
+    }
+
+    /** 已安装的竞品（包名 + 显示名）：固定包名精确匹配，NyaNote 按应用名匹配 */
+    private fun findRivalApps(): List<Pair<String, String>> {
+        val out = mutableListOf<Pair<String, String>>()
+        try {
+            val pm = packageManager
+            for (pkg in listOf(RIVAL_PKG_MAOMAO, RIVAL_PKG_NYANOTE)) {
+                if (isInstalled(pkg)) out += pkg to labelOf(pkg)
+            }
+            val hint = RIVAL_LABEL_NYANOTE.replace(" ", "")
+            for (ai in pm.getInstalledApplications(0)) {
+                if (ai.packageName == packageName) continue
+                if (out.any { it.first == ai.packageName }) continue
+                val label = try { pm.getApplicationLabel(ai).toString() } catch (_: Throwable) { "" }
+                if (label.replace(" ", "").equals(hint, ignoreCase = true)) {
+                    out += ai.packageName to label
+                }
+            }
+        } catch (_: Throwable) { }
+        return out
+    }
+
+    private fun isInstalled(pkg: String): Boolean = try {
+        packageManager.getPackageInfo(pkg, 0)
+        true
+    } catch (_: Throwable) {
+        false
+    }
+
+    private fun labelOf(pkg: String): String = try {
+        packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
+    } catch (_: Throwable) {
+        pkg
+    }
+
+    /** 竞品提示：标题用应用显示名，正文同一套猫娘语气；只提醒一次 */
+    private fun showRivalPrompt(pkg: String, label: String) {
+        AppPrefs.markRivalPromptShown(pkg)
+        NekoLog.info("检测到竞品「$label」($pkg)，提示卸载")
         NekoDialog.builder(this)
-            .setTitle(getString(R.string.rival_title))
+            .setTitle(label)
             .setMessage(getString(R.string.rival_msg))
-            .setPositiveButton(getString(R.string.rival_uninstall)) { _, _ -> openRivalAppInfo() }
+            .setPositiveButton(getString(R.string.rival_uninstall)) { _, _ -> openAppInfo(pkg) }
             .setNegativeButton(getString(R.string.rival_skip), null)
+            .setOnDismissListener { finishPrompt() }
             .show()
     }
 
-    private fun openRivalAppInfo() {
+    private fun openAppInfo(pkg: String) {
         try {
             startActivity(
                 Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                    .setData(android.net.Uri.parse("package:$RIVAL_PKG"))
+                    .setData(android.net.Uri.parse("package:$pkg"))
             )
         } catch (t: Throwable) {
-            NekoLog.error("打开喵喵助手应用信息失败：${t.javaClass.simpleName}")
+            NekoLog.error("打开应用信息失败：${t.javaClass.simpleName}")
             toast(getString(R.string.op_failed))
         }
+    }
+
+    private fun showSponsorPrompt() {
+        if (com.nekotype.app.module.ModuleHooks.isFeatureHidden(com.nekotype.app.module.FeatureKeys.SPONSOR)) {
+            finishPrompt()
+            return
+        }
+        val shown = com.nekotype.app.util.SponsorDialog.maybeShow(this) { finishPrompt() }
+        if (!shown) finishPrompt()
     }
 
     /**
@@ -322,6 +391,10 @@ class HomeActivity : AppCompatActivity() {
             }
             .setCancelable(false)
             .create()
+        dialog.setOnDismissListener {
+            // 同意后继续弹后续公告；拒绝会直接结束进程
+            if (AppPrefs.disclaimerAccepted) finishPrompt()
+        }
         dialog.setOnShowListener {
             val btn = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             btn.isEnabled = false

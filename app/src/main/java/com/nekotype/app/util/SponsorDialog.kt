@@ -36,17 +36,20 @@ object SponsorDialog {
      * 弹出前先把指针推进到下一个里程碑，避免同一次启动重复弹、
      * 也保证「上次点了哪个按钮」不影响下一次里程碑。
      */
-    fun maybeShow(ctx: Context) {
-        try {
+    fun maybeShow(ctx: Context, onDismiss: (() -> Unit)? = null): Boolean {
+        return try {
             val count = AppPrefs.launchCount
             val next = AppPrefs.nextSponsorMilestone
-            if (count <= 0 || count < next) return
+            if (count <= 0 || count < next) return false
             AppPrefs.nextSponsorMilestone = MILESTONES.firstOrNull { it > count } ?: Int.MAX_VALUE
-            show(ctx, count)
-        } catch (_: Throwable) { /* 提醒失败不影响正常使用 */ }
+            show(ctx, count, onDismiss)
+            true
+        } catch (_: Throwable) {
+            false
+        }
     }
 
-    private fun show(ctx: Context, count: Int) {
+    private fun show(ctx: Context, count: Int, onDismiss: (() -> Unit)? = null) {
         val root = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(ctx, 24), dp(ctx, 20), dp(ctx, 24), 0)
@@ -87,6 +90,7 @@ object SponsorDialog {
             .setNegativeButton(ctx.getString(R.string.sp_later)) { _, _ ->
                 NekoLog.adjust("赞助提醒(第 $count 次启动)：下次一定")
             }
+            .setOnDismissListener { onDismiss?.invoke() }
             .show()
     }
 
