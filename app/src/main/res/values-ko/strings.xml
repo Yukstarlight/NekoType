@@ -419,7 +419,7 @@
     <string name="u152">✗ 비활성</string>
     <string name="u153">서비스 상태: </string>
     <string name="u154">누적 변환: %1$d회</string>
-    <string name="u155">버전 이름: %1$s\n버전 코드: %2$s\n최소 시스템: Android 8.0(API 26)\n대상 시스템: Android 14(API 34)\n패키지: %3$s</string>
+    <string name="u155">버전 이름: %1$s\n최소 시스템: Android 8.0(API 26)\n대상 시스템: Android 14(API 34)\n패키지: %2$s</string>
     <string name="u156">닫기</string>
     <string name="u157">NekoType 의견 보내기</string>
     <string name="u158">버전: %1$s\n기기: %2$s %3$s · Android %4$s\nShizuku: %5$s\n\n제안/문제:\n</string>

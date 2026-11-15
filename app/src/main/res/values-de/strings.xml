@@ -435,7 +435,7 @@ E-Mail: TR114512@qq.com</string>
     <string name="u152">✗ Nicht aktiv</string>
     <string name="u153">Dienststatus:</string>
     <string name="u154">Umwandlungen insgesamt: %1$d</string>
-    <string name="u155">Versionsname: %1$s\nVersionsnummer: %2$s\nMindestsystem: Android 8.0 (API 26)\nZielsystem: Android 14 (API 34)\nPaketname: %3$s</string>
+    <string name="u155">Versionsname: %1$s\nMindestsystem: Android 8.0 (API 26)\nZielsystem: Android 14 (API 34)\nPaketname: %2$s</string>
     <string name="u156">Schließen</string>
     <string name="u157">NekoType Feedback</string>
     <string name="u158">Version: %1$s\nGerät: %2$s %3$s · Android %4$s\nShizuku: %5$s\n\nVorschlag/Problem:\n</string>

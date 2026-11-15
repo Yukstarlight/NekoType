@@ -416,8 +416,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun refreshVersion() {
         val info = packageManager.getPackageInfo(packageName, 0)
         val versionName = info.versionName ?: "?"
-        val versionCode = if (Build.VERSION.SDK_INT >= 28) info.longVersionCode.toString() else info.versionCode.toString()
-        binding.tvVersion.text = getString(R.string.u155, versionName, versionCode, packageName)
+        binding.tvVersion.text = getString(R.string.u155, versionName, packageName)
     }
 
     private fun isAccessibilityEnabled(): Boolean {
@@ -449,7 +448,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun sendFeedbackEmail() {
         try {
             val info = packageManager.getPackageInfo(packageName, 0)
-            val version = "${info.versionName} (${if (Build.VERSION.SDK_INT >= 28) info.longVersionCode else info.versionCode})"
+            val version = info.versionName.orEmpty()
             val subject = getString(R.string.u157)
             val body = getString(R.string.u158, version, Build.MANUFACTURER, Build.MODEL, Build.VERSION.RELEASE, if (SysPower.isShizukuPermissionGranted()) getString(R.string.u109) else getString(R.string.u108))
             val intent = Intent(Intent.ACTION_SENDTO).apply {

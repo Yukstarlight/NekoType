@@ -470,7 +470,7 @@ E-posta: TR114512@qq.com</string>
     <string name="u152">✗ Etkin değil</string>
     <string name="u153">Servis durumu:</string>
     <string name="u154">Toplam dönüşüm: %1$d kez</string>
-    <string name="u155">Sürüm adı: %1$s\nSürüm kodu: %2$s\nEn düşük sistem: Android 8.0 (API 26)\nHedef sistem: Android 14 (API 34)\nPaket adı: %3$s</string>
+    <string name="u155">Sürüm adı: %1$s\nEn düşük sistem: Android 8.0 (API 26)\nHedef sistem: Android 14 (API 34)\nPaket adı: %2$s</string>
     <string name="u156">Kapat</string>
     <string name="u157">NekoType öneri geri bildirimi</string>
     <string name="u158">Sürüm: %1$s\nCihaz: %2$s %3$s · Android %4$s\nShizuku: %5$s\n\nÖneri/sorun:\n</string>

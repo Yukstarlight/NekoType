@@ -294,7 +294,7 @@
     <string name="u152">✗ 未激活</string>
     <string name="u153">服务状态：</string>
     <string name="u154">累计变换：%1$d 次</string>
-    <string name="u155">版本名：%1$s\n版本号：%2$s\n最低系统：Android 8.0（API 26）\n目标系统：Android 14（API 34）\n包名：%3$s</string>
+    <string name="u155">版本名：%1$s\n最低系统：Android 8.0（API 26）\n目标系统：Android 14（API 34）\n包名：%2$s</string>
     <string name="u156">关闭</string>
     <string name="u157">NekoType 建议反馈</string>
     <string name="u158">版本：%1$s\n设备：%2$s %3$s · Android %4$s\nShizuku：%5$s\n\n建议/问题：\n</string>

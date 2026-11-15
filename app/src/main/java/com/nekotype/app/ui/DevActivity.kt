@@ -126,7 +126,7 @@ class DevActivity : AppCompatActivity() {
         } catch (_: Throwable) { false }
         val fmt = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
         return buildString {
-            appendLine("版本: ${pi.versionName} (versionCode $vc)")
+            appendLine("版本: ${pi.versionName}")
             appendLine("包名: $pkg")
             appendLine("进程: PID ${android.os.Process.myPid()}  UID ${android.os.Process.myUid()}")
             appendLine("targetSdk: ${ai.targetSdkVersion}   minSdk: ${Build.VERSION.SDK_INT}")

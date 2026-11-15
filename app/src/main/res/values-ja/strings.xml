@@ -419,7 +419,7 @@
     <string name="u152">✗ 未承認</string>
     <string name="u153">サービスの状態：</string>
     <string name="u154">累計変換：%1$d 回</string>
-    <string name="u155">バージョン名：%1$s\nバージョンコード：%2$s\n最低システム：Android 8.0（API 26）\n対象システム：Android 14（API 34）\nパッケージ名：%3$s</string>
+    <string name="u155">バージョン名：%1$s\n最低システム：Android 8.0（API 26）\n対象システム：Android 14（API 34）\nパッケージ名：%2$s</string>
     <string name="u156">閉じる</string>
     <string name="u157">NekoType ご意見・ご要望</string>
     <string name="u158">バージョン：%1$s\n端末：%2$s %3$s · Android %4$s\nShizuku：%5$s\n\nご要望／問題：\n</string>
