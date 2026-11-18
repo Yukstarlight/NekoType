@@ -1,7 +1,3 @@
-<p align="center">
-  <img src=".github/MUIT.png" alt="Mist Unveils Infinite Tomorrows" width="300">
-</p>
-
 NekoType
 
 > Android 系统级消息文本自定义工具 —— 悬浮按钮一键为输入框内容应用自定义规则（前缀/后缀/随机尾缀/文本替换）并自动发送
@@ -333,3 +329,9 @@ NekoType 是一款运行在 Android 上的系统级消息处理工具，核心�
 * 必须保留版权声明与协议声明，且**不得附加额外限制**
 * 完整协议文本见仓库根目录 [LICENSE](LICENSE)；如与本文有出入，以 `LICENSE` 文件为准
 * 本软件按"现状"提供，不提供任何明示或暗示的担保
+
+* * *
+
+<p align="center">
+  <img src=".github/MUIT.png" alt="Mist Unveils Infinite Tomorrows" width="220">
+</p>
